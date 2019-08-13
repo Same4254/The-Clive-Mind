@@ -188,7 +188,7 @@ public class FullyConnectedRenderer {
 		frame.setVisible(true);
 		
 		while(true) {
-			network.calculate(new double[] {.4, .3, .7, .4, .2, .1});
+			network.feedForward(new double[] {.4, .3, .7, .4, .2, .1});
 			network.nesterovBackpropogate(new double[] { .5, .3, .8});
 			
 			panel.repaint();

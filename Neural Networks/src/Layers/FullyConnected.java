@@ -1,5 +1,10 @@
 package Layers;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.Scanner;
+
 import Utilities.Matrix;
 import Utilities.ActivationFunctions.ActivationFunction;
 import Utilities.ActivationFunctions.SigmoidFunction;
@@ -24,6 +29,7 @@ public class FullyConnected {
 		weights = new Matrix[layerSizes.length - 1];
 		biases = new Matrix[layerSizes.length - 1];
 		
+		//Momentum
 		weightVelocities = new Matrix[layerSizes.length - 1];
 		biasVelocities = new Matrix[layerSizes.length - 1];
 		
@@ -46,17 +52,131 @@ public class FullyConnected {
 		}
 	}
 	
-	public Matrix calculate(double[] in) {
+	public FullyConnected(File file) {
+		//Layer Sizes
+		//activation function
+		//learning rate, velocity coefficient
+		//Weights
+		//Biases
+		//Weight Velocities
+		//Bias Velocities
+		
+		Scanner sc = null;
+		try {
+			sc = new Scanner(file);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		String[] layerSizesParts = sc.nextLine().split(",");
+		layerSizes = new int[layerSizesParts.length];
+		
+		for(int i = 0; i < layerSizesParts.length; i++)
+			layerSizes[i] = Integer.parseInt(layerSizesParts[i]);
+		
+		weights = new Matrix[layerSizes.length - 1];
+		biases = new Matrix[layerSizes.length - 1];
+		
+		weightVelocities = new Matrix[layerSizes.length - 1];
+		biasVelocities = new Matrix[layerSizes.length - 1];
+		
+		runningAverageWeightGradients = new Matrix[layerSizes.length - 1];
+		runningAverageBiasGradients = new Matrix[layerSizes.length - 1];
+		
+		nets = new Matrix[layerSizes.length];
+		activations = new Matrix[layerSizes.length];
+		
+		activationFunction = new SigmoidFunction();
+		
+		//Learning Rate, Valocity Coefficient
+		String[] parts = sc.nextLine().split(",");
+		learningRate = Double.parseDouble(parts[0]);
+		velocityCoeficcient = Double.parseDouble(parts[1]);
+		
+		for(int layer = 1; layer < layerSizes.length; layer++) {
+			runningAverageWeightGradients[layer - 1] = new Matrix(layerSizes[layer], layerSizes[layer - 1]);
+			runningAverageBiasGradients[layer - 1] = new Matrix(layerSizes[layer], 1);
+		}
+
+		for(int weight = 0; weight < weights.length; weight++) {
+			weights[weight] = Matrix.parseFileString(sc.nextLine());
+		}
+		
+		for(int bias = 0; bias < biases.length; bias++) {
+			biases[bias] = Matrix.parseFileString(sc.nextLine());
+		}
+		
+		for(int weightVelocity = 0; weightVelocity < weightVelocities.length; weightVelocity++) {
+			weightVelocities[weightVelocity] = Matrix.parseFileString(sc.nextLine());
+		}
+		
+		for(int biasVelocity = 0; biasVelocity < biasVelocities.length; biasVelocity++) {
+			biasVelocities[biasVelocity] = Matrix.parseFileString(sc.nextLine());
+		}
+	}
+	
+	public void save(File file) {
+		PrintWriter writer = null;
+		try {
+			writer = new PrintWriter(file);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		//Layer Sizes
+		for(int i = 0; i < layerSizes.length; i++) {
+			if(i != layerSizes.length - 1)
+				writer.print(layerSizes[i] + ",");
+			else
+				writer.println(layerSizes[i]);
+		}
+		
+		//Activation Function
+		
+		//Learning Rate, Velocity Coefficient
+		writer.println(learningRate + "," + velocityCoeficcient);
+		
+		//Weights
+		for(int weightIndex = 0; weightIndex < weights.length; weightIndex++)
+			writer.println(weights[weightIndex].fileString());
+		
+		//Biases
+		for(int biasIndex = 0; biasIndex < biases.length; biasIndex++)
+			writer.println(biases[biasIndex].fileString());
+		
+		//Weight Velocity
+		for(int weightVelocityIndex = 0; weightVelocityIndex < weightVelocities.length; weightVelocityIndex++) {
+			writer.println(weightVelocities[weightVelocityIndex].fileString());
+		}
+		
+		//Bias Velocity
+		for(int biasVelocityIndex = 0; biasVelocityIndex < biasVelocities.length; biasVelocityIndex++) {
+			writer.println(biasVelocities[biasVelocityIndex].fileString());
+		}
+		
+		writer.close();
+	}
+	
+	public Matrix feedForward(double[] in) {
 		activations[0] = new Matrix(in.length, 1, in);
 		nets[0] = new Matrix(in.length, 1, in);
 		
 		for(int i = 1; i < layerSizes.length; i++) {
 			Matrix net = weights[i - 1].multiply(activations[i - 1]).add(biases[i - 1]);
 			nets[i] = new Matrix(net);
-			activations[i] = net.forEach(activationFunction.getFunction());
+			activations[i] = net.mForEach(activationFunction.getFunction());
 		}
 		
 		return activations[activations.length - 1];
+	}
+	
+	public Matrix calculate(double[] in) {
+		Matrix last = new Matrix(in.length, 1, in);
+		
+		for(int i = 1; i < layerSizes.length; i++)
+			last = weights[i - 1].multiply(last).add(biases[i - 1]).mForEach(activationFunction.getFunction());
+		
+		return last;
 	}
 	
 	public void vanillaBackpropogate(double[] labels) { vanillaBackpropogate(new Matrix(labels.length, 1, labels)); }
@@ -65,38 +185,17 @@ public class FullyConnected {
 		for(int weightLayer = weights.length - 1; weightLayer >= 0; weightLayer--) {
 			if(weightLayer == weights.length - 1) {
 				error = activations[activations.length - 1].subtract(labels)
-							.hadamardProduct(nets[weightLayer].immutableForEach(activationFunction.getDerivativeFunction()));
+							.hadamardProduct(nets[weightLayer].forEach(activationFunction.getDerivativeFunction()));
 			} else {
 				error = weights[weightLayer + 1].transpose().multiply(error)
-							.hadamardProduct(nets[weightLayer + 1].immutableForEach(activationFunction.getDerivativeFunction()));
+							.hadamardProduct(nets[weightLayer + 1].forEach(activationFunction.getDerivativeFunction()));
 			}
 			
-			weights[weightLayer] = weights[weightLayer].subtract(weights[weightLayer].immutableScale(learningRate)
+			weights[weightLayer] = weights[weightLayer].subtract(weights[weightLayer].scale(learningRate)
 									.hadamardProduct(error.multiply(activations[weightLayer].transpose())));
 			
-			biases[weightLayer] = biases[weightLayer].subtract(biases[weightLayer].immutableScale(learningRate)
+			biases[weightLayer] = biases[weightLayer].subtract(biases[weightLayer].scale(learningRate)
 									.hadamardProduct(error));
-		}
-	}
-	
-	public void momentumBackpropogate(double[] labels) { momentumBackpropogate(new Matrix(labels.length, 1, labels)); }
-	public void momentumBackpropogate(Matrix labels) {
-		Matrix error = null;
-		for(int weightLayer = weights.length - 1; weightLayer >= 0; weightLayer--) {
-			if(weightLayer == weights.length - 1) {
-				error = activations[activations.length - 1].subtract(labels)
-							.hadamardProduct(nets[weightLayer].immutableForEach(activationFunction.getDerivativeFunction()));
-			} else {
-				error = weights[weightLayer + 1].transpose().multiply(error)
-							.hadamardProduct(nets[weightLayer + 1].immutableForEach(activationFunction.getDerivativeFunction()));
-			}
-			
-			Matrix weightGradient = error.multiply(activations[weightLayer].transpose());
-			weightVelocities[weightLayer] = weightVelocities[weightLayer].immutableScale(velocityCoeficcient).subtract(weightGradient.immutableScale(learningRate));
-			weights[weightLayer] = weights[weightLayer].add(weightVelocities[weightLayer]);
-
-			biasVelocities[weightLayer] = biasVelocities[weightLayer].immutableScale(velocityCoeficcient).subtract(error.immutableScale(learningRate));
-			biases[weightLayer] = biases[weightLayer].add(biasVelocities[weightLayer]);
 		}
 	}
 	
@@ -106,10 +205,10 @@ public class FullyConnected {
 		for(int weightLayer = weights.length - 1; weightLayer >= 0; weightLayer--) {
 			if(weightLayer == weights.length - 1) {
 				error = activations[activations.length - 1].subtract(labels)
-							.hadamardProduct(nets[weightLayer].immutableForEach(activationFunction.getDerivativeFunction()));
+							.hadamardProduct(nets[weightLayer].forEach(activationFunction.getDerivativeFunction()));
 			} else {
 				error = weights[weightLayer + 1].transpose().multiply(error)
-							.hadamardProduct(nets[weightLayer + 1].immutableForEach(activationFunction.getDerivativeFunction()));
+							.hadamardProduct(nets[weightLayer + 1].forEach(activationFunction.getDerivativeFunction()));
 			}
 
 			Matrix weightGradient = error.multiply(activations[weightLayer].transpose());
@@ -117,15 +216,15 @@ public class FullyConnected {
 			Matrix previousWeightVelocity = new Matrix(weightVelocities[weightLayer]);
 			Matrix previousBiasVelocity = new Matrix(biasVelocities[weightLayer]);
 			
-			weightVelocities[weightLayer] = weightVelocities[weightLayer].immutableScale(velocityCoeficcient)
-												.subtract(weightGradient.immutableScale(learningRate));
-			biasVelocities[weightLayer] = biasVelocities[weightLayer].immutableScale(velocityCoeficcient)
-												.subtract(error.immutableScale(learningRate));
+			weightVelocities[weightLayer] = weightVelocities[weightLayer].scale(velocityCoeficcient)
+												.subtract(weightGradient.scale(learningRate));
+			biasVelocities[weightLayer] = biasVelocities[weightLayer].scale(velocityCoeficcient)
+												.subtract(error.scale(learningRate));
 			
-			weights[weightLayer] = weights[weightLayer].subtract(previousWeightVelocity.immutableScale(velocityCoeficcient))
-										.add(weightVelocities[weightLayer].immutableScale(1.0 + velocityCoeficcient));
-			biases[weightLayer] = biases[weightLayer].subtract(previousBiasVelocity.immutableScale(velocityCoeficcient))
-										.add(biasVelocities[weightLayer].immutableScale(1.0 + velocityCoeficcient));
+			weights[weightLayer] = weights[weightLayer].subtract(previousWeightVelocity.scale(velocityCoeficcient))
+										.add(weightVelocities[weightLayer].scale(1.0 + velocityCoeficcient));
+			biases[weightLayer] = biases[weightLayer].subtract(previousBiasVelocity.scale(velocityCoeficcient))
+										.add(biasVelocities[weightLayer].scale(1.0 + velocityCoeficcient));
 		}
 	}
 	
@@ -135,10 +234,10 @@ public class FullyConnected {
 		for(int weightLayer = weights.length - 1; weightLayer >= 0; weightLayer--) {
 			if(weightLayer == weights.length - 1) {
 				error = activations[activations.length - 1].subtract(labels)
-							.hadamardProduct(nets[weightLayer].immutableForEach(activationFunction.getDerivativeFunction()));
+							.hadamardProduct(nets[weightLayer].forEach(activationFunction.getDerivativeFunction()));
 			} else {
 				error = weights[weightLayer + 1].transpose().multiply(error)
-							.hadamardProduct(nets[weightLayer + 1].immutableForEach(activationFunction.getDerivativeFunction()));
+							.hadamardProduct(nets[weightLayer + 1].forEach(activationFunction.getDerivativeFunction()));
 			}
 
 			Matrix weightGradient = error.multiply(activations[weightLayer].transpose());
@@ -153,15 +252,15 @@ public class FullyConnected {
 				Matrix previousWeightVelocity = new Matrix(weightVelocities[i]);
 				Matrix previousBiasVelocity = new Matrix(biasVelocities[i]);
 				
-				weightVelocities[i] = weightVelocities[i].immutableScale(velocityCoeficcient)
-						.subtract(runningAverageWeightGradients[i].immutableScale(learningRate / batchCount));
-				biasVelocities[i] = biasVelocities[i].immutableScale(velocityCoeficcient)
-						.subtract(runningAverageBiasGradients[i].immutableScale(learningRate / batchCount));
+				weightVelocities[i] = weightVelocities[i].scale(velocityCoeficcient)
+						.subtract(runningAverageWeightGradients[i].scale(learningRate / batchCount));
+				biasVelocities[i] = biasVelocities[i].scale(velocityCoeficcient)
+						.subtract(runningAverageBiasGradients[i].scale(learningRate / batchCount));
 				
-				weights[i] = weights[i].subtract(previousWeightVelocity.immutableScale(velocityCoeficcient))
-						.add(weightVelocities[i].immutableScale(1.0 + velocityCoeficcient));
-				biases[i] = biases[i].subtract(previousBiasVelocity.immutableScale(velocityCoeficcient))
-						.add(biasVelocities[i].immutableScale(1.0 + velocityCoeficcient));
+				weights[i] = weights[i].subtract(previousWeightVelocity.scale(velocityCoeficcient))
+						.add(weightVelocities[i].scale(1.0 + velocityCoeficcient));
+				biases[i] = biases[i].subtract(previousBiasVelocity.scale(velocityCoeficcient))
+						.add(biasVelocities[i].scale(1.0 + velocityCoeficcient));
 				
 				runningAverageWeightGradients[i].clear();
 				runningAverageBiasGradients[i].clear();
@@ -170,7 +269,7 @@ public class FullyConnected {
 			batchCount = 0;
 		}
 	}
-
+	
 	public Matrix[] getActivations() { return activations; }
 	public Matrix getInput() { return activations[0]; }
 	public Matrix getOutput() { return activations[activations.length - 1]; } 
@@ -180,36 +279,51 @@ public class FullyConnected {
 	
 	public int[] getLayerSizes() { return layerSizes; }
 	
-	public static void main(String[] args) {
-		FullyConnected network = new FullyConnected(new int[] {2, 50, 2});
-
-		double[][][] dataset = {
-			{ {0, .5}, {.4, .3} },
-			{ {.1, .7}, {.9, .1} },
-			{ {.6, .8}, {.3, .2} },
-			{ {.5, .3}, {.108, .904} },
-			{ {.8, .6}, {.87, .46} },
-			{ {.9, .05}, {.12, .79} },
-			{ {.705, .806}, {.34, .68} },
-		};
-		
-		System.out.println(network.calculate(dataset[0][0]));
-		System.out.println(network.calculate(dataset[1][0]));
-		
-		for(int i = 0; i < 100000; i++) {
-//			System.out.println("-----");
-			
-			network.calculate(dataset[0][0]);
-			network.nesterovBackpropogate(dataset[0][1]);
-			
-			network.calculate(dataset[1][0]);
-			network.nesterovBackpropogate(dataset[1][1]);
-			
-//			System.out.println(network.calculate(dataset[2][0]));
-//			network.backpropogate(dataset[2][1]);
-		}
-		
-		System.out.println(network.calculate(dataset[0][0]));
-		System.out.println(network.calculate(dataset[1][0]));
-	}
+//	public static void main(String[] args) {
+//		FullyConnected network = new FullyConnected(new int[] {2, 50, 2});
+//		File file = new File(System.getProperty("user.dir") + "/model.txt");
+//		
+//		if(!file.exists())
+//			try {
+//				file.createNewFile();
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+//		
+//		System.out.println(network.calculate(new double[] {.1, .2} ));
+//		
+//		network.save(file);
+//		
+//		FullyConnected net2 = new FullyConnected(file);
+//		System.out.println(net2.calculate(new double[] {.1, .2} ));
+//		
+//		double[][][] dataset = {
+//			{ {0, .5}, {.4, .3} },
+//			{ {.1, .7}, {.9, .1} },
+//			{ {.6, .8}, {.3, .2} },
+//			{ {.5, .3}, {.108, .904} },
+//			{ {.8, .6}, {.87, .46} },
+//			{ {.9, .05}, {.12, .79} },
+//			{ {.705, .806}, {.34, .68} },
+//		};
+//		
+//		System.out.println(network.feedForward(dataset[0][0]));
+//		System.out.println(network.feedForward(dataset[1][0]));
+//		
+//		for(int i = 0; i < 100000; i++) {
+////			System.out.println("-----");
+//			
+//			network.feedForward(dataset[0][0]);
+//			network.nesterovBackpropogate(dataset[0][1]);
+//			
+//			network.feedForward(dataset[1][0]);
+//			network.nesterovBackpropogate(dataset[1][1]);
+//			
+////			System.out.println(network.calculate(dataset[2][0]));
+////			network.backpropogate(dataset[2][1]);
+//		}
+//		
+//		System.out.println(network.feedForward(dataset[0][0]));
+//		System.out.println(network.feedForward(dataset[1][0]));
+//	}
 }

@@ -18,6 +18,23 @@ public class Matrix {
 		return toRet;
 	}
 	
+	public static Matrix parseFileString(String string) {
+		Matrix toRet = null;
+		String[] rows = string.split(",,");
+		
+		for(int row = 0; row < rows.length; row++) {
+			String[] values = rows[row].split(",");
+			
+			if(toRet == null)
+				toRet = new Matrix(rows.length, values.length);
+			
+			for(int i = 0; i < values.length; i++)
+				toRet.values[row][i] = Double.parseDouble(values[i]);
+		}
+		
+		return toRet;
+	}
+	
 	public Matrix(double[][] values) {
 		this.values = values;
 		this.nRows = values.length;
@@ -40,6 +57,15 @@ public class Matrix {
 			this.values[row][col] = values[index];
 			
 			index++;
+		}}
+	}
+	
+	public Matrix(int rows, int columns, double value) {
+		this(rows, columns);
+		
+		for(int row = 0; row < rows; row++) {
+		for(int col = 0; col < columns; col++) {
+			this.values[row][col] = value;
 		}}
 	}
 	
@@ -94,6 +120,15 @@ public class Matrix {
 		return toRet;
 	}
 	
+	public Matrix mAdd(Matrix matrix) {
+		for(int row = 0; row < nRows; row++) {
+		for(int col = 0; col < nCols; col++) {
+			this.values[row][col] = this.values[row][col] + matrix.values[row][col];
+		}}
+		
+		return this;
+	}
+	
 	public Matrix subtract(Matrix matrix) {
 		Matrix toRet = new Matrix(this.nRows, this.nCols);
 		
@@ -103,6 +138,15 @@ public class Matrix {
 		}}
 		
 		return toRet;
+	}
+	
+	public Matrix mSubtract(Matrix matrix) {
+		for(int row = 0; row < nRows; row++) {
+		for(int col = 0; col < nCols; col++) {
+			this.values[row][col] = this.values[row][col] - matrix.values[row][col];
+		}}
+		
+		return this;
 	}
 	
 	public double elementWiseProduct(Matrix smaller, int x, int y) {
@@ -127,6 +171,15 @@ public class Matrix {
 		return toRet;
 	}
 	
+	public Matrix mHadamardProduct(Matrix matrix) {
+		for(int row = 0; row < nRows; row++) {
+		for(int col = 0; col < nCols; col++) {
+			this.values[row][col] = this.values[row][col] * matrix.values[row][col];
+		}}
+		
+		return this;
+	}
+	
 	public Matrix pad(int amount) {
 		Matrix matrix = new Matrix(this.nRows + (2 * amount), this.nCols + (2 * amount));
 		
@@ -137,7 +190,7 @@ public class Matrix {
 		
 		return matrix;
 	}
-
+	
 	public Matrix subMatrix(int x, int y, int width, int height) {
 		Matrix toRet = new Matrix(height, width);
 		
@@ -149,7 +202,7 @@ public class Matrix {
 		return toRet;
 	}
 	
-	public Matrix forEach(Function<Double, Double> function) {
+	public Matrix mForEach(Function<Double, Double> function) {
 		for(int row = 0; row < nRows; row++) {
 		for(int col = 0; col < nCols; col++) {
 			values[row][col] = function.apply(values[row][col]);
@@ -158,7 +211,7 @@ public class Matrix {
 		return this;
 	}
 	
-	public Matrix immutableForEach(Function<Double, Double> function) {
+	public Matrix forEach(Function<Double, Double> function) {
 		Matrix toRet = new Matrix(nRows, nCols);
 		
 		for(int row = 0; row < nRows; row++) {
@@ -169,12 +222,34 @@ public class Matrix {
 		return toRet;
 	}
 	
+	public Matrix forEach(MatrixForEach forEach) {
+		Matrix toRet = new Matrix(nRows, nCols);
+		
+		for(int row = 0; row < nRows; row++) {
+		for(int col = 0; col < nCols; col++) {
+			toRet.values[row][col] = forEach.forEach(row, col, values[row][col]);
+		}}
+		
+		return toRet;
+	}
+	
+	public Matrix mScale(double scalar) {
+		return mForEach(x -> scalar * x);
+	}
+	
 	public Matrix scale(double scalar) {
 		return forEach(x -> scalar * x);
 	}
 	
-	public Matrix immutableScale(double scalar) {
-		return immutableForEach(x -> scalar * x);
+	public Matrix sign() {
+		Matrix toRet = new Matrix(this.nRows, this.nCols);
+		
+		for(int row = 0; row < nRows; row++) {
+		for(int col = 0; col < nCols; col++) {
+			toRet.set(row, col, Math.copySign(1, values[row][col]));
+		}}
+		
+		return toRet;
 	}
 
 	public Matrix clear() {
@@ -218,12 +293,28 @@ public class Matrix {
 		return stringBuilder.toString();
 	}
 	
-	public double get(int row, int col) { return values[row][col]; }
-	
-	public double[] getRow(int row) {
-		return values[row];
+	public String fileString() {
+		StringBuilder builder = new StringBuilder();
+		
+		for(int r = 0; r < nRows; r++) {
+			for(int i = 0; i < values[r].length; i++) {
+				if(i == values[r].length - 1)
+					builder.append(values[r][i]);
+				else
+					builder.append(values[r][i] + ",");
+			}
+			
+			if(r != nRows - 1)
+				builder.append(",,");
+		}
+		
+		return builder.toString();
 	}
 	
+	public double get(int row, int col) { return values[row][col]; }
+	
+	public double[][] getValues() { return values; }
+	public double[] getRow(int row) { return values[row]; }
 	public double[] getColumn(int column) {
 		double[] toRet = new double[values.length];
 		
@@ -234,37 +325,14 @@ public class Matrix {
 		return toRet;
 	}
 	
-	public double[][] getValues() { return values; }
+	public void set(int row, int col, double value) { values[row][col] = value; }
 	
 	public int getNRows() { return nRows; }
 	public int getNCols() { return nCols; }
 	
 	public static void main(String[] args) {
-		Matrix matrix = new Matrix(new double[][] {
-			{5,4,3},
-			{4,0,4},
-			{7,10,3}
-		});
+		System.out.println(Math.copySign(1, -50));
 		
-		System.out.println(matrix.transpose());
-		
-//		Matrix matrix1 = new Matrix(new double[][] {
-//			{-1, 2, 3},
-//			{4, 0, 5}
-//		});
-//		
-//		Matrix matrix2 = new Matrix(new double[][] {
-//			{5, -1},
-//			{-4, 0},
-//			{2, 3}
-//		});
-//		
-//		System.out.println(matrix2.multiply(matrix1));
-		
-		
-		
-//		double sum = 0.0;
-//		
 //		Matrix matrix1 = new Matrix(new double[][] {
 //			{0,0,0,0,0,0,0},
 //			{0,1,1,1,2,1,0},
@@ -272,6 +340,16 @@ public class Matrix {
 //			{0,2,0,1,2,0,0},
 //			{0,2,0,2,0,0,0},
 //			{0,1,0,1,0,0,0},
+//			{0,0,0,0,0,0,0}
+//		});
+//		
+//		Matrix matrix2 = new Matrix(new double[][] {
+//			{0,0,0,0,0,0,0},
+//			{0,1,1,2,2,0,0},
+//			{0,2,2,1,0,2,0},
+//			{0,2,0,2,1,2,0},
+//			{0,2,1,1,1,0,0},
+//			{0,1,1,1,0,1,0},
 //			{0,0,0,0,0,0,0}
 //		});
 //		
