@@ -15,13 +15,19 @@ public class FullyConnected {
 	
 	private Matrix[] runningAverageWeightGradients, runningAverageBiasGradients;
 	
-	private int batchCount, batchSize = 10;
+	private int batchCount, batchSize = 20;
 	
 	private int[] layerSizes;
 	
 	private ActivationFunction activationFunction;
 	private double learningRate = 0.001;
 	private double velocityCoeficcient = 0.9;
+	
+	private Matrix[] previousWeightGradients;
+	private Matrix[] previousDeltas;
+	private Matrix[] previousWeightDeltas;
+	
+	private double etaPlus = 1.2, etaMinus = 0.5, deltaMin = 1E-6, deltaMax = 50.0;
 	
 	public FullyConnected(int[] layerSizes) {
 		this.layerSizes = layerSizes;
@@ -36,6 +42,10 @@ public class FullyConnected {
 		runningAverageWeightGradients = new Matrix[layerSizes.length - 1];
 		runningAverageBiasGradients = new Matrix[layerSizes.length - 1];
 		
+		previousWeightGradients = new Matrix[layerSizes.length - 1];
+		previousDeltas = new Matrix[layerSizes.length - 1];
+		previousWeightDeltas = new Matrix[layerSizes.length - 1];
+		
 		nets = new Matrix[layerSizes.length];
 		activations = new Matrix[layerSizes.length];
 		
@@ -49,6 +59,10 @@ public class FullyConnected {
 			biases[layer - 1] = Matrix.random(layerSizes[layer], 1, -1, 1);
 			biasVelocities[layer - 1] = new Matrix(layerSizes[layer], 1);
 			runningAverageBiasGradients[layer - 1] = new Matrix(layerSizes[layer], 1);
+			
+			previousWeightGradients[layer - 1] = new Matrix(layerSizes[layer], layerSizes[layer - 1]);
+			previousDeltas[layer - 1] = new Matrix(layerSizes[layer], layerSizes[layer - 1], 0.1);
+			previousWeightDeltas[layer - 1] = new Matrix(layerSizes[layer], layerSizes[layer - 1]);
 		}
 	}
 	
@@ -162,9 +176,12 @@ public class FullyConnected {
 		nets[0] = new Matrix(in.length, 1, in);
 		
 		for(int i = 1; i < layerSizes.length; i++) {
-			Matrix net = weights[i - 1].multiply(activations[i - 1]).add(biases[i - 1]);
-			nets[i] = new Matrix(net);
-			activations[i] = net.mForEach(activationFunction.getFunction());
+//			Matrix net = weights[i - 1].multiply(activations[i - 1]).mAdd(biases[i - 1]);
+//			nets[i] = new Matrix(net);
+//			activations[i] = net.mForEach(activationFunction.getFunction());
+			
+			nets[i] = weights[i - 1].multiply(activations[i - 1]).mAdd(biases[i - 1]);
+			activations[i] = nets[i].forEach(activationFunction.getFunction());
 		}
 		
 		return activations[activations.length - 1];
@@ -205,28 +222,95 @@ public class FullyConnected {
 		for(int weightLayer = weights.length - 1; weightLayer >= 0; weightLayer--) {
 			if(weightLayer == weights.length - 1) {
 				error = activations[activations.length - 1].subtract(labels)
-							.hadamardProduct(nets[weightLayer].forEach(activationFunction.getDerivativeFunction()));
+							.mHadamardProduct(nets[weightLayer].mForEach(activationFunction.getDerivativeFunction()));
 			} else {
 				error = weights[weightLayer + 1].transpose().multiply(error)
-							.hadamardProduct(nets[weightLayer + 1].forEach(activationFunction.getDerivativeFunction()));
+							.mHadamardProduct(nets[weightLayer + 1].mForEach(activationFunction.getDerivativeFunction()));
 			}
 
 			Matrix weightGradient = error.multiply(activations[weightLayer].transpose());
 			
-			Matrix previousWeightVelocity = new Matrix(weightVelocities[weightLayer]);
-			Matrix previousBiasVelocity = new Matrix(biasVelocities[weightLayer]);
+			weightVelocities[weightLayer].mScale(velocityCoeficcient);
+			biasVelocities[weightLayer].mScale(velocityCoeficcient);
 			
-			weightVelocities[weightLayer] = weightVelocities[weightLayer].scale(velocityCoeficcient)
-												.subtract(weightGradient.scale(learningRate));
-			biasVelocities[weightLayer] = biasVelocities[weightLayer].scale(velocityCoeficcient)
-												.subtract(error.scale(learningRate));
-			
-			weights[weightLayer] = weights[weightLayer].subtract(previousWeightVelocity.scale(velocityCoeficcient))
-										.add(weightVelocities[weightLayer].scale(1.0 + velocityCoeficcient));
-			biases[weightLayer] = biases[weightLayer].subtract(previousBiasVelocity.scale(velocityCoeficcient))
-										.add(biasVelocities[weightLayer].scale(1.0 + velocityCoeficcient));
+			weights[weightLayer].mSubtract(weightVelocities[weightLayer])
+										.mAdd(weightVelocities[weightLayer].mSubtract(weightGradient.mScale(learningRate)).scale(1.0 + velocityCoeficcient));
+			biases[weightLayer].mSubtract(biasVelocities[weightLayer])
+										.mAdd(biasVelocities[weightLayer].mSubtract(error.scale(learningRate)).scale(1.0 + velocityCoeficcient));
 		}
 	}
+	
+	//72 Seconds
+//	Matrix error = null;
+//	for(int weightLayer = weights.length - 1; weightLayer >= 0; weightLayer--) {
+//		if(weightLayer == weights.length - 1) {
+//			error = activations[activations.length - 1].subtract(labels)
+//						.mHadamardProduct(nets[weightLayer].mForEach(activationFunction.getDerivativeFunction()));
+//		} else {
+//			error = weights[weightLayer + 1].transpose().multiply(error)
+//						.mHadamardProduct(nets[weightLayer + 1].mForEach(activationFunction.getDerivativeFunction()));
+//		}
+//
+//		Matrix weightGradient = error.multiply(activations[weightLayer].transpose());
+//		
+//		weightVelocities[weightLayer].mScale(velocityCoeficcient);
+//		biasVelocities[weightLayer].mScale(velocityCoeficcient);
+//		
+//		weights[weightLayer].mSubtract(weightVelocities[weightLayer])
+//									.mAdd(weightVelocities[weightLayer].mSubtract(weightGradient.mScale(learningRate)).scale(1.0 + velocityCoeficcient));
+//		biases[weightLayer].mSubtract(biasVelocities[weightLayer])
+//									.mAdd(biasVelocities[weightLayer].mSubtract(error.scale(learningRate)).scale(1.0 + velocityCoeficcient));
+//	}
+	
+	//86 Seconds
+//	Matrix error = null;
+//	for(int weightLayer = weights.length - 1; weightLayer >= 0; weightLayer--) {
+//		if(weightLayer == weights.length - 1) {
+//			error = activations[activations.length - 1].subtract(labels)
+//						.mHadamardProduct(nets[weightLayer].forEach(activationFunction.getDerivativeFunction()));
+//		} else {
+//			error = weights[weightLayer + 1].transpose().multiply(error)
+//						.mHadamardProduct(nets[weightLayer + 1].forEach(activationFunction.getDerivativeFunction()));
+//		}
+//
+//		Matrix weightGradient = error.multiply(activations[weightLayer].transpose());
+//		
+//		weightVelocities[weightLayer].mScale(velocityCoeficcient);
+//		biasVelocities[weightLayer].mScale(velocityCoeficcient);
+//		
+//		weights[weightLayer].mSubtract(weightVelocities[weightLayer])
+//									.mAdd(weightVelocities[weightLayer].mSubtract(weightGradient.mScale(learningRate)).scale(1.0 + velocityCoeficcient));
+//		biases[weightLayer].mSubtract(biasVelocities[weightLayer])
+//									.mAdd(biasVelocities[weightLayer].mSubtract(error.scale(learningRate)).scale(1.0 + velocityCoeficcient));
+//	}	
+	
+//	public void nesterovBackpropogate(Matrix labels) {
+//		Matrix error = null;
+//		for(int weightLayer = weights.length - 1; weightLayer >= 0; weightLayer--) {
+//			if(weightLayer == weights.length - 1) {
+//				error = activations[activations.length - 1].subtract(labels)
+//							.hadamardProduct(nets[weightLayer].forEach(activationFunction.getDerivativeFunction()));
+//			} else {
+//				error = weights[weightLayer + 1].transpose().multiply(error)
+//							.hadamardProduct(nets[weightLayer + 1].forEach(activationFunction.getDerivativeFunction()));
+//			}
+//
+//			Matrix weightGradient = error.multiply(activations[weightLayer].transpose());
+//			
+//			Matrix previousWeightVelocity = new Matrix(weightVelocities[weightLayer]);
+//			Matrix previousBiasVelocity = new Matrix(biasVelocities[weightLayer]);
+//			
+//			weightVelocities[weightLayer] = weightVelocities[weightLayer].scale(velocityCoeficcient)
+//												.subtract(weightGradient.scale(learningRate));
+//			biasVelocities[weightLayer] = biasVelocities[weightLayer].scale(velocityCoeficcient)
+//												.subtract(error.scale(learningRate));
+//			
+//			weights[weightLayer] = weights[weightLayer].subtract(previousWeightVelocity.scale(velocityCoeficcient))
+//										.add(weightVelocities[weightLayer].scale(1.0 + velocityCoeficcient));
+//			biases[weightLayer] = biases[weightLayer].subtract(previousBiasVelocity.scale(velocityCoeficcient))
+//										.add(biasVelocities[weightLayer].scale(1.0 + velocityCoeficcient));
+//		}
+//	}
 	
 	public void batchedNesterovBackpropogate(double[] labels) { batchedNesterovBackpropogate(new Matrix(labels.length, 1, labels)); }
 	public void batchedNesterovBackpropogate(Matrix labels) {
@@ -267,6 +351,58 @@ public class FullyConnected {
 			}
 			
 			batchCount = 0;
+		}
+	}
+	
+	public void resilientBackpropogation(double[] labels) { resilientBackpropogation(new Matrix(labels.length, 1, labels)); }
+	public void resilientBackpropogation(Matrix labels) {
+//		System.out.println("---------------------------------------------");
+		
+		Matrix error = null;
+		for(int weightLayer = weights.length - 1; weightLayer >= 0; weightLayer--) {
+			if(weightLayer == weights.length - 1) {
+				error = activations[activations.length - 1].subtract(labels)
+							.hadamardProduct(nets[weightLayer].forEach(activationFunction.getDerivativeFunction()));
+			} else {
+				error = weights[weightLayer + 1].transpose().multiply(error)
+							.hadamardProduct(nets[weightLayer + 1].forEach(activationFunction.getDerivativeFunction()));
+			}
+
+			Matrix weightGradient = error.multiply(activations[weightLayer].transpose());
+			
+			final int index = weightLayer;
+			
+			weights[index] = weights[index].forEach((row, col, value) -> {
+				if(previousWeightGradients[index].get(row, col) * weightGradient.get(row, col) > 0) {
+					double delta = Math.min(previousDeltas[index].get(row, col) * etaPlus, deltaMax);
+					double deltaWeight = -Math.copySign(1, weightGradient.get(row, col)) * delta;
+					
+					previousWeightGradients[index].set(row, col, weightGradient.get(row, col));
+					previousDeltas[index].set(row, col, delta);
+					
+//					System.out.println(deltaWeight);
+					
+					previousWeightDeltas[index].set(row, col, deltaWeight);
+					
+//					return value - deltaWeight;
+					return value;
+				} else if(previousWeightGradients[index].get(row, col) * weightGradient.get(row, col) < 0) {
+					previousDeltas[index].set(row, col, Math.max(previousDeltas[index].get(row, col) * etaMinus, deltaMin));
+					previousWeightGradients[index].set(row, col, 0.0);
+					
+//					if(weightGradient.get(row, col) > previousWeightGradients[index].get(row, col)) 
+//						return value + previousWeightDeltas[index].get(row, col);
+					return value;
+				} else {
+					double deltaWeight = -Math.copySign(1, weightGradient.get(row, col)) * previousDeltas[index].get(row, col);
+					previousWeightGradients[index].set(row, col, weightGradient.get(row, col));
+					
+					previousWeightDeltas[index].set(row, col, deltaWeight);
+					
+					return value - deltaWeight;
+//					return value;
+				}
+			});
 		}
 	}
 	

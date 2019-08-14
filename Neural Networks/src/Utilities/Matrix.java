@@ -331,18 +331,27 @@ public class Matrix {
 	public int getNCols() { return nCols; }
 	
 	public static void main(String[] args) {
-		System.out.println(Math.copySign(1, -50));
+		Matrix matrix1 = new Matrix(724, 16, 1);
+		Matrix matrix2 = new Matrix(724, 16, 1);
 		
-//		Matrix matrix1 = new Matrix(new double[][] {
-//			{0,0,0,0,0,0,0},
-//			{0,1,1,1,2,1,0},
-//			{0,0,2,2,2,2,0},
-//			{0,2,0,1,2,0,0},
-//			{0,2,0,2,0,0,0},
-//			{0,1,0,1,0,0,0},
-//			{0,0,0,0,0,0,0}
-//		});
-//		
+		long start = System.currentTimeMillis();
+		
+		for(int i = 0; i < 100; i++) {
+			matrix1.add(matrix2);
+		}
+		
+		System.out.println(System.currentTimeMillis() - start);
+		
+		start = System.currentTimeMillis();
+		
+		for(int i = 0; i < 100; i++) {
+			matrix1.mAdd(matrix2);
+		}
+		
+		System.out.println(System.currentTimeMillis() - start);
+		
+		
+		
 //		Matrix matrix2 = new Matrix(new double[][] {
 //			{0,0,0,0,0,0,0},
 //			{0,1,1,2,2,0,0},

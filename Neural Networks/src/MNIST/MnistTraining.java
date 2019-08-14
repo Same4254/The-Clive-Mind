@@ -60,48 +60,8 @@ public class MnistTraining {
 			double[] answers = new double[10];
 			answers[label] = 1;
 			
-			network.nesterovBackpropogate(answers);
-		}
-	}
-	
-	private static void twoThreadTraining() {
-		Thread t1 = new Thread(() -> {
-			for(int i = 27500; i < 55000; i++) {
-				int label = trainLabels[i];
-				greatest(network.feedForward(convert(trainImages.get(i))).getColumn(0));
-				
-				double[] answers = new double[10];
-				answers[label] = 1;
-				
-				network.batchedNesterovBackpropogate(answers);
-			}
-		});
-		
-		Thread t2 = new Thread(() -> {
-			for(int i = 0; i < 27500; i++) {
-				int label = trainLabels[i];
-				greatest(network.feedForward(convert(trainImages.get(i))).getColumn(0));
-				
-				double[] answers = new double[10];
-				answers[label] = 1;
-				
-				network.batchedNesterovBackpropogate(answers);
-			}
-		});
-		
-		t1.start();
-		t2.start();
-		
-		try {
-			t1.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		
-		try {
-			t2.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+//			network.batchedNesterovBackpropogate(answers);
+			network.resilientBackpropogation(answers);
 		}
 	}
 	
@@ -117,21 +77,27 @@ public class MnistTraining {
 		
 		network = new FullyConnected(new int[] { 784, 32, 32, 10 });
 
-		network = new FullyConnected(file);
+//		network = new FullyConnected(file);
 		
 		System.out.println("Initial, " + (evaluate() * 100.0) + "%");
 		
 		for(int j = 0; j < 100; j++) {
 			long startTime = System.currentTimeMillis();
 			
-			if(args[0].equals("two"))
-				twoThreadTraining();
-			else
-				singleThreadTraining();
+			for(int i = 0; i < 55000; i++) {
+				int label = trainLabels[i];
+				greatest(network.feedForward(convert(trainImages.get(i))).getColumn(0));
+				
+				double[] answers = new double[10];
+				answers[label] = 1;
+				
+				network.nesterovBackpropogate(answers);
+//				network.resilientBackpropogation(answers);
+			}
 			
 			System.out.println((System.currentTimeMillis() - startTime) + "ms, " + (evaluate() * 100.0) + "%");
 			
-			network.save(file);
+//			network.save(file);
 		}
 	}
 }
