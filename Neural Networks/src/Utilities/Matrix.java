@@ -18,6 +18,17 @@ public class Matrix {
 		return toRet;
 	}
 	
+	public static Matrix random(int rows, int columns, double range) {
+		Matrix toRet = new Matrix(rows, columns);
+		
+		for(int x = 0; x < rows; x++) {
+		for(int y = 0; y < columns; y++) {
+			toRet.values[x][y] = (Math.random() * 2.0 * range) - range;
+		}}
+		
+		return toRet;
+	}
+	
 	public static Matrix parseFileString(String string) {
 		Matrix toRet = null;
 		String[] rows = string.split(",,");
@@ -233,6 +244,15 @@ public class Matrix {
 		return toRet;
 	}
 	
+	public Matrix mForEach(MatrixForEach forEach) {
+		for(int row = 0; row < nRows; row++) {
+		for(int col = 0; col < nCols; col++) {
+			this.values[row][col] = forEach.forEach(row, col, values[row][col]);
+		}}
+		
+		return this;
+	}
+	
 	public Matrix mScale(double scalar) {
 		return mForEach(x -> scalar * x);
 	}
@@ -250,6 +270,15 @@ public class Matrix {
 		}}
 		
 		return toRet;
+	}
+	
+	public Matrix mSign() {
+		for(int row = 0; row < nRows; row++) {
+		for(int col = 0; col < nCols; col++) {
+			this.set(row, col, Math.copySign(1, values[row][col]));
+		}}
+		
+		return this;
 	}
 
 	public Matrix clear() {
@@ -331,26 +360,24 @@ public class Matrix {
 	public int getNCols() { return nCols; }
 	
 	public static void main(String[] args) {
-		Matrix matrix1 = new Matrix(724, 16, 1);
-		Matrix matrix2 = new Matrix(724, 16, 1);
-		
-		long start = System.currentTimeMillis();
-		
-		for(int i = 0; i < 100; i++) {
-			matrix1.add(matrix2);
-		}
-		
-		System.out.println(System.currentTimeMillis() - start);
-		
-		start = System.currentTimeMillis();
-		
-		for(int i = 0; i < 100; i++) {
-			matrix1.mAdd(matrix2);
-		}
-		
-		System.out.println(System.currentTimeMillis() - start);
-		
-		
+//		Matrix matrix1 = new Matrix(724, 16, 1);
+//		Matrix matrix2 = new Matrix(724, 16, 1);
+//		
+//		long start = System.currentTimeMillis();
+//		
+//		for(int i = 0; i < 100; i++) {
+//			matrix1.add(matrix2);
+//		}
+//		
+//		System.out.println(System.currentTimeMillis() - start);
+//		
+//		start = System.currentTimeMillis();
+//		
+//		for(int i = 0; i < 100; i++) {
+//			matrix1.mAdd(matrix2);
+//		}
+//		
+//		System.out.println(System.currentTimeMillis() - start);
 		
 //		Matrix matrix2 = new Matrix(new double[][] {
 //			{0,0,0,0,0,0,0},
@@ -361,6 +388,11 @@ public class Matrix {
 //			{0,1,1,1,0,1,0},
 //			{0,0,0,0,0,0,0}
 //		});
+//		
+//		System.out.println(matrix2.mForEach((row, col, value) -> {
+//			return value + col;
+//		}));
+		
 //		
 //		Matrix filter1 = new Matrix(new double[][] {
 //			{-1, 0, 1},

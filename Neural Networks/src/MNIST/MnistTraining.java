@@ -1,8 +1,11 @@
 package MNIST;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+
+import javax.imageio.ImageIO;
 
 import Layers.FullyConnected;
 
@@ -52,33 +55,58 @@ public class MnistTraining {
 		return correct / 10000.0;
 	}
 	
-	private static void singleThreadTraining() {
-		for(int i = 0; i < 55000; i++) {
-			int label = trainLabels[i];
-			greatest(network.feedForward(convert(trainImages.get(i))).getColumn(0));
-			
-			double[] answers = new double[10];
-			answers[label] = 1;
-			
-//			network.batchedNesterovBackpropogate(answers);
-			network.resilientBackpropogation(answers);
+	public static BufferedImage getImage(String path) {
+		try {
+			return ImageIO.read(new File(path));
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
+		
+		return null;
+	}
+	
+	public static BufferedImage getImage(File file) {
+		try {
+			return ImageIO.read(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
 	}
 	
 	public static void main(String[] args) {
-		File file = new File(System.getProperty("user.dir"), "mnist_model.txt");
-		if(!file.exists()) {
-			try {
-				file.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+//		File file = new File(System.getProperty("user.dir"), "mnist93model.txt");
+//		if(!file.exists()) {
+//			try {
+//				file.createNewFile();
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		
+//		BufferedImage image = getImage(new File(System.getProperty("user.dir"), "test.png"));
+//		
+//		double[] data = new double[784];
+//		
+//		int index = 0;
+//		
+//		for(int y = 0; y < image.getHeight(); y++) {
+//			for(int x = 0; x < image.getWidth(); x++) {
+//				Color color = new Color(image.getRGB(x, y));
+//				data[index] = color.getRed() / 255.0;
+//			
+//				index++;
+//			}
+//		}
 		
 		network = new FullyConnected(new int[] { 784, 32, 32, 10 });
 
 //		network = new FullyConnected(file);
 		
+//		System.out.println(greatest(network.feedForward(data).getColumn(0)));
+		
+//		
 		System.out.println("Initial, " + (evaluate() * 100.0) + "%");
 		
 		for(int j = 0; j < 100; j++) {
@@ -91,6 +119,7 @@ public class MnistTraining {
 				double[] answers = new double[10];
 				answers[label] = 1;
 				
+//				network.batchedNesterovBackpropogate(answers);
 				network.nesterovBackpropogate(answers);
 //				network.resilientBackpropogation(answers);
 			}
