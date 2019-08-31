@@ -140,6 +140,85 @@ public class Matrix {
 		return this;
 	}
 	
+	/*
+	 * This will place the smaller matrix on top of the bigger matrix and 
+	 * 		return the result of adding overlapping values
+	 * 
+	 * One Matrix must be able to fully contain the other for this to work
+	 */
+	public Matrix locationAddition(Matrix matrix, int x, int y) {
+		Matrix smaller = null;
+		Matrix bigger = null;
+		
+		if(nRows >= matrix.nRows && nCols >= matrix.nCols) {
+			smaller = matrix;
+			bigger = this;
+		} else if(nRows <= matrix.nRows && nCols <= matrix.nCols) {
+			smaller = this;
+			bigger = matrix;
+		}
+		
+		if(smaller == null) {
+			System.err.println("Invalid Sizes! Location Addition");
+			return null;
+		}
+		
+		if(x + smaller.nCols > bigger.nCols || y + smaller.nRows > bigger.nCols || x < 0 || y < 0) {
+			System.err.println("Invalid Location! Location Addition");
+			return null;
+		}
+		
+		Matrix toRet = new Matrix(smaller.nRows, smaller.nCols);
+		
+		for(int row = y; row < y + smaller.nRows; row++) {
+		for(int col = x; col < x + smaller.nCols; col++) {
+			toRet.values[row - y][col - x] = bigger.values[row][col] + smaller.values[row - y][col - x];
+		}}
+		
+		return toRet;
+	}
+	
+	/*
+	 * This will place the smaller matrix on top of the bigger matrix and 
+	 * 		return the result of adding overlapping values
+	 * 
+	 * One Matrix must be able to fully contain the other for this to work
+	 * 
+	 * Values will be added into the caller's values at the location
+	 */
+	public Matrix mLocationAddition(Matrix matrix, int x, int y) {
+		Matrix smaller = null;
+		Matrix bigger = null;
+		
+		if(nRows >= matrix.nRows && nCols >= matrix.nCols) {
+			smaller = matrix;
+			bigger = this;
+		} else if(nRows <= matrix.nRows && nCols <= matrix.nCols) {
+			smaller = this;
+			bigger = matrix;
+		}
+		
+		if(smaller == null) {
+			System.err.println("Invalid Sizes! Location Addition");
+			return null;
+		}
+		
+		if(x + smaller.nCols > bigger.nCols || y + smaller.nRows > bigger.nCols || x < 0 || y < 0) {
+			System.err.println("Invalid Location! Location Addition");
+			return null;
+		}
+		
+		for(int row = y; row < y + smaller.nRows; row++) {
+		for(int col = x; col < x + smaller.nCols; col++) {
+			if(this == bigger)
+				this.values[row][col] += + smaller.values[row - y][col - x];
+			else
+				this.values[row - y][col - x] += bigger.values[row][col];
+		}}
+		
+		return this;
+	}
+	
 	public Matrix subtract(Matrix matrix) {
 		Matrix toRet = new Matrix(this.nRows, this.nCols);
 		
@@ -360,6 +439,19 @@ public class Matrix {
 	public int getNCols() { return nCols; }
 	
 	public static void main(String[] args) {
+		Matrix m1 = new Matrix(new double[][] {
+			{ 1,  2,  3,  4,  5,  6  },
+			{ 7,  8,  9,  10, 11, 12 },
+			{ 13, 14, 15, 16, 17, 18 }
+		});
+		
+		Matrix m2 = new Matrix(new double[][] {
+			{ 1, 4 },
+			{ 2, 3}
+		});
+		
+		System.out.println(m1.mLocationAddition(m2, 0, 0));
+		
 //		Matrix matrix1 = new Matrix(724, 16, 1);
 //		Matrix matrix2 = new Matrix(724, 16, 1);
 //		

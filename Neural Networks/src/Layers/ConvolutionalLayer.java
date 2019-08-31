@@ -9,6 +9,19 @@ public class ConvolutionalLayer {
 	private int padding, stride;
 	private int kernalCount, kernalSize;
 	
+	/**
+	 * Sources:
+	 * 	https://www.jefkine.com/general/2016/09/05/backpropagation-in-convolutional-neural-networks/
+	 *  http://cs231n.github.io/convolutional-networks/
+	 *  http://yann.lecun.com/exdb/publis/pdf/lecun-98b.pdf
+	 * 
+	 * 
+	 * @param padding
+	 * @param stride
+	 * @param kernalCount
+	 * @param kernalSize
+	 * @param kernalDimensionalExtent
+	 */
 	public ConvolutionalLayer(int padding, int stride, int kernalCount, int kernalSize, int kernalDimensionalExtent) {
 		this.padding = padding;
 		this.stride = stride;
@@ -25,7 +38,7 @@ public class ConvolutionalLayer {
 		biases = new double[kernalCount];
 		
 		for(int i = 0; i < biases.length; i++) 
-			biases[i] = (Math.random() * 2.0) - 1.0;
+			biases[i] = 0;//(Math.random() * 2.0) - 1.0;
 	}
 
 	public Matrix[] calculate(Matrix[] input) {
@@ -69,10 +82,41 @@ public class ConvolutionalLayer {
 		return output;
 	}
 	
+	public Matrix convolute(Matrix data, Matrix filter) {
+		if(padding != 0)
+			data = data.pad(padding);
+		
+		double outputWidth = ((data.getNCols() - filter.getNCols() + (2.0 * padding)) / ((double) stride)) + 1.0;
+		double outputHeight = ((data.getNRows() - filter.getNRows() + (2.0 * padding)) / ((double) stride)) + 1.0;
+		
+		if((int) outputWidth != outputWidth) {
+			System.err.println("Invalid Conv Width!");
+			return null;
+		}
+		
+		if((int) outputHeight != outputHeight) {
+			System.err.println("Invalid Conv Height!");
+			return null;
+		}
+		
+		Matrix output = new Matrix((int) outputHeight, (int) outputWidth);
+		
+		for(int y = 0; y <= data.getNRows() - filter.getNRows(); y += stride) {
+		for(int x = 0; x <= data.getNCols() - filter.getNCols(); x += stride) {
+			output.set(y / stride, x / stride, data.elementWiseProduct(filter, x, y));
+		}}
+		
+		return output;
+	}
+	
+//	public Matrix[] backpropogate(Matrix[] error) {
+//		
+//	}
+	
 	public Matrix[][] getKarnals() { return kernals; }
 	
 	public static void main(String[] args) {
-		ConvolutionalLayer convolutional = new ConvolutionalLayer(0, 2, 1, 3, 3);
+		ConvolutionalLayer convolutional = new ConvolutionalLayer(0, 2, 1, 3, 1);
 		convolutional.kernals = new Matrix[][] {
 			{ new Matrix(new double[][] {
 				{-1, 1, 1},
@@ -80,17 +124,17 @@ public class ConvolutionalLayer {
 				{1, 1, 1}
 				}),
 			 
-			  new Matrix(new double[][] {
-				  {0, 0, -1},
-				  {1, 1, 1},
-				  {1, -1, 1}
-			  }),
-			  
-			  new Matrix(new double[][] {
-				  {0,-1,1},
-				  {0,1,-1},
-				  {0,-1,-1}
-			  })
+//			  new Matrix(new double[][] {
+//				  {0, 0, -1},
+//				  {1, 1, 1},
+//				  {1, -1, 1}
+//			  }),
+//			  
+//			  new Matrix(new double[][] {
+//				  {0,-1,1},
+//				  {0,1,-1},
+//				  {0,-1,-1}
+//			  })
 			}
 		};
 		
@@ -105,30 +149,73 @@ public class ConvolutionalLayer {
 				{0, 0, 0, 0, 0, 0, 0}
 			}),
 			
-			new Matrix(new double[][] {
-				{0, 0, 0, 0, 0, 0, 0},
-				{0, 2, 2, 2, 2, 1, 0},
-				{0, 2, 1, 0, 0, 0, 0},
-				{0, 2, 0, 2, 1, 0, 0},
-				{0, 0, 2, 0, 1, 2, 0},
-				{0, 2, 1, 1, 1, 1, 0},
-				{0, 0, 0, 0, 0, 0, 0}
-			}),
-			
-			new Matrix(new double[][] {
-				{0, 0, 0, 0, 0, 0, 0},
-				{0, 2, 0, 2, 2, 2, 0},
-				{0, 0, 0, 2, 0, 1, 0},
-				{0, 2, 0, 0, 1, 1, 0},
-				{0, 1, 2, 1, 2, 1, 0},
-				{0, 2, 2, 2, 2, 0, 0},
-				{0, 0, 0, 0, 0, 0, 0}
-			})
+//			new Matrix(new double[][] {
+//				{0, 0, 0, 0, 0, 0, 0},
+//				{0, 2, 2, 2, 2, 1, 0},
+//				{0, 2, 1, 0, 0, 0, 0},
+//				{0, 2, 0, 2, 1, 0, 0},
+//				{0, 0, 2, 0, 1, 2, 0},
+//				{0, 2, 1, 1, 1, 1, 0},
+//				{0, 0, 0, 0, 0, 0, 0}
+//			}),
+//			
+//			new Matrix(new double[][] {
+//				{0, 0, 0, 0, 0, 0, 0},
+//				{0, 2, 0, 2, 2, 2, 0},
+//				{0, 0, 0, 2, 0, 1, 0},
+//				{0, 2, 0, 0, 1, 1, 0},
+//				{0, 1, 2, 1, 2, 1, 0},
+//				{0, 2, 2, 2, 2, 0, 0},
+//				{0, 0, 0, 0, 0, 0, 0}
+//			})
 		});
 		
 		for(Matrix m : out) {
 			System.out.println(m);
 			System.out.println("----------");
 		}
+		
+		Matrix o = convolutional.convolute(new Matrix(new double[][] {
+						{0, 0, 0, 0, 0, 0, 0},
+						{0, 0, 2, 2, 0, 0, 0},
+						{0, 2, 2, 1, 0, 2, 0},
+						{0, 1, 0, 1, 1, 0, 0},
+						{0, 0, 1, 0, 2, 1, 0},
+						{0, 2, 1, 0, 1, 0, 0},
+						{0, 0, 0, 0, 0, 0, 0}
+					}), 
+					
+					new Matrix(new double[][] {
+						{-1, 1, 1},
+						{-1, 0, -1},
+						{1, 1, 1}
+					})
+				);
+				
+//				new Matrix(new double[][] {
+//					{0, 0, 0, 0, 0, 0, 0},
+//					{0, 2, 2, 2, 2, 1, 0},
+//					{0, 2, 1, 0, 0, 0, 0},
+//					{0, 2, 0, 2, 1, 0, 0},
+//					{0, 0, 2, 0, 1, 2, 0},
+//					{0, 2, 1, 1, 1, 1, 0},
+//					{0, 0, 0, 0, 0, 0, 0}
+//				}),
+//				
+//				new Matrix(new double[][] {
+//					{0, 0, 0, 0, 0, 0, 0},
+//					{0, 2, 0, 2, 2, 2, 0},
+//					{0, 0, 0, 2, 0, 1, 0},
+//					{0, 2, 0, 0, 1, 1, 0},
+//					{0, 1, 2, 1, 2, 1, 0},
+//					{0, 2, 2, 2, 2, 0, 0},
+//					{0, 0, 0, 0, 0, 0, 0}
+//				})
+//			});
+			
+//			for(Matrix m : out) {
+				System.out.println(o);
+//				System.out.println("----------");
+//			}
 	}
 }
