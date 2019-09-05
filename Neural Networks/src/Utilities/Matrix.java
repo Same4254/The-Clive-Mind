@@ -381,6 +381,23 @@ public class Matrix {
 		return value;
 	}
 	
+	public Pair<int[], Double> mostPositive(int startRow, int startCol, int endRow, int endCol) {
+		double value = 0.0;
+		int row = 0;
+		int col = 0;
+		
+		for(int r = startRow; r <= endRow; r++) {
+		for(int c = startCol; c <= endCol; c++) {
+			if(values[r][c] > value) {
+				row = r;
+				col = c;
+				value = values[r][c];
+			}
+		}}
+		
+		return new Pair<int[], Double>(new int[] { row, col }, value);
+	}
+	
 	public double mostNegative() {
 		double value = 0.0;
 		
@@ -391,6 +408,33 @@ public class Matrix {
 		}}
 		
 		return value;
+	}
+	
+	public Matrix mFlipHorizontal() {
+		for(int row = 0; row < nRows; row++) {
+		for(int col = 0; col < nCols / 2; col++) {
+			double temp  = values[row][col];
+			values[row][col] = values[row][nCols - col - 1];
+			values[row][nCols - col - 1] = temp;
+		}}
+		
+		return this;
+	}
+	
+	public Matrix mFlipVertical() {
+		for(int row = 0; row < nRows / 2; row++) {
+		for(int col = 0; col < nCols; col++) {
+			double temp  = values[row][col];
+			values[row][col] = values[nRows - row - 1][col];
+			values[nRows - row - 1][col] = temp;
+		}}
+		
+		return this;
+	}
+	
+	public Matrix mFlip() {
+		mFlipHorizontal();
+		return mFlipVertical();
 	}
 	
 	public String toString() {
@@ -439,18 +483,18 @@ public class Matrix {
 	public int getNCols() { return nCols; }
 	
 	public static void main(String[] args) {
-		Matrix m1 = new Matrix(new double[][] {
-			{ 1,  2,  3,  4,  5,  6  },
-			{ 7,  8,  9,  10, 11, 12 },
-			{ 13, 14, 15, 16, 17, 18 }
-		});
-		
-		Matrix m2 = new Matrix(new double[][] {
-			{ 1, 4 },
-			{ 2, 3}
-		});
-		
-		System.out.println(m1.mLocationAddition(m2, 0, 0));
+//		Matrix m1 = new Matrix(new double[][] {
+//			{ 1,  2,  3,  4,  5,  6  },
+//			{ 7,  8,  9,  10, 11, 12 },
+//			{ 13, 14, 15, 16, 17, 18 }
+//		});
+//		
+//		Matrix m2 = new Matrix(new double[][] {
+//			{ 1, 4 },
+//			{ 2, 3}
+//		});
+//		
+//		System.out.println(m1.mLocationAddition(m2, 0, 0));
 		
 //		Matrix matrix1 = new Matrix(724, 16, 1);
 //		Matrix matrix2 = new Matrix(724, 16, 1);
@@ -485,13 +529,21 @@ public class Matrix {
 //			return value + col;
 //		}));
 		
-//		
+		
 //		Matrix filter1 = new Matrix(new double[][] {
 //			{-1, 0, 1},
 //			{-1, 1, -1},
 //			{-1, -1, 0}
 //		});
+		
+//		Matrix m = new Matrix(new double[][] {
+//			{1, 2, 3},
+//			{4, 5, 6},
+//			{7, 8, 9}
+//		});
 //		
+//		System.out.println(m.mFlip());
+		
 //		sum += matrix1.elementWiseProduct(filter1, 2, 0);
 //		
 //		Matrix matrix2 = new Matrix(new double[][] {

@@ -1,52 +1,90 @@
 package Layers;
 
 import Utilities.Matrix;
+import Utilities.Pair;
 
-public class PoolingLayer {
+public class PoolingLayer extends Layer {
+	private Matrix[] gradients;
+	private Matrix[] output;
+	
 	private int size, stride;
 	
-	public PoolingLayer(int size, int stride) {
+	public PoolingLayer(NeuralNetwork network, int layer, int size, int stride) {
+		super(network, layer);
+		
 		this.size = size;
 		this.stride = stride;
 	}
 	
-	public Matrix[] maxPool(Matrix[] input) {
-		Matrix[] toRet = new Matrix[input.length];
+	@Override
+	public void initialize() {
+		Layer previousLayer = getPreviousLayer();
 		
-		for(int i = 0; i < toRet.length; i++) {
-			double outputWidth = ((input[0].getNCols() - size) / ((double) stride)) + 1.0;
-			double outputHeight = ((input[0].getNRows() - size) / ((double) stride)) + 1.0;
-			
-			if((int) outputWidth != outputWidth) {
-				System.err.println("Invalid Pooling Width!");
-				return null;
+		if(previousLayer == null) {
+			inputMatrixCount = network.getInputMatrixCount();
+			inputNRows = network.getInputNRows();
+			inputNCols = network.getInputNCols();
+		} else {
+			inputMatrixCount = previousLayer.getOutputMatrixCount();
+			inputNRows = previousLayer.getOutputNRows();
+			inputNCols = previousLayer.getOutputNCols();
+		}
+		
+		double outputCols = ((inputNCols - size) / ((double) stride)) + 1.0;
+		double outputRows = ((inputNRows - size) / ((double) stride)) + 1.0;
+		
+		if((int) outputCols != outputCols) {
+			System.err.println("Invalid Pooling Width!");
+			System.exit(-1);
+		}
+		
+		if((int) outputRows != outputRows) {
+			System.err.println("Invalid Pooling Height!");
+			System.exit(-1);
+		}
+		
+		this.outputNCols = (int) outputCols;
+		this.outputNRows = (int) outputRows;
+		this.outputMatrixCount = inputMatrixCount;
+		
+		output = new Matrix[outputMatrixCount];
+		for(int i = 0; i < output.length; i++)
+			output[i] = new Matrix(outputNRows, outputNCols);
+	}
+	
+	@Override
+	public Matrix[] forward(Matrix[] input) {
+		for(int i = 0; i < input.length; i++)
+			output[i].clear();
+		
+		if(gradients == null) {
+			gradients = new Matrix[input.length];
+			for(int i = 0; i < input.length; i++)
+				gradients[i] = new Matrix(input[0].getNRows(), input[0].getNCols());
+		} else {
+			for(int i = 0; i < gradients.length; i++) {
+				gradients[i].clear();
 			}
-			
-			if((int) outputHeight != outputHeight) {
-				System.err.println("Invalid Pooling Height!");
-				return null;
-			}
-			
-			toRet[i] = new Matrix((int) outputHeight, (int) outputWidth);
-			
-			for(int y = 0; y <= input[0].getNRows() - size; y += stride) {
-			for(int x = 0; x <= input[0].getNCols() - size; x += stride) {
-				toRet[i].set(y / stride, x / stride, input[i].subMatrix(x, y, size, size).mostPositive());
+		}
+		
+		for(int i = 0; i < output.length; i++) {
+			for(int row = 0; row <= input[0].getNRows() - size; row += stride) {
+			for(int col = 0; col <= input[0].getNCols() - size; col += stride) {
+				Pair<int[], Double> pair = input[i].mostPositive(row, col, row + size - 1, col + size - 1);
+				int[] location = pair.getKey();
+				double value = pair.getValue();
+				
+				gradients[i].set(location[0], location[1], value);
+				
+				output[i].set(row / stride, col / stride, value);
 			}}
 		}
 		
-		return toRet;
+		return output;
 	}
 	
-	public static void main(String[] args) {
-		PoolingLayer pool = new PoolingLayer(2, 2);
-		System.out.println(pool.maxPool(new Matrix[] {
-			new Matrix(new double[][] {
-				{1, 1, 2, 4},
-				{5, 6, 7, 8},
-				{3, 2, 1, 0},
-				{1, 2, 3, 4}
-			})
-		})[0]);
+	@Override
+	protected Matrix[] back(Matrix[] error) {
+		return gradients;
 	}
 }
