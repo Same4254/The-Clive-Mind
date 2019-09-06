@@ -8,13 +8,13 @@ public class NeuralNetwork {
 	private int inputMatrixCount, inputNRows, inputNCols;
 	private int outputMatrixCount, outputNRows, outputNCols;
 	
-	public NeuralNetwork(int inputMatrixCount, int inputNRows, int inputNCols, int outputNRows) {
+	public NeuralNetwork(int inputMatrixCount, int inputNRows, int inputNCols, int outputNRows, int outputNCols) {
 		this.inputMatrixCount = inputMatrixCount;
 		this.inputNRows = inputNRows;
 		this.inputNCols = inputNCols;
 		this.outputMatrixCount = 1;
 		this.outputNRows = outputNRows;
-		this.outputNCols = 1;
+		this.outputNCols = outputNCols;
 	}
 
 	public Matrix[] feedForward(Matrix[] input) {
@@ -36,7 +36,7 @@ public class NeuralNetwork {
 	public int getOutputNCols() { return outputNCols; }
 	
 	public static void main(String[] args) {
-		NeuralNetwork network = new NeuralNetwork(1, 4, 4, 2);
+		NeuralNetwork network = new NeuralNetwork(1, 4, 4, 2, 1);
 		
 		ConvolutionalLayer conv = new ConvolutionalLayer(network, 0, 0, 2, 1, 2, 1);
 		FullyConnected full = new FullyConnected(network, 1, new int[] { 4, 2 });
