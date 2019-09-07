@@ -291,25 +291,27 @@ public class FullyConnected extends Layer {
 	
 	@Override
 	public Matrix[] back(Matrix[] labels) {
-		Matrix gradient = nesterovBackpropogate(labels[0]);
+		Matrix error = nesterovBackpropogate(labels[0]);
 		
-//		System.out.println(gradient);
-		
-		Matrix[] toRet = new Matrix[inputMatrixCount];
+		Matrix[] kernals = new Matrix[layerSizes[1]];
 		int index = 0;
 		
-		for(int i = 0; i < toRet.length; i++) {
-			toRet[i] = new Matrix(inputNRows, inputNCols);
+		for(int i = 0; i < kernals.length; i++) {
+			kernals[i] = new Matrix(inputNRows, inputNCols);
 			
-			for(int row = 0; row < inputNRows; row++) {
-			for(int col = 0; col < inputNCols; col++) {
-				toRet[i].set(row, col, gradient.get(index, 0));
+			for(int row = 0; row < kernals[0].getNRows(); row++) {
+			for(int col = 0; col < kernals[0].getNCols(); col++) {
+				kernals[i].set(row, col, weights[0].get(i, index));
 				
 				index++;
 			}}
 		}
 		
-		return toRet;
+		Matrix toRet = ConvolutionalLayer.fullConvolute(error, kernals[0].flip(), 1);
+		
+//		System.out.println(toRet);
+		
+		return new Matrix[] { toRet };
 	}
 	
 	/**
@@ -349,6 +351,7 @@ public class FullyConnected extends Layer {
 	public Matrix nesterovBackpropogate(double[] labels) { return nesterovBackpropogate(new Matrix(labels.length, 1, labels)); }
 	public Matrix nesterovBackpropogate(Matrix labels) {
 		Matrix error = null;
+		
 		for(int weightLayer = weights.length - 1; weightLayer >= 0; weightLayer--) {
 			if(weightLayer == weights.length - 1) {
 				error = activations[activations.length - 1].subtract(labels)

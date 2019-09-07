@@ -360,6 +360,17 @@ public class Matrix {
 		return this;
 	}
 
+	public double sum() {
+		double sum = 0.0;
+		
+		for(int row = 0; row < nRows; row++) {
+		for(int col = 0; col < nCols; col++) {
+			sum += this.values[row][col];
+		}}
+		
+		return sum;
+	}
+	
 	public Matrix clear() {
 		for(int row = 0; row < nRows; row++) {
 		for(int col = 0; col < nCols; col++) {
@@ -437,6 +448,17 @@ public class Matrix {
 		return mFlipVertical();
 	}
 	
+	public Matrix flip() {
+		Matrix toRet = new Matrix(this.nRows, this.nCols);
+		
+		for(int row = 0; row < nRows; row++) {
+		for(int col = 0; col < nCols; col++) {
+			toRet.values[row][col] = this.values[nRows - row - 1][nCols - col - 1];
+		}}
+		
+		return toRet;
+	}
+	
 	public String toString() {
 		StringBuilder stringBuilder = new StringBuilder();
 		for(int i = 0; i < values.length; i++)
@@ -489,6 +511,14 @@ public class Matrix {
 //			{ 13, 14, 15, 16, 17, 18 }
 //		});
 //		
+//		System.out.println(m1.flip());
+//		
+//		System.out.println("---");
+//		
+//		System.out.println(m1.mFlip());
+		
+		System.out.println(Matrix.random(8, 8, 0, 1));
+		
 //		Matrix m2 = new Matrix(new double[][] {
 //			{ 1, 4 },
 //			{ 2, 3}
