@@ -24,6 +24,8 @@ public class ConvolutionalLayer extends Layer {
 	 *  http://cs231n.github.io/convolutional-networks/
 	 *  http://yann.lecun.com/exdb/publis/pdf/lecun-98b.pdf
 	 *  https://becominghuman.ai/only-numpy-implementing-convolutional-neural-network-using-numpy-deriving-forward-feed-and-back-458a5250d6e4
+	 *  
+	 *  https://stats.stackexchange.com/questions/361817/back-propagation-in-convolution-layer
 	 */
 	public ConvolutionalLayer(NeuralNetwork network, int layer, int padding, int stride, int kernalCount, int kernalSize, int kernalDimensionalExtent) {
 		super(network, layer);
@@ -46,7 +48,7 @@ public class ConvolutionalLayer extends Layer {
 		biasVelocities = new double[biases.length];
 		
 		for(int i = 0; i < biases.length; i++) 
-			biases[i] = 0;//(Math.random() * 2.0) - 1.0;
+			biases[i] = (Math.random() * 2.0) - 1.0;
 	}
 
 	public void initialize() {
@@ -116,30 +118,48 @@ public class ConvolutionalLayer extends Layer {
 		return output;
 	}
 	
+	/*
+	 * Calculate error on new kernals or old ones?
+	 * What gradient does the bias use? The one that is passed in, or the one for this layer?
+	 */
 	protected Matrix[] back(Matrix[] error) {
+		Matrix[] toRet = new Matrix[input.length]; 
+		
+		for(int i = 0; i < toRet.length; i++) {
+			Matrix sum = new Matrix(inputNRows, inputNCols);
+			
+			for(int j = 0; j < kernalCount; j++) {
+				Matrix m = fullConvolute(error[i], kernals[j][i].flip(), 1);
+				
+				System.out.println(kernals[j][i]);
+				
+				sum.mAdd(m);
+			}
+			
+			toRet[i] = sum;
+		}
+		
 		for(int i = 0; i < error.length; i++) {
 			Matrix weightGradient = convolute(input[i], error[i]);
 			
-			for(int kernalSet = 0; kernalSet < kernals.length; kernalSet++) {
-				biasVelocities[kernalSet] *= velocityCoeficcient;
-				
-				biases[kernalSet] -= biasVelocities[kernalSet];
-				
-				biasVelocities[kernalSet] -= error[i].sum() * learningRate;
-				
-				biases[kernalSet] += biasVelocities[kernalSet] * (1.0 + velocityCoeficcient);
-				
+			biasVelocities[i] *= velocityCoeficcient;
+			
+			biases[i] -= biasVelocities[i];
+			
+			biasVelocities[i] -= weightGradient.sum() * learningRate;
+			
+			biases[i] += biasVelocities[i] * (1.0 + velocityCoeficcient);
+			
 //				biases[weightLayer].mSubtract(biasVelocities[weightLayer])
 //					.mAdd(biasVelocities[weightLayer].mSubtract(error.scale(learningRate)).scale(1.0 + velocityCoeficcient));
+			
+			for(int kernal = 0; kernal < kernals[i].length; kernal++) {
+				weightVelocities[i][kernal].mScale(velocityCoeficcient);
+				   
+				kernals[i][kernal].mSubtract(weightVelocities[i][kernal])
+					.mAdd(weightVelocities[i][kernal].mSubtract(weightGradient.mScale(learningRate)).scale(1.0 + velocityCoeficcient));
 				
-				for(int kernal = 0; kernal < kernals[kernalSet].length; kernal++) {
-					weightVelocities[kernalSet][kernal].mScale(velocityCoeficcient);
-					
-					kernals[kernalSet][kernal].mSubtract(weightVelocities[kernalSet][kernal])
-						.mAdd(weightVelocities[kernalSet][kernal].mSubtract(weightGradient.mScale(learningRate)).scale(1.0 + velocityCoeficcient));
-					
-	//				kernals[kernalSet][kernal].mSubtract(weightGradient.mScale(0.001));
-				}
+//				kernals[kernalSet][kernal].mSubtract(weightGradient.mScale(0.001));
 			}
 		}
 		
@@ -156,11 +176,10 @@ public class ConvolutionalLayer extends Layer {
 //		System.out.println(kernals[0][0]);
 //		
 //		System.out.println("Ret " + index);
-		Matrix toRet = fullConvolute(error[0], kernals[0][0].flip());
 		
 //		System.out.println(toRet);
 		
-		return new Matrix[] { toRet };
+		return toRet;
 	}
 	
 	public static Matrix fullConvolute(Matrix data, Matrix filter) {
@@ -210,12 +229,12 @@ public class ConvolutionalLayer extends Layer {
 	public Matrix[][] getKarnals() { return kernals; }
 	
 	public static void main(String[] args) {
-		NeuralNetwork network = new NeuralNetwork(1, 8, 8, 1, 1);
+		NeuralNetwork network = new NeuralNetwork(1, 8, 8, 2, 1);
 		
 		ConvolutionalLayer conv1 = new ConvolutionalLayer(network, 0, 0, 2, 1, 2, 1);
 		ActivationLayer activation = new ActivationLayer(network, 1, new ReluFunction());
 		ConvolutionalLayer conv2 = new ConvolutionalLayer(network, 2, 0, 2, 1, 2, 1);
-		FullyConnected full = new FullyConnected(network, 3, new int[] {4, 1});
+		FullyConnected full = new FullyConnected(network, 3, new int[] {4, 2});
 		
 		network.layers = new Layer[4];
 		network.layers[0] = conv1;
@@ -228,7 +247,7 @@ public class ConvolutionalLayer extends Layer {
 		conv2.initialize();
 		full.initialize();
 		
-		for(int i = 0; i < 20000; i++) {
+		for(int i = 0; i < 2000; i++) {
 			Matrix[] out = network.feedForward(new Matrix[] {
 				new Matrix(new double[][] {
 					{0.5792389362467796, 0.9211249458082603, 0.5333749112829619, 0.9388725662073563, 0.005098582026965448, 0.4290278331324482, 0.22153076187049558, 0.8303867778242918},
@@ -256,7 +275,9 @@ public class ConvolutionalLayer extends Layer {
 			System.out.println("-------------------------");
 			
 			network.backPropogate(new Matrix(new double[][] {
-				{ .5 }
+//				{2 * (out[0].get(0, 0) - .1) }
+				{.5},
+				{.7}
 				
 //				{2 * (out[0].get(0, 0) - .1), 2 * (out[0].get(0, 1) - .6)},//, Math.pow(-out[0].get(0, 1) + .7, 2)}
 //				{2 * (out[0].get(1, 0) - .8), 2 * (out[0].get(1, 1) - .4)} 

@@ -281,12 +281,12 @@ public class Matrix {
 		return matrix;
 	}
 	
-	public Matrix subMatrix(int x, int y, int width, int height) {
-		Matrix toRet = new Matrix(height, width);
+	public Matrix subMatrix(int row, int col, int nRows, int nCols) {
+		Matrix toRet = new Matrix(nRows, nCols);
 		
-		for(int row = y; row < y + height; row++) {
-		for(int col = x; col < x + width; col++) {
-			toRet.values[row - y][col - x] = values[row][col];
+		for(int r = row; r < row + nRows; r++) {
+		for(int c = col; c < col + nCols; c++) {
+			toRet.values[r - row][c - col] = values[r][c];
 		}}
 		
 		return toRet;

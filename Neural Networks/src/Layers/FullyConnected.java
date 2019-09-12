@@ -29,6 +29,10 @@ public class FullyConnected extends Layer {
 	
 	private double etaPlus = 1.2, etaMinus = 0.5, deltaMin = 1E-6, deltaMax = 50.0;
 	
+	/**
+	 * Sources: 
+	 * 	http://neuralnetworksanddeeplearning.com/chap2.html
+	 */
 	public FullyConnected(NeuralNetwork network, int layer, int[] layerSizes) {
 		super(network, layer);
 		
@@ -292,26 +296,33 @@ public class FullyConnected extends Layer {
 	@Override
 	public Matrix[] back(Matrix[] labels) {
 		Matrix error = nesterovBackpropogate(labels[0]);
-		
-		Matrix[] kernals = new Matrix[layerSizes[1]];
-		int index = 0;
-		
-		for(int i = 0; i < kernals.length; i++) {
-			kernals[i] = new Matrix(inputNRows, inputNCols);
+
+		if(index != 0) {
+			Matrix[] kernals = new Matrix[layerSizes[1]];
 			
-			for(int row = 0; row < kernals[0].getNRows(); row++) {
-			for(int col = 0; col < kernals[0].getNCols(); col++) {
-				kernals[i].set(row, col, weights[0].get(i, index));
+			for(int i = 0; i < kernals.length; i++) {
+				kernals[i] = new Matrix(inputNRows, inputNCols);
 				
-				index++;
-			}}
+				int index = 0;
+				for(int row = 0; row < kernals[0].getNRows(); row++) {
+				for(int col = 0; col < kernals[0].getNCols(); col++) {
+					kernals[i].set(row, col, weights[0].get(i, index));
+					
+					index++;
+				}}
+				
+				kernals[i].mScale(error.get(i, 0));
+			}
+
+			Matrix toRet = new Matrix(inputNRows, inputNCols);
+			
+			for(int i = 0; i < kernals.length; i++) 
+				toRet.mAdd(ConvolutionalLayer.fullConvolute(error.subMatrix(i, 0, 1, 1), kernals[i].flip(), 1));
+			
+			return new Matrix[] { toRet };
 		}
 		
-		Matrix toRet = ConvolutionalLayer.fullConvolute(error, kernals[0].flip(), 1);
-		
-//		System.out.println(toRet);
-		
-		return new Matrix[] { toRet };
+		return null;
 	}
 	
 	/**
@@ -361,8 +372,6 @@ public class FullyConnected extends Layer {
 							.mHadamardProduct(nets[weightLayer + 1].mForEach(activationFunction.getDerivativeFunction()));
 			}
 
-//			System.out.println(error);
-			
 			Matrix weightGradient = error.multiply(activations[weightLayer].transpose());
 			
 			weightVelocities[weightLayer].mScale(velocityCoeficcient);
@@ -436,4 +445,22 @@ public class FullyConnected extends Layer {
 	public Matrix[] getBiases() { return biases; }
 	
 	public int[] getLayerSizes() { return layerSizes; }
+	
+	public static void main(String[] args) {
+		NeuralNetwork network = new NeuralNetwork(1, 4, 1, 1, 1);
+		FullyConnected full = new FullyConnected(network, 0, new int[] {4, 2} );
+		
+		network.layers = new Layer[1];
+		network.layers[0] = full;
+		
+		full.initialize();
+		
+		for(int i = 0; i < 10000; i++) {
+			System.out.println(network.feedForward(new Matrix[] { new Matrix(4, 1, new double[] {.5, .6, .3, .1})} )[0]);
+			network.backPropogate(new Matrix(new double[][] {
+				{.5},
+				{.7}
+			}));
+		}
+	}
 }
