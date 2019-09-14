@@ -123,15 +123,18 @@ public class ConvolutionalLayer extends Layer {
 	 * What gradient does the bias use? The one that is passed in, or the one for this layer?
 	 */
 	protected Matrix[] back(Matrix[] error) {
-		Matrix[] toRet = new Matrix[input.length]; 
+		Matrix[] toRet = new Matrix[error.length]; 
 		
-		for(int i = 0; i < toRet.length; i++) {
-			Matrix sum = new Matrix(inputNRows, inputNCols);
+		for(int i = 0; i < error.length; i++) {
+			Matrix sum = null; //= new Matrix(inputNRows, inputNCols);
 			
 			for(int j = 0; j < kernalCount; j++) {
-				Matrix m = fullConvolute(error[i], kernals[j][i].flip(), 1);
+				Matrix m = fullConvolute(error[i], kernals[j][i].flip());
 				
-				System.out.println(kernals[j][i]);
+				if(sum == null)
+					sum = new Matrix(m.getNRows(), m.getNCols());
+				
+//				System.out.println(kernals[j][i]);
 				
 				sum.mAdd(m);
 			}
@@ -229,12 +232,12 @@ public class ConvolutionalLayer extends Layer {
 	public Matrix[][] getKarnals() { return kernals; }
 	
 	public static void main(String[] args) {
-		NeuralNetwork network = new NeuralNetwork(1, 8, 8, 2, 1);
+		NeuralNetwork network = new NeuralNetwork(1, 8, 8, 3, 1);
 		
-		ConvolutionalLayer conv1 = new ConvolutionalLayer(network, 0, 0, 2, 1, 2, 1);
+		ConvolutionalLayer conv1 = new ConvolutionalLayer(network, 0, 0, 2, 1, 2, 2);
 		ActivationLayer activation = new ActivationLayer(network, 1, new ReluFunction());
-		ConvolutionalLayer conv2 = new ConvolutionalLayer(network, 2, 0, 2, 1, 2, 1);
-		FullyConnected full = new FullyConnected(network, 3, new int[] {4, 2});
+		ConvolutionalLayer conv2 = new ConvolutionalLayer(network, 2, 0, 2, 2, 2, 1);
+		FullyConnected full = new FullyConnected(network, 3, new int[] {8, 3});
 		
 		network.layers = new Layer[4];
 		network.layers[0] = conv1;
@@ -249,6 +252,17 @@ public class ConvolutionalLayer extends Layer {
 		
 		for(int i = 0; i < 2000; i++) {
 			Matrix[] out = network.feedForward(new Matrix[] {
+				new Matrix(new double[][] {
+					{0.5792389362467796, 0.9211249458082603, 0.5333749112829619, 0.9388725662073563, 0.005098582026965448, 0.4290278331324482, 0.22153076187049558, 0.8303867778242918},
+					{0.7619360869189011, 0.5263370840546454, 0.26881182458224206, 0.378941560286265, 0.43460684177431574, 0.03623056022874438, 0.558991982493623, 0.47759396409576915},
+					{0.11044642101644542, 0.28018810891028656, 0.7610696334001295, 0.7501802694001208, 0.6826697621010581, 0.5744528128136138, 0.8361376419102844, 0.29721124112233244},
+					{0.09883598069859989, 0.32604541953559174, 0.35328668272923036, 0.5157620894652506, 0.80501939352295, 0.6862480988843276, 0.46137420267732376, 0.8013709017929852},
+					{0.7427731712020266, 0.3962316568367592, 0.923061787255414, 0.1948425309305073, 0.5186671047593546, 0.5425081257102878, 0.8333434343858379, 0.19798702311243332},
+					{0.7851261054210508, 0.4291482961742722, 0.5168584826101902, 0.0497055220795406, 0.4464916709108353, 0.6692117794878232, 0.6266021819364491, 0.7274683049634093},
+					{0.03567386728627897, 0.8995950513891406, 0.6512182305183563, 0.8191131990281166, 0.4944563639002051, 0.23151027475074581, 0.8788769465009179, 0.1960251456232045},
+					{0.6344626739163071, 0.6630662996925635, 0.36281403558405556, 0.11114044504754883, 0.75598702539214, 0.20093019158447434, 0.5869242768398852, 0.9438521589234725}
+				}),
+				
 				new Matrix(new double[][] {
 					{0.5792389362467796, 0.9211249458082603, 0.5333749112829619, 0.9388725662073563, 0.005098582026965448, 0.4290278331324482, 0.22153076187049558, 0.8303867778242918},
 					{0.7619360869189011, 0.5263370840546454, 0.26881182458224206, 0.378941560286265, 0.43460684177431574, 0.03623056022874438, 0.558991982493623, 0.47759396409576915},
@@ -277,7 +291,8 @@ public class ConvolutionalLayer extends Layer {
 			network.backPropogate(new Matrix(new double[][] {
 //				{2 * (out[0].get(0, 0) - .1) }
 				{.5},
-				{.7}
+				{.7},
+				{.1}
 				
 //				{2 * (out[0].get(0, 0) - .1), 2 * (out[0].get(0, 1) - .6)},//, Math.pow(-out[0].get(0, 1) + .7, 2)}
 //				{2 * (out[0].get(1, 0) - .8), 2 * (out[0].get(1, 1) - .4)} 
