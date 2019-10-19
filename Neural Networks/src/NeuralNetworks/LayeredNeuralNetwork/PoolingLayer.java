@@ -1,4 +1,4 @@
-package Layers;
+package NeuralNetworks.LayeredNeuralNetwork;
 
 import Utilities.Matrix;
 import Utilities.Pair;
@@ -9,7 +9,7 @@ public class PoolingLayer extends Layer {
 	
 	private int size, stride;
 	
-	public PoolingLayer(NeuralNetwork network, int layer, int size, int stride) {
+	public PoolingLayer(LayeredNeuralNetwork network, int layer, int size, int stride) {
 		super(network, layer);
 		
 		this.size = size;
@@ -86,5 +86,11 @@ public class PoolingLayer extends Layer {
 	@Override
 	protected Matrix[] back(Matrix[] error) {
 		return gradients;
+	}
+
+	@Override
+	protected Matrix[] calculate(Matrix[] input) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

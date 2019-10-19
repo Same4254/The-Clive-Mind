@@ -1,20 +1,35 @@
-package Layers;
+package NeuralNetworks.LayeredNeuralNetwork;
 
 import Utilities.Matrix;
 
 public abstract class Layer {
-	protected NeuralNetwork network;
+	protected LayeredNeuralNetwork network;
 	protected int index;
 	
 	protected int inputMatrixCount, inputNRows, inputNCols;
 	protected int outputMatrixCount, outputNRows, outputNCols;
 	
-	public Layer(NeuralNetwork network, int index) {
+	public Layer(LayeredNeuralNetwork network, int index) {
 		this.network = network;
 		this.index = index;
 	}
-	
-	public abstract void initialize();
+
+	protected abstract void initialize();
+	public void init() {
+		Layer previousLayer = getPreviousLayer();
+		
+		if(previousLayer == null) {
+			inputMatrixCount = network.getInputMatrixCount();
+			inputNRows = network.getInputNRows();
+			inputNCols = network.getInputNCols();
+		} else {
+			inputMatrixCount = previousLayer.getOutputMatrixCount();
+			inputNRows = previousLayer.getOutputNRows();
+			inputNCols = previousLayer.getOutputNCols();
+		}
+		
+		initialize();
+	}
 	
 	public Layer getPreviousLayer() { 
 		if(index == 0)
@@ -27,6 +42,13 @@ public abstract class Layer {
 		if(index == network.getLayerCount() - 1)
 			return forward(input);
 		return network.getLayers()[index + 1].feedFoward(forward(input));
+	}
+	
+	protected abstract Matrix[] calculate(Matrix[] input);
+	public Matrix[] calculateForwards(Matrix[] input) {
+		if(index == network.getLayerCount() - 1)
+			return calculate(input);
+		return network.getLayers()[index + 1].calculateForwards(calculate(input));
 	}
 
 	protected abstract Matrix[] back(Matrix[] error);

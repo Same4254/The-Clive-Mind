@@ -1,15 +1,17 @@
-package Layers;
+package NeuralNetworks;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.Scanner;
+import java.util.function.Function;
 
+import NeuralNetworks.LayeredNeuralNetwork.LayeredNeuralNetwork;
 import Utilities.Matrix;
 import Utilities.ActivationFunctions.ActivationFunction;
 import Utilities.ActivationFunctions.SigmoidFunction;
 
-public class FullyConnected extends Layer {
+public class FullyConnected {
 	private Matrix[] weights, biases, activations, nets;
 	private Matrix[] weightVelocities, biasVelocities;
 	
@@ -33,9 +35,7 @@ public class FullyConnected extends Layer {
 	 * Sources: 
 	 * 	http://neuralnetworksanddeeplearning.com/chap2.html
 	 */
-	public FullyConnected(NeuralNetwork network, int layer, int[] layerSizes) {
-		super(network, layer);
-		
+	public FullyConnected(int[] layerSizes) {
 		this.layerSizes = layerSizes;
 		
 		weights = new Matrix[layerSizes.length - 1];
@@ -88,32 +88,14 @@ public class FullyConnected extends Layer {
 		}
 	}
 	
-	@Override
-	public void initialize() {
-		Layer previousLayer = getPreviousLayer();
-		
-		if(previousLayer == null) {
-			inputMatrixCount = network.getInputMatrixCount();
-			inputNRows = network.getInputNRows();
-			inputNCols = network.getInputNCols();
-		} else {
-			inputMatrixCount = previousLayer.getOutputMatrixCount();
-			inputNRows = previousLayer.getOutputNRows();
-			inputNCols = previousLayer.getOutputNCols();
-		}
-		
-		outputMatrixCount = 1;
-		outputNRows = layerSizes[layerSizes.length - 1];
-	}
+	
 	
 	/**
 	 * Load the Neural Network from a file
 	 * 
 	 * @param file -> The File containing the neural network information
 	 */
-	public FullyConnected(NeuralNetwork network, int layer, File file) {
-		super(network, layer);
-		
+	public FullyConnected(LayeredNeuralNetwork network, int layer, File file) {
 		//Layer Sizes
 		//activation function
 		//learning rate, velocity coefficient
@@ -241,7 +223,7 @@ public class FullyConnected extends Layer {
 	 * @param in -> Input data
 	 * @return The resulting vector
 	 */
-	public Matrix forward(double[] in) {
+	public Matrix feedForward(double[] in) {
 		activations[0] = new Matrix(in.length, 1, in);
 		nets[0] = new Matrix(in.length, 1, in);
 		
@@ -256,24 +238,6 @@ public class FullyConnected extends Layer {
 		}
 		
 		return activations[activations.length - 1];
-	}
-	
-	@Override
-	public Matrix[] forward(Matrix[] input) {
-		double[] in = new double[layerSizes[0]];
-		
-		int index = 0;
-		
-		for(int i = 0; i < input.length; i++) {
-			for(int row = 0; row < inputNRows; row++) {
-			for(int col = 0; col < inputNCols; col++) {
-				in[index] = input[i].get(row, col);
-				
-				index++;
-			}}
-		}
-		
-		return new Matrix[] { forward(in) };
 	}
 	
 	/**
@@ -293,36 +257,56 @@ public class FullyConnected extends Layer {
 		return last;
 	}
 	
-	@Override
-	public Matrix[] back(Matrix[] labels) {
-		Matrix error = nesterovBackpropogate(labels[0]);
-
-		if(index != 0) {
-			Matrix[] kernals = new Matrix[layerSizes[1]];
-			
-			for(int i = 0; i < kernals.length; i++) {
-				kernals[i] = new Matrix(inputNRows, inputNCols);
-				
-				int index = 0;
-				for(int row = 0; row < kernals[0].getNRows(); row++) {
-				for(int col = 0; col < kernals[0].getNCols(); col++) {
-					kernals[i].set(row, col, weights[0].get(i, index));
-					
-					index++;
-				}}
-				
-				kernals[i].mScale(error.get(i, 0));
-			}
-
-			Matrix toRet = new Matrix(inputNRows, inputNCols);
-			
-			for(int i = 0; i < kernals.length; i++) 
-				toRet.mAdd(ConvolutionalLayer.fullConvolute(error.subMatrix(i, 0, 1, 1), kernals[i].flip(), 1));
-			
-			return new Matrix[] { toRet };
-		}
+//	@Override
+//	public Matrix[] back(Matrix[] labels) {
+//		Matrix error = nesterovBackpropogate(labels[0]);
+//
+//		if(index != 0) {
+//			Matrix[][] kernals = new Matrix[layerSizes[1]][inputMatrixCount];
+//			for(int kernalDimension = 0; kernalDimension < inputMatrixCount; kernalDimension++) {
+//				
+//				int index = 0;
+//				for(int kernal = 0; kernal < kernals.length; kernal++) {
+//					kernals[kernal][kernalDimension] = new Matrix(inputNRows, inputNCols);
+//					
+//					for(int row = 0; row < kernals[0][0].getNRows(); row++) {
+//					for(int col = 0; col < kernals[0][0].getNCols(); col++) {
+//						kernals[kernal][kernalDimension].set(row, col, weights[0].get(kernal, index));
+//						
+//						index++;
+//					}}
+//				}
+//			}
+//			
+//			Matrix[] nextError = new Matrix[inputMatrixCount]; 
+//			for(int i = 0; i < nextError.length; i++) {
+//				Matrix sum = null;
+//				
+//				for(int j = 0; j < kernals.length; j++) {
+//					
+//					Matrix temp = ConvolutionalLayer.fullConvolute(error.subMatrix(j, 0, 1, 1), kernals[j][i].flip(), 1);
+//					
+//					if(sum == null)//Why construct a whole other matrix?
+//						sum = temp;//Set to the current matrix, and then start adding to it
+//					else
+//						sum.mAdd(temp);
+//				}
+//				
+//				nextError[i] = sum;
+//			}
+////			return new Matrix[] { toRet };
+//			
+//			return nextError;
+//		}
+//		
+//		return null;
+//	}
+	
+	public Matrix backpropogate(double[] labels) {
+		Matrix l = new Matrix(labels.length, 1, labels);
 		
-		return null;
+//		return nesterovBackpropogate(activations[activations.length - 1].subtract(l));
+		return nesterovBackpropogate(l.subtract(activations[activations.length - 1]));
 	}
 	
 	/**
@@ -330,13 +314,15 @@ public class FullyConnected extends Layer {
 	 * 
 	 * @param labels -> Answers to the input (last feed forward call)
 	 */
-	public Matrix vanillaBackpropogate(double[] labels) { return vanillaBackpropogate(new Matrix(labels.length, 1, labels)); }
-	public Matrix vanillaBackpropogate(Matrix labels) {
+	public Matrix vanillaBackpropogate(Matrix givenError) {
 		Matrix error = null;
 		for(int weightLayer = weights.length - 1; weightLayer >= 0; weightLayer--) {
 			if(weightLayer == weights.length - 1) {
-				error = activations[activations.length - 1].subtract(labels)
-							.hadamardProduct(nets[weightLayer].forEach(activationFunction.getDerivativeFunction()));
+//				error = activations[activations.length - 1].subtract(givenError)
+//							.hadamardProduct(nets[weightLayer].forEach(activationFunction.getDerivativeFunction()));
+				
+				error = givenError.hadamardProduct(nets[weightLayer]
+							.forEach(activationFunction.getDerivativeFunction()));
 			} else {
 				error = weights[weightLayer + 1].transpose().multiply(error)
 							.hadamardProduct(nets[weightLayer + 1].forEach(activationFunction.getDerivativeFunction()));
@@ -359,14 +345,16 @@ public class FullyConnected extends Layer {
 	 * 
 	 * @param labels -> Answers to the input (last feed forward call)
 	 */
-	public Matrix nesterovBackpropogate(double[] labels) { return nesterovBackpropogate(new Matrix(labels.length, 1, labels)); }
-	public Matrix nesterovBackpropogate(Matrix labels) {
+	public Matrix nesterovBackpropogate(Matrix givenError) {
 		Matrix error = null;
 		
 		for(int weightLayer = weights.length - 1; weightLayer >= 0; weightLayer--) {
 			if(weightLayer == weights.length - 1) {
-				error = activations[activations.length - 1].subtract(labels)
-							.mHadamardProduct(nets[weightLayer].mForEach(activationFunction.getDerivativeFunction()));
+//				error = activations[activations.length - 1].subtract(labels)
+//							.mHadamardProduct(nets[weightLayer].mForEach(activationFunction.getDerivativeFunction()));
+				
+				error = givenError.mHadamardProduct(nets[weightLayer]
+							.mForEach(activationFunction.getDerivativeFunction()));
 			} else {
 				error = weights[weightLayer + 1].transpose().multiply(error)
 							.mHadamardProduct(nets[weightLayer + 1].mForEach(activationFunction.getDerivativeFunction()));
@@ -386,56 +374,56 @@ public class FullyConnected extends Layer {
 		return error;
 	}
 	
-	public void batchedNesterovBackpropogate(double[] labels) { batchedNesterovBackpropogate(new Matrix(labels.length, 1, labels)); }
-	public void batchedNesterovBackpropogate(Matrix labels) {
-		Matrix error = null;
-		for(int weightLayer = weights.length - 1; weightLayer >= 0; weightLayer--) {
-			if(weightLayer == weights.length - 1) {
-				error = activations[activations.length - 1].subtract(labels)
-							.mHadamardProduct(nets[weightLayer].mForEach(activationFunction.getDerivativeFunction()));
-			} else {
-				error = weights[weightLayer + 1].transpose().multiply(error)
-							.mHadamardProduct(nets[weightLayer + 1].mForEach(activationFunction.getDerivativeFunction()));
-			}
-
-			Matrix weightGradient = error.multiply(activations[weightLayer].transpose());
-			runningAverageWeightGradients[weightLayer].mAdd(weightGradient);
-			runningAverageBiasGradients[weightLayer].mAdd(error); 
-		}
-		
-		batchCount++;
-		
-		if(batchCount == batchSize) {
-			for(int i = 0; i < weights.length; i++) {
-				Matrix previousWeightVelocity = new Matrix(weightVelocities[i]);
-				Matrix previousBiasVelocity = new Matrix(biasVelocities[i]);
-				
-				weightVelocities[i] = weightVelocities[i].scale(velocityCoeficcient)
-						.subtract(runningAverageWeightGradients[i].scale(learningRate / batchCount));
-				biasVelocities[i] = biasVelocities[i].scale(velocityCoeficcient)
-						.subtract(runningAverageBiasGradients[i].scale(learningRate / batchCount));
-				
-				weights[i] = weights[i].subtract(previousWeightVelocity.scale(velocityCoeficcient))
-						.add(weightVelocities[i].scale(1.0 + velocityCoeficcient));
-				biases[i] = biases[i].subtract(previousBiasVelocity.scale(velocityCoeficcient))
-						.add(biasVelocities[i].scale(1.0 + velocityCoeficcient));
-				
-				weightVelocities[i].mScale(velocityCoeficcient);
-				biasVelocities[i].mScale(velocityCoeficcient);
-				
-				weights[i].mSubtract(weightVelocities[i])
-											.mAdd(weightVelocities[i].mSubtract(runningAverageWeightGradients[i].mScale(learningRate / batchCount)).scale(1.0 + velocityCoeficcient));
-				biases[i].mSubtract(biasVelocities[i])
-											.mAdd(biasVelocities[i].mSubtract(runningAverageBiasGradients[i].mScale(learningRate / batchCount)).scale(1.0 + velocityCoeficcient));
-				
-				
-				runningAverageWeightGradients[i].clear();
-				runningAverageBiasGradients[i].clear();
-			}
-			
-			batchCount = 0;
-		}
-	}
+//	public void batchedNesterovBackpropogate(double[] labels) { batchedNesterovBackpropogate(new Matrix(labels.length, 1, labels)); }
+//	public void batchedNesterovBackpropogate(Matrix labels) {
+//		Matrix error = null;
+//		for(int weightLayer = weights.length - 1; weightLayer >= 0; weightLayer--) {
+//			if(weightLayer == weights.length - 1) {
+//				error = activations[activations.length - 1].subtract(labels)
+//							.mHadamardProduct(nets[weightLayer].mForEach(activationFunction.getDerivativeFunction()));
+//			} else {
+//				error = weights[weightLayer + 1].transpose().multiply(error)
+//							.mHadamardProduct(nets[weightLayer + 1].mForEach(activationFunction.getDerivativeFunction()));
+//			}
+//
+//			Matrix weightGradient = error.multiply(activations[weightLayer].transpose());
+//			runningAverageWeightGradients[weightLayer].mAdd(weightGradient);
+//			runningAverageBiasGradients[weightLayer].mAdd(error); 
+//		}
+//		
+//		batchCount++;
+//		
+//		if(batchCount == batchSize) {
+//			for(int i = 0; i < weights.length; i++) {
+//				Matrix previousWeightVelocity = new Matrix(weightVelocities[i]);
+//				Matrix previousBiasVelocity = new Matrix(biasVelocities[i]);
+//				
+//				weightVelocities[i] = weightVelocities[i].scale(velocityCoeficcient)
+//						.subtract(runningAverageWeightGradients[i].scale(learningRate / batchCount));
+//				biasVelocities[i] = biasVelocities[i].scale(velocityCoeficcient)
+//						.subtract(runningAverageBiasGradients[i].scale(learningRate / batchCount));
+//				
+//				weights[i] = weights[i].subtract(previousWeightVelocity.scale(velocityCoeficcient))
+//						.add(weightVelocities[i].scale(1.0 + velocityCoeficcient));
+//				biases[i] = biases[i].subtract(previousBiasVelocity.scale(velocityCoeficcient))
+//						.add(biasVelocities[i].scale(1.0 + velocityCoeficcient));
+//				
+//				weightVelocities[i].mScale(velocityCoeficcient);
+//				biasVelocities[i].mScale(velocityCoeficcient);
+//				
+//				weights[i].mSubtract(weightVelocities[i])
+//											.mAdd(weightVelocities[i].mSubtract(runningAverageWeightGradients[i].mScale(learningRate / batchCount)).scale(1.0 + velocityCoeficcient));
+//				biases[i].mSubtract(biasVelocities[i])
+//											.mAdd(biasVelocities[i].mSubtract(runningAverageBiasGradients[i].mScale(learningRate / batchCount)).scale(1.0 + velocityCoeficcient));
+//				
+//				
+//				runningAverageWeightGradients[i].clear();
+//				runningAverageBiasGradients[i].clear();
+//			}
+//			
+//			batchCount = 0;
+//		}
+//	}
 	
 	public Matrix[] getActivations() { return activations; }
 	public Matrix getInput() { return activations[0]; }
@@ -444,23 +432,25 @@ public class FullyConnected extends Layer {
 	public Matrix[] getWeights() { return weights; }
 	public Matrix[] getBiases() { return biases; }
 	
+	public int getInputLength() { return layerSizes[0]; }
+	public int getOutputLength() { return layerSizes[layerSizes.length - 1]; }
 	public int[] getLayerSizes() { return layerSizes; }
 	
-	public static void main(String[] args) {
-		NeuralNetwork network = new NeuralNetwork(1, 4, 1, 1, 1);
-		FullyConnected full = new FullyConnected(network, 0, new int[] {4, 2} );
-		
-		network.layers = new Layer[1];
-		network.layers[0] = full;
-		
-		full.initialize();
-		
-		for(int i = 0; i < 10000; i++) {
-			System.out.println(network.feedForward(new Matrix[] { new Matrix(4, 1, new double[] {.5, .6, .3, .1})} )[0]);
-			network.backPropogate(new Matrix(new double[][] {
-				{.5},
-				{.7}
-			}));
-		}
-	}
+//	public static void main(String[] args) {
+//		LayeredNeuralNetwork network = new LayeredNeuralNetwork(1, 4, 1, 1, 1);
+//		FullyConnected full = new FullyConnected(network, 0, new int[] {4, 2} );
+//		
+//		network.layers = new Layer[1];
+//		network.layers[0] = full;
+//		
+//		full.initialize();
+//		
+//		for(int i = 0; i < 10000; i++) {
+//			System.out.println(network.feedForward(new Matrix[] { new Matrix(4, 1, new double[] {.5, .6, .3, .1})} )[0]);
+//			network.backPropogate(new Matrix(new double[][] {
+//				{.5},
+//				{.7}
+//			}));
+//		}
+//	}
 }

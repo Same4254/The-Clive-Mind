@@ -517,7 +517,7 @@ public class Matrix {
 //		
 //		System.out.println(m1.mFlip());
 		
-		System.out.println(Matrix.random(8, 8, 0, 1));
+		System.out.println(Matrix.random(20, 20, 0, 1));
 		
 //		Matrix m2 = new Matrix(new double[][] {
 //			{ 1, 4 },
