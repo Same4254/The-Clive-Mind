@@ -63,5 +63,5 @@ void loadDataset() {
     fclose(testLabelFD);
     fclose(testImageFD);
     fclose(trainImageFD);
-    fclose(testLabelFD);
+    fclose(trainLabelFD);
 }
