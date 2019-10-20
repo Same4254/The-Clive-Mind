@@ -111,7 +111,15 @@ class Matrix {
         }
 
     public:
+        /*
+        *   The Matrix constructor will store the given data pointer with the given dimensions.
+        *   The total length of the data pointer should be row * col, and the values for this pointer should be initialized.
+        *   This will start with no padding and untransposed.
+        */
         Matrix(double* data, int nRows, int nCols) {
+            if(nRows < 0 || nCols < 0)
+                throw invalid_argument("Cannot have negative number of rows or columns");
+
             this->data = data;
             this->nRows = nRows;
             this->nCols = nCols;
@@ -122,27 +130,51 @@ class Matrix {
             this->transposed = false;
         }
 
+        /*
+        *   Initializes a matrix with dimensions nRows x nCols.
+        *   Values are initialized to 0, no padding and untransposed.
+        */
         Matrix(int nRows, int nCols) : Matrix((double*) calloc(nRows * nCols, sizeof(double)), nRows, nCols) {
         
         }
 
+        /*
+        *   Initializes a matrix with dimensions nRows x nCols.
+        *   Values are initialized to val, no padding and untransposed.
+        */
         Matrix(int nRows, int nCols, double val) : Matrix(nRows, nCols) {
             for(int i = 0; i < length; i++) {
                 data[i] = val;
             }
         }
 
+        /*
+        *   Initializes a matrix with dimensions nRows x nCols.
+        *   Values are initialized to a random double between min and max, no padding and untransposed.
+        */
         Matrix(int nRows, int nCols, double min, double max) : Matrix(nRows, nCols) {
             for(int i = 0; i < length; i++)
                 data[i] = (max - min) * ((double) rand() / (double) RAND_MAX) + min;
         }
 
+        /*
+        *   This will construct a new matrix that is of the same size of the given matrix.
+        *   The value of the data, padding, and transpose information will all be copied.
+        */
         Matrix(Matrix* other) : Matrix(other->nRows, other->nCols) { 
-            for(int i = 0; i < other->length; i++) {
+            for(int i = 0; i < other->length; i++)
                 this->data[i] = other->data[i];
-            }
+
+            this->padding = other->padding;
+            this->paddedNRows = other->paddedNRows;
+            this->paddedNCols = other->paddedNCols;
+
+            this->transposed = other->transposed;
         }
 
+        /*
+        *   Frees the data pointer
+        */
         ~Matrix() { 
             free(data);
         }
@@ -159,41 +191,31 @@ class Matrix {
             return this;
         }
 
+        /*
+        *   This function will make a direct copy of the given matrix "other".
+        *   For the data pointer, the values will be copied. They will NOT point to the same place.
+        *   The result matrix must have the same number of rows and columns.
+        * 
+        *   Return this matrix.
+        */
         Matrix* copy(Matrix* other) {
             if(this->nRows != other->nRows || this->nCols != other->nCols)
-                throw invalid_argument("Unequal Copy");
+                throw invalid_argument("Unequal Copy Result Size");
 
-            for(int i = 0; i < other->length; i++) {
+            for(int i = 0; i < other->length; i++)
                 this->data[i] = other->data[i];
-            }
 
             return this;
         }
 
+        /*
+        *   Retrieves the value of the data at the specified 2D position.
+        *   This will check if the row and column indecies are within the bounds of the matrix.
+        *   In addition, this will take into account whether this matrix is transposed, if it is
+        *       this will simply change the way the 1D index is calculated and return the value.
+        *   If the value is within the bounds of the padding, a 0.0 will be returned.
+        */
         double at(int row, int col) {
-            if(row < 0)
-                throw invalid_argument("Negative Row Index");
-            else if(row >= this->nRows + (2 * padding))
-                throw invalid_argument("Row Index Overflow");
-
-            if(col < 0)
-                throw invalid_argument("Negative Col Index");
-            else if(col >= this->nCols + (2 * padding))
-                throw invalid_argument("Col Index Overflow");
-
-            if(row - padding < 0 || row - padding >= this->nRows)
-                return 0.0;
-            
-            if(col - padding < 0 || col - padding >= this->nCols)
-                return 0.0;
-
-            if(transposed)
-                return data[((col - padding) * nRows) + row - padding];
-            else
-                return data[((row - padding) * nCols) + col - padding];
-        }
-
-        void set(int row, int col, double value) {
             if(row < 0)
                 throw invalid_argument("Negative Row Index");
             else if(row >= this->paddedNRows)
@@ -204,17 +226,49 @@ class Matrix {
             else if(col >= this->paddedNCols)
                 throw invalid_argument("Col Index Overflow");
 
-            if(col < padding || col - padding >= this->nCols)
-                throw invalid_argument("Cannot Set padded value");
+            if(row - padding < 0 || row - padding >= this->nRows)
+                return 0.0;
+            
+            if(col - padding < 0 || col - padding >= this->nCols)
+                return 0.0;
 
-            if(transposed)
-                data[((col - padding) * nRows) + row - padding] = value;
-            else
-                data[((row - padding) * nCols) + col - padding] = value;
-
-            // this->data[((row - padding) * nCols) + col - padding] = value;
+            //Row-Major vs Col-Major
+            return data[((row - padding) * (transposed ? nRows : nCols)) + col - padding];
         }
 
+        /*
+        *   Sets the value of the data at the specified 2D position.
+        *   This will check if the row and column indecies are within the bounds of the matrix.
+        *   In addition, this will take into account whether this matrix is transposed, if it is
+        *       this will simply change the way the 1D index is calculated and set the value.
+        *   If the value is within the bounds of the padding, this will throw an exception -> cannot set values that are padded.
+        * 
+        *   Returns this result matrix.
+        */
+        Matrix* set(int row, int col, double value) {
+            if(row < 0)
+                throw invalid_argument("Negative Row Index");
+            else if(row >= this->paddedNRows)
+                throw invalid_argument("Row Index Overflow");
+
+            if(col < 0)
+                throw invalid_argument("Negative Col Index");
+            else if(col >= this->paddedNCols)
+                throw invalid_argument("Col Index Overflow");
+
+            if(col < padding || col - padding >= this->nCols || row < padding || row - padding >= this->nRows)
+                throw invalid_argument("Cannot Set padded value");
+
+            //Row-Major vs Col-Major
+            this->data[((row - padding) * (transposed ? nRows : nCols)) + col - padding] = value;
+        }
+
+        /*
+        *   Matrix addition. Adds together all of the elements of this and other matricies and store the result in the result matrix.
+        *   All 3 matricies must have the same dimensions.
+        * 
+        *   Returns the result matrix.
+        */
         Matrix* add(Matrix* other, Matrix* result) {
             if(other->paddedNCols != this->paddedNCols || result->paddedNCols != this->paddedNCols || 
                other->paddedNRows != this->paddedNRows || result->paddedNRows != this->paddedNRows)
@@ -225,12 +279,7 @@ class Matrix {
             if(result->padding > minPadding)
                 throw invalid_argument("Invalid Padding In Result Matrix When Adding");
 
-            // for(int row = result->padding; row < result->paddedNRows - result->padding; row++) {
-            // for(int col = result->padding; col < result->paddedNCols - result->padding; col++) {
-            //     // result->set(row, col, this->at(row, col) + other->at(row, col));
-            //     result->data[(row * result->nCols) + col] = data[(row * nCols) + col] + other->data[(row * other->nCols) + col];
-            // }}
-
+            //This needs to run fast, so this will not call the at or set functions. Everything needs to be done here.
             if(result->transposed) {
                 for(int row = result->padding; row < result->paddedNRows - result->padding; row++) {
                 for(int col = result->padding; col < result->paddedNCols - result->padding; col++) {
@@ -245,18 +294,23 @@ class Matrix {
                 }}
             }
 
-            // for(int i = 0; i < this->length; i += nCols) {
-            // for(int j = 0; j < nCols; j++) {
-            //     result->data[i + j] = this->data[i + j] + other->data[i + j];
-            // }}
-
             return result;
         }
 
+        /*
+        *   Same as the addition function except the matrix calling this function will also be the result matrix
+        * 
+        *   Returns this matrix.
+        */
         Matrix* mAdd(Matrix* other) {
             return add(other, this);
         }
 
+        /*
+        *   Same as the addition function except this is subtraction.
+        * 
+        *   Returns the result matrix.
+        */
         Matrix* subtract(Matrix* other, Matrix* result) {
             if(other->paddedNCols != this->paddedNCols || result->paddedNCols != this->paddedNCols || 
                other->paddedNRows != this->paddedNRows || result->paddedNRows != this->paddedNRows)
@@ -281,18 +335,24 @@ class Matrix {
                 }}
             }
 
-            // for(int row = result->padding; row < result->paddedNRows - result->padding; row++) {
-            // for(int col = result->padding; col < result->paddedNCols - result->padding; col++) {
-            //     result->set(row, col, this->at(row, col) - other->at(row, col));
-            // }}
-
             return result;
         }
 
+        /*
+        *   Same as the subtract function except the matrix calling this function will also be the result matrix.
+        * 
+        *   Returns this matrix.
+        */
         Matrix* mSubtract(Matrix* other) {
             return subtract(other, this);
         }
 
+        /*
+        *   This will multiply all of the elements of the given matricies and store the result in the result matrix.
+        *      The dimensions of all matricies involved must have the same dimensions.
+        * 
+        *   Returns the result matrix.
+        */
         Matrix* elementProduct(Matrix* other, Matrix* result) {
             if(other->paddedNCols != this->paddedNCols || result->paddedNCols != this->paddedNCols || 
                other->paddedNRows != this->paddedNRows || result->paddedNRows != this->paddedNRows)
@@ -317,14 +377,15 @@ class Matrix {
                 }}
             }
 
-            // for(int row = result->padding; row < result->paddedNRows - result->padding; row++) {
-            // for(int col = result->padding; col < result->paddedNCols - result->padding; col++) {
-            //     result->set(row, col, this->at(row, col) * other->at(row, col));
-            // }}
-
             return result;
         }
 
+        /*
+        *   This will simply scale all of the values of this matrix by the given scalar and store the result in the result matrix.
+        *   These two matricies must be the same size.
+        * 
+        *   Returns the result matrix.
+        */
         Matrix* scale(double scalar, Matrix* result) {
             if(this->nRows != result->nRows || this->nCols != result->nCols)
                 throw invalid_argument("Invalid Result Size When Scaling");
@@ -334,13 +395,24 @@ class Matrix {
             return result;
         }
 
+        /*
+        *   Scales the values of this matrix by the scalar and stores the result.
+        *   Returns this matrix.
+        */
         Matrix* mScale(double scalar) {
             return scale(scalar, this);
         }
 
-        //Transposed and padding
+        /*
+        *   Matrix multiplication. 
+        * 
+        *   Required dimensions: a x b and b x c
+        *   The two matricies being multiplied cannot be the matrix as the result matrix.
+        * 
+        *   Returns the result matrix.
+        */
         Matrix* multiply(Matrix* other, Matrix* result) {
-            if(result == this || result == this)
+            if(result == this || result == other)
                 throw invalid_argument("Can't store the result of multiplication in the same matrix");
 
             if(this->paddedNCols != other->paddedNRows)
@@ -375,20 +447,21 @@ class Matrix {
                 }}
             }
 
-            // for(int i = minPadding; i < this->paddedNRows - minPadding; i++) {
-            // for(int j = minPadding; j < other->paddedNCols - minPadding; j++) {
-            //     double sum = 0.0;
-
-            //     for(int k = minPadding; k < this->paddedNCols - minPadding; k++) {
-            //         sum += this->at(i, k) * other->at(k, j);
-            //     }
-
-            //     result->set(i, j, sum);
-            // }}
-
             return result;
         }
 
+        /*
+        *   Threaded Matrix multiplication. 
+        * 
+        *   Required dimensions: a x b and b x c
+        *   The two matricies being multiplied cannot be the matrix as the result matrix.
+        * 
+        *   This will split the work between multiple threads.
+        *   Only use this for very large matricies, otherwise the work of setting up threads is greater
+        *       than the work of just doing it in one.
+        * 
+        *   Returns the result matrix.
+        */
         Matrix* threadMultiply(Matrix* other, Matrix* result) {
             int amountOFThreads = 2;
             thread threads[amountOFThreads];
@@ -410,6 +483,13 @@ class Matrix {
             return result;
         }
 
+        /*
+        *   Matrix transposition. This fucntion goes through the work of copying the data
+        *       into the result matrix.
+        *  
+        *   The number of rows in this matrix must equal the number of columns in the result matrix.
+        *   The number of columns in this matrix must equal the number of rows in the result matrix.
+        */
         Matrix* transpose(Matrix* result) {
             if(this == result)
                 return mTranspose();
@@ -425,6 +505,12 @@ class Matrix {
             return result;
         }
 
+        /*
+        *   This function is different from the regular transpose function.
+        *   Instead of copying data, this will swap the number of rows and columns
+        *       to change the way data is accessed in the at and set fucntions.
+        *   There is a transpose flag that will be flipped as well.
+        */
         Matrix* mTranspose() {
             int temp = this->nRows;
             this->nRows = this->nCols;
@@ -438,6 +524,14 @@ class Matrix {
             return this;
         }
 
+        /*
+        *   This will take a function pointer that takes a double and returns a double. This function will take in the different elements of 
+        *       this matrix, apply the function and store the result in the result matrix.
+        * 
+        *   The two matricies must have the same dimensions.
+        * 
+        *   Returns the result matrix.
+        */
         Matrix* forEach(double (*function)(double), Matrix* result) {
             if(this->padding != result->padding)
                 throw invalid_argument("Invalid padding for a for each function");
@@ -450,6 +544,17 @@ class Matrix {
             return result;
         }
 
+        /*
+        *   Setting the padding of the matrix means adding an outter layer of 0s that encapsulate the data.
+        *   This is done atomically without actually adding any 0s to the data.
+        *   
+        *   x -> data
+        *   padding = 1
+        * 
+        *   0 0 0 0
+        *   0 x x 0
+        *   0 0 0 0
+        */
         Matrix* setPadding(int padding) {
             if(padding < 0)
                 throw invalid_argument("Cannot Set Negative Padding");
@@ -461,12 +566,18 @@ class Matrix {
             return this;
         }
 
+        /*
+        *   This will set all of the data values to 0
+        */
         Matrix* clear() { 
             for(int i = 0; i < length; i++)
                 this->data[i] = 0.0;
             return this;
         }
 
+        /*
+        *   Sums together the values of this matrix
+        */
         double sumElements() { 
             double result = 0.0;
             for(int i = 0; i < length; i++)
