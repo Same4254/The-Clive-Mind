@@ -380,6 +380,18 @@ class Matrix {
             return result;
         }
 
+        double elementWiseProduct(Matrix* other, int startRow, int startCol, int nRows, int nCols) {
+            double sum = 0.0;
+
+            for(int row = startRow; row < nRows + startRow; row++) {
+            for(int col = startCol; col < nCols + startCol; col++) {
+                sum += (transposed ? data[(col * this->nRows) + row] : data[(row * this->nCols) + col])
+                                                    * (other->transposed ? other->data[((col - startCol) * other->nRows) + (row - startRow)] : other->data[((row - startRow) * other->nCols) + (col - startCol)]);
+            }}
+
+            return sum;
+        }
+
         /*
         *   This will simply scale all of the values of this matrix by the given scalar and store the result in the result matrix.
         *   These two matricies must be the same size.
