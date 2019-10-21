@@ -36,7 +36,7 @@ class ConvolutionalLayer {
 
             inputRows = 4;
             inputCols = 4;
-            stride = 2;
+            stride = 2; 
 
             kernals = new Matrix*[kernalCount];
             for(int i = 0; i < kernalCount; i++) {
