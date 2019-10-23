@@ -33,6 +33,7 @@ class Matrix {
         int padding;
 
         bool transposed;
+        bool flipped;
 
         double atNoPadding(int row, int col) {
             if(row < 0)
@@ -128,6 +129,7 @@ class Matrix {
             this->paddedNRows = nRows;
             this->paddedNCols = nCols;
             this->transposed = false;
+            this->flipped = false;
         }
 
         /*
@@ -261,6 +263,8 @@ class Matrix {
 
             //Row-Major vs Col-Major
             this->data[((row - padding) * (transposed ? nRows : nCols)) + col - padding] = value;
+
+            return this;
         }
 
         /*
@@ -385,8 +389,14 @@ class Matrix {
 
             for(int row = startRow; row < nRows + startRow; row++) {
             for(int col = startCol; col < nCols + startCol; col++) {
-                sum += (transposed ? data[(col * this->nRows) + row] : data[(row * this->nCols) + col])
-                                                    * (other->transposed ? other->data[((col - startCol) * other->nRows) + (row - startRow)] : other->data[((row - startRow) * other->nCols) + (col - startCol)]);
+                // sum += data[(row * this->nCols) + col] * 
+                //        other->data[((row - startRow) * other->nCols) + (col - startCol)];
+
+                sum += (flipped ? data[((this->nRows - row - 1) * this->nCols) + (this->nCols - col - 1)] : data[(row * this->nCols) + col]) * 
+                       (other->flipped ? other->data[(((other->nRows - row - 1) + startRow) * other->nCols) + ((other->nCols - col - 1) + startCol)] : other->data[((row - startRow) * other->nCols) + (col - startCol)]);
+
+                // sum += (transposed ? data[(col * this->nRows) + row] : data[(row * this->nCols) + col]) * 
+                //         (other->transposed ? other->data[((col - startCol) * other->nRows) + (row - startRow)] : other->data[((row - startRow) * other->nCols) + (col - startCol)]);
             }}
 
             return sum;
@@ -517,6 +527,15 @@ class Matrix {
             return result;
         }
 
+        Matrix* mFlip() {
+            flipped = !flipped;
+
+            if(transposed && flipped)
+                throw logic_error("Cannot be both flipped and transposed");
+
+            return this;
+        }
+
         /*
         *   This function is different from the regular transpose function.
         *   Instead of copying data, this will swap the number of rows and columns
@@ -602,6 +621,7 @@ class Matrix {
         int getNRows() { return paddedNRows; }
         int getNCols() { return paddedNCols; }
         int getLength() { return length; }
+        int getPadding() { return padding; }
 
         void print() {
             for(int row = 0; row < nRows + (2 * padding); row++) {
