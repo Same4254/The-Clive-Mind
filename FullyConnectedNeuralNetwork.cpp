@@ -28,7 +28,7 @@ class FullyConnectedNeuralNetwork {
         double deltaMax = 50;
         double deltaMin = 1E-6;
 
-        Matrix* weights;
+        Matrix* weights; 
         Matrix* biases;
         Matrix* activations;
         Matrix* nets;

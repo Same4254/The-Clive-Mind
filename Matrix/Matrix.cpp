@@ -6,6 +6,10 @@
 using namespace std;
 
 /**
+ *  TODO:
+ *      Inline modifier may be beneficial for the set and at methods....
+ *      Flipping the matrix is something that should be fully implemented
+ * 
  *  The goal of the matrix class is to abstract away the matrix operations.
  *  The Matrix class also allows for preallocated matricies to take in the result of another matrix operation.
  *      This is beneficial to not create matricies on the fly over and over again and fill up memory.

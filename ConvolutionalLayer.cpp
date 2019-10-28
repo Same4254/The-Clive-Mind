@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <iostream>
 #include <cmath>
-#include <fstream>
 
-#include "./Matrix/Matrix.cpp"
+#include "Layer.hpp"
 
 using namespace std;
 
@@ -220,90 +219,88 @@ class ConvolutionalLayer {
         }
 };
 
-int main() { 
-    srand(48563);
+// int main() { 
+//     // ConvolutionalLayer conv(2, 2, 4, 4, 2, 1);
+//     // (&conv.kernals[0][0])->set(0, 0, .2);
+//     // (&conv.kernals[0][0])->set(0, 1, .2);
+//     // (&conv.kernals[0][0])->set(1, 0, .2);
+//     // (&conv.kernals[0][0])->set(1, 1, .2);
 
-    ConvolutionalLayer conv(2, 2, 4, 4, 2, 1);
-    (&conv.kernals[0][0])->set(0, 0, .2);
-    (&conv.kernals[0][0])->set(0, 1, .2);
-    (&conv.kernals[0][0])->set(1, 0, .2);
-    (&conv.kernals[0][0])->set(1, 1, .2);
+//     // (&conv.kernals[1][0])->set(0, 0, .2);
+//     // (&conv.kernals[1][0])->set(0, 1, .2);
+//     // (&conv.kernals[1][0])->set(1, 0, .2);
+//     // (&conv.kernals[1][0])->set(1, 1, .2);
 
-    (&conv.kernals[1][0])->set(0, 0, .2);
-    (&conv.kernals[1][0])->set(0, 1, .2);
-    (&conv.kernals[1][0])->set(1, 0, .2);
-    (&conv.kernals[1][0])->set(1, 1, .2);
+//     // Matrix m(4, 4);
 
-    Matrix m(4, 4);
+//     // int n = 0;
+//     // for(int row = 0; row < 4; row++) {
+//     // for(int col = 0; col < 4; col++) {
+//     //     m.set(row, col, n / 20.0);
 
-    int n = 0;
-    for(int row = 0; row < 4; row++) {
-    for(int col = 0; col < 4; col++) {
-        m.set(row, col, n / 20.0);
+//     //     n++;
+//     // }}
 
-        n++;
-    }}
+//     // cout << "Kernals" << endl;
+//     // conv.kernals[0][0].print();
 
-    cout << "Kernals" << endl;
-    conv.kernals[0][0].print();
+//     // cout << endl << "IN" << endl;
+//     // m.print();
 
-    cout << endl << "IN" << endl;
-    m.print();
+//     // Matrix* out = conv.feedForward(&m);
 
-    Matrix* out = conv.feedForward(&m);
+//     // cout << endl << "Initial" << endl;
+//     // out->print();
 
-    cout << endl << "Initial" << endl;
-    out->print();
+//     // Matrix* error = (Matrix*) malloc(sizeof(Matrix) * 2);
+//     // new (&error[0]) Matrix(2, 2);
+//     // new (&error[1]) Matrix(2, 2);
 
-    Matrix* error = (Matrix*) malloc(sizeof(Matrix) * 2);
-    new (&error[0]) Matrix(2, 2);
-    new (&error[1]) Matrix(2, 2);
+//     // Matrix answer1(2, 2);
+//     // answer1.set(0, 0, 0.1);
+//     // answer1.set(0, 1, 0.3);
+//     // answer1.set(1, 0, 0.6);
+//     // answer1.set(1, 1, 0.9);
 
-    Matrix answer1(2, 2);
-    answer1.set(0, 0, 0.1);
-    answer1.set(0, 1, 0.3);
-    answer1.set(1, 0, 0.6);
-    answer1.set(1, 1, 0.9);
+//     // Matrix answer2(2, 2);
+//     // answer2.set(0, 0, 0.1);
+//     // answer2.set(0, 1, 0.0);
+//     // answer2.set(1, 0, 0.6);
+//     // answer2.set(1, 1, 0.9);
 
-    Matrix answer2(2, 2);
-    answer2.set(0, 0, 0.1);
-    answer2.set(0, 1, 0.0);
-    answer2.set(1, 0, 0.6);
-    answer2.set(1, 1, 0.9);
+//     // for(int i = 0; i < 5000; i++) {
+//     //     out[0].subtract(&answer1, &(error[0]));
+//     //     out[1].subtract(&answer2, &(error[1]));
 
-    for(int i = 0; i < 5000; i++) {
-        out[0].subtract(&answer1, &(error[0]));
-        out[1].subtract(&answer2, &(error[1]));
+//     //     // cout << endl;
+//     //     // cout << "Error" << endl;
 
-        // cout << endl;
-        // cout << "Error" << endl;
+//     //     // error.print();
 
-        // error.print();
+//     //     conv.backpropogate(error);
 
-        conv.backpropogate(error);
+//     //     // cout << endl;
 
-        // cout << endl;
+//     //     // cout << "IN" << endl;
+//     //     // m.print();
 
-        // cout << "IN" << endl;
-        // m.print();
+//     //     out = conv.feedForward(&m);
 
-        out = conv.feedForward(&m);
+//     //     cout << endl;
+//     //     cout << "OUT" << endl;
 
-        cout << endl;
-        cout << "OUT" << endl;
+//     //     out[0].print();
 
-        out[0].print();
+//     //     cout << endl;
 
-        cout << endl;
+//     //     out[1].print();
+//     // }
 
-        out[1].print();
-    }
+//     // // cout << endl;
 
-    // cout << endl;
+//     // // error[0].print();
 
-    // error[0].print();
+//     // // cout << endl;
 
-    // cout << endl;
-
-    // error[1].print();
-}
+//     // // error[1].print();
+// }
