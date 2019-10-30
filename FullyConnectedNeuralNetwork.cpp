@@ -1,9 +1,9 @@
-#include <stdio.h>
-#include <iostream>
-#include <cmath>
-#include <fstream>
+#ifndef MATRIX_HPP
+#define MATRIX_HPP
 
-#include "./Matrix/Matrix.cpp"
+#include "Matrix/Matrix.hpp"
+
+#endif
 
 using namespace std;
 

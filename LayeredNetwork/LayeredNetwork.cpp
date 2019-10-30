@@ -1,4 +1,5 @@
-#include "Layer.hpp"
+#include "ConvolutionalLayer.cpp"
+#include "ActivationLayer.hpp"
 
 class LayeredNetwork {
     public:
@@ -11,9 +12,7 @@ class LayeredNetwork {
         }
 
         void initialize() { 
-            for(int i = 0; i < amountOfLayers; i++) {
-                layers[i]->initialize();
-            }
+        
         }
 };
 

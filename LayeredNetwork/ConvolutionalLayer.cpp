@@ -1,12 +1,11 @@
-#include <stdio.h>
-#include <iostream>
-#include <cmath>
+#ifndef LAYER_HPP
+#define LAYER_HPP
 
 #include "Layer.hpp"
 
-using namespace std;
+#endif
 
-class ConvolutionalLayer {
+class ConvolutionalLayer: public Layer {
     public:
         Matrix** kernals;
         double* bias;
@@ -117,7 +116,7 @@ class ConvolutionalLayer {
             double outputCols = ((inputCols - kernalSize + (2.0 * padding)) / ((double) stride)) + 1.0;
 
             if((int) outputRows != outputRows || (int) outputCols != outputCols)
-                throw invalid_argument("Invalid convolution parameters");
+                throw std::invalid_argument("Invalid convolution parameters");
             
             this->outputRows = (int) outputRows;
             this->outputCols = (int) outputCols;
@@ -135,19 +134,18 @@ class ConvolutionalLayer {
                 bias[i] = 2.0 * ((double) rand() / (double) RAND_MAX) - 1.0;
             }
 
-            //Place-Holder Terms
-
+            /******* Place-Holder Terms *******/
             //Error Convolution
             toRetError = (Matrix*) malloc(sizeof(Matrix) * inputDimensions);
             errorConvolutionResult = (Matrix*) malloc(sizeof(Matrix) * kernalCount);
 
             //                  Change this when more information is given about the next layer!!!
             //The number is the size of the incoming error
-            double errorConvOutputRows = ((2.0 - kernalSize + (2.0 * padding)) / ((double) stride)) + 1.0;
-            double errorConvOutputCols = ((2.0 - kernalSize + (2.0 * padding)) / ((double) stride)) + 1.0;
+            double errorConvOutputRows = 2.0 - kernalSize + (2.0 * (inputRows)) + 1.0;
+            double errorConvOutputCols = 2.0 - kernalSize + (2.0 * (inputCols)) + 1.0;
 
             if((int) errorConvOutputRows != errorConvOutputRows || (int) errorConvOutputCols != errorConvOutputCols)
-                throw invalid_argument("Invalid error convolution parameters");
+                throw std::invalid_argument("Invalid error convolution parameters");
             
             for(int i = 0; i < kernalCount; i++)
                 new (&(errorConvolutionResult[i])) Matrix((int) errorConvOutputRows, (int) errorConvOutputCols);
@@ -165,13 +163,17 @@ class ConvolutionalLayer {
             double gradientConvOutputCols = ((inputCols - 2) / (double) stride) + 1.0;
 
             if((int) gradientConvOutputRows != gradientConvOutputRows || (int) gradientConvOutputCols != gradientConvOutputCols)
-                throw invalid_argument("Invalid error convolution parameters");
+                throw std::invalid_argument("Invalid error convolution parameters");
             
             for(int i = 0; i < kernalCount; i++)
                 new (&(gradients[i])) Matrix((int) gradientConvOutputRows, (int) gradientConvOutputCols);
 
             for(int i = 0; i < inputDimensions; i++) 
                 new (&(gradientConvolutionOutput[i])) Matrix((int) gradientConvOutputRows, (int) gradientConvOutputCols);
+        }
+
+        void initialize() {
+
         }
 
         Matrix* feedForward(Matrix* input) { 
@@ -182,13 +184,13 @@ class ConvolutionalLayer {
             return output;
         }
 
-        Matrix backpropogate(Matrix* error) {
-            //Next Error
+        Matrix* backpropogate(Matrix* error) {
+            //Next Error This is not correct, will come back to this when the rest is done
             // for(int j = 0; j < inputDimensions; j++) {
             //     (&toRetError[j])->clear();
 
             //     for(int i = 0; i < kernalCount; i++) {
-            //         convolute(&error[i], (&(&kernals[i])[j]), &errorConvolutionResult[i], NULL, 1, 1, stride, padding);
+            //         convolute(&error[i], (&(&kernals[i])[j]), &errorConvolutionResult[i], NULL, 1, 1, 1, inputRows - 1);
             //         (&toRetError[j])->mAdd(&errorConvolutionResult[i]);
             //     }
             // }
@@ -218,89 +220,3 @@ class ConvolutionalLayer {
             return toRetError;
         }
 };
-
-// int main() { 
-//     // ConvolutionalLayer conv(2, 2, 4, 4, 2, 1);
-//     // (&conv.kernals[0][0])->set(0, 0, .2);
-//     // (&conv.kernals[0][0])->set(0, 1, .2);
-//     // (&conv.kernals[0][0])->set(1, 0, .2);
-//     // (&conv.kernals[0][0])->set(1, 1, .2);
-
-//     // (&conv.kernals[1][0])->set(0, 0, .2);
-//     // (&conv.kernals[1][0])->set(0, 1, .2);
-//     // (&conv.kernals[1][0])->set(1, 0, .2);
-//     // (&conv.kernals[1][0])->set(1, 1, .2);
-
-//     // Matrix m(4, 4);
-
-//     // int n = 0;
-//     // for(int row = 0; row < 4; row++) {
-//     // for(int col = 0; col < 4; col++) {
-//     //     m.set(row, col, n / 20.0);
-
-//     //     n++;
-//     // }}
-
-//     // cout << "Kernals" << endl;
-//     // conv.kernals[0][0].print();
-
-//     // cout << endl << "IN" << endl;
-//     // m.print();
-
-//     // Matrix* out = conv.feedForward(&m);
-
-//     // cout << endl << "Initial" << endl;
-//     // out->print();
-
-//     // Matrix* error = (Matrix*) malloc(sizeof(Matrix) * 2);
-//     // new (&error[0]) Matrix(2, 2);
-//     // new (&error[1]) Matrix(2, 2);
-
-//     // Matrix answer1(2, 2);
-//     // answer1.set(0, 0, 0.1);
-//     // answer1.set(0, 1, 0.3);
-//     // answer1.set(1, 0, 0.6);
-//     // answer1.set(1, 1, 0.9);
-
-//     // Matrix answer2(2, 2);
-//     // answer2.set(0, 0, 0.1);
-//     // answer2.set(0, 1, 0.0);
-//     // answer2.set(1, 0, 0.6);
-//     // answer2.set(1, 1, 0.9);
-
-//     // for(int i = 0; i < 5000; i++) {
-//     //     out[0].subtract(&answer1, &(error[0]));
-//     //     out[1].subtract(&answer2, &(error[1]));
-
-//     //     // cout << endl;
-//     //     // cout << "Error" << endl;
-
-//     //     // error.print();
-
-//     //     conv.backpropogate(error);
-
-//     //     // cout << endl;
-
-//     //     // cout << "IN" << endl;
-//     //     // m.print();
-
-//     //     out = conv.feedForward(&m);
-
-//     //     cout << endl;
-//     //     cout << "OUT" << endl;
-
-//     //     out[0].print();
-
-//     //     cout << endl;
-
-//     //     out[1].print();
-//     // }
-
-//     // // cout << endl;
-
-//     // // error[0].print();
-
-//     // // cout << endl;
-
-//     // // error[1].print();
-// }

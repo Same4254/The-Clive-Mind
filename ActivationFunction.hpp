@@ -1,8 +1,22 @@
-#include <cmath>
+#ifndef MATRIX_HPP
+#define MATRIX_HPP
 
-using namespace std;
+#include "Matrix/Matrix.hpp"
+
+#endif
 
 class ActivationFunction {
-    virtual double applyFunction(double x) = 0;
-    virtual double applyDerivativeFunction(double x) = 0;
+    public: 
+        Matrix* applyFunction(Matrix* matrix) {
+            matrix->mForEach(&this->applyFunction);
+            return matrix;
+        }
+
+        Matrix* applyDerivativeFunction(Matrix* matrix) {
+            matrix->mForEach(&this->applyDerivativeFunction);
+            return matrix;
+        }
+
+        virtual double applyFunction(double x) = 0;
+        virtual double applyDerivativeFunction(double x) = 0;
 };
