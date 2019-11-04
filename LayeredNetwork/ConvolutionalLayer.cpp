@@ -186,7 +186,7 @@ class ConvolutionalLayer: public Layer {
 
         Matrix* backpropogate(Matrix* error) {
             //Next Error This is not correct, will come back to this when the rest is done
-            // for(int j = 0; j < inputDimensions; j++) {
+            // for(int j = 0; j < inputDimensions; j++) { Dialation!
             //     (&toRetError[j])->clear();
 
             //     for(int i = 0; i < kernalCount; i++) {

@@ -270,6 +270,23 @@ class Matrix {
         }
 
         /*
+        *   Computes the vector magnitude. Either the number of rows or the number of columns must be 1 (it has to be a vector....)
+        */
+        double vectorMagnitude() {
+            if(nRows != 1 && nCols != 1) {
+                throw std::invalid_argument("Cannot compute magnitude of a matrix");
+            }
+
+            double sum = 0.0;
+
+            for(int i = 0; i < length; i++) {
+                sum += pow(data[i], 2.0);
+            }
+
+            return sqrt(sum);
+        }
+
+        /*
         *   Matrix addition. Adds together all of the elements of this and other matricies and store the result in the result matrix.
         *   All 3 matricies must have the same dimensions.
         * 

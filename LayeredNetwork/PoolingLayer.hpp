@@ -15,11 +15,15 @@ class PoolingLayer: public Layer {
         int numPoolIndecies;
 
     public:
-        PoolingLayer() {
-            
+        PoolingLayer(int size) {
+            this->size = size;
         }
 
         void initialize() {
+            if(inputNRows % size != 0)
+                throw std::invalid_argument("Invalid size for pooling layer");
+
+            output = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
 
         }
 
@@ -53,11 +57,11 @@ class PoolingLayer: public Layer {
 
         Matrix* backpropogate(Matrix* error) {
             for(int i = 0; i < outputMatrixCount; i++) {
-                (&gradient[i])->clear();
+                (&gradient[i])->clear();// could look at the previous positions to set them only
                 
-                // for(int index = 0; index < numPoolIndecies; index++) {
-                //     (&gradient[i])->set(poolIndecies[i][index][0], poolIndecies[i][index][1], (&error[i])->getData()[index];
-                // }
+                for(int index = 0; index < numPoolIndecies; index++) {
+                    (&gradient[i])->set(poolIndecies[i][index][0], poolIndecies[i][index][1], (&error[i])->getData()[index]);
+                }
             }
 
             return gradient;
