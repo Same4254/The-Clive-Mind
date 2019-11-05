@@ -1,7 +1,7 @@
 #ifndef ACTIVATION_FUNCTION_HPP
 #define ACTIVATION_FUNCTION_HPP
 
-#include "./ActivationFunction.hpp"
+#include "ActivationFunction.hpp"
 
 #endif
 
