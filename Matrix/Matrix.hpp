@@ -546,6 +546,21 @@ class Matrix {
             return result;
         }
 
+        Matrix* dialate(Matrix* output, int amount) {
+            if(output->getNRows() != (4 * (amount - 1)) + nRows || output->getNCols() != (4 * (amount - 1)) + nCols)
+                throw std::invalid_argument("Invalid output size to dialate");
+
+            int index = 0;
+            for(int row = amount - 1; row < output->getNRows(); row += amount) {
+            for(int col = amount - 1; col < output->getNCols(); col += amount) {
+                    output->set(row, col, data[index]);
+
+                    index++;
+            }}
+
+            return output;
+        }
+
         Matrix* mFlip() {
             flipped = !flipped;
 

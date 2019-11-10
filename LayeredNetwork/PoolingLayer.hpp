@@ -46,8 +46,8 @@ class PoolingLayer: public Layer {
                 int index = 0;
                 for(int row = 0; row <= inputNRows - size; row += size) {
                 for(int col = 0; col <= inputNCols - size; col += size) {
-                    int positionRow = 0;
-                    int positionCol = 0;
+                    int positionRow = row;
+                    int positionCol = col;
 
                     for(int r = row; r < row + size; r++) {
                     for(int c = col; c < col + size; c++) {

@@ -5,7 +5,14 @@
 
 #endif
 
+#ifndef SIGMOID_FUNCTION_HPP
+#define SIGMOID_FUNCTION_HPP
+
 #include "SigmoidFunction.hpp"
+
+#endif
+
+#include "ReluFunction.hpp"
 
 class ActivationLayer: public Layer {
     private: 
@@ -31,14 +38,17 @@ class ActivationLayer: public Layer {
         }
 
         Matrix* feedForward(Matrix* input) { 
-            for(int i = 0; i < inputMatrixCount; i++)
+            for(int i = 0; i < inputMatrixCount; i++) {
                 function->applyFunction(&(input[i]), &(output[i]));
+                function->applyDerivativeFunction(&(input[i]), &(gradient[i]));
+            }
+
             return output;
         }
 
         Matrix* backpropogate(Matrix* error) { 
             for(int i = 0; i < inputMatrixCount; i++)
-                function->applyDerivativeFunction(&(error[i]), &(gradient[i]));
+                (&gradient[i])->elementProduct(&error[i], &gradient[i]);
             return gradient;
         }
 };

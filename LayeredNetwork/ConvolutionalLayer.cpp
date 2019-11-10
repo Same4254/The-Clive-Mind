@@ -14,7 +14,6 @@ class ConvolutionalLayer: public Layer {
         int kernalCount, kernalSize;
 
         Matrix* input;
-        Matrix* output;
 
         Matrix* toRetError;
         Matrix* errorConvolutionResult;
@@ -32,11 +31,11 @@ class ConvolutionalLayer: public Layer {
         *   General convolutional method -> Different parts of propogation need to use convolution
         */
         Matrix* convolute(Matrix* input, Matrix** kernals, Matrix* output, double* bias, int kernalCount, int inputDimensions, int stride, int padding) {
-            if((&input[0])->getPadding() != padding) {
-                for(int i = 0; i < kernalCount; i++) {
-                    (&input[i])->setPadding(padding);
-                }
-            }
+            // if((&input[0])->getPadding() != padding) {
+            //     for(int i = 0; i < kernalCount; i++) {
+            //         (&input[i])->setPadding(padding);
+            //     }
+            // }
 
             for(int row = 0; row <= (&input[0])->getNRows() - kernalSize; row += stride) {
             for(int col = 0; col <= (&input[0])->getNCols() - kernalSize; col += stride) {
@@ -109,6 +108,8 @@ class ConvolutionalLayer: public Layer {
             double outputRows = ((inputNRows - kernalSize + (2.0 * padding)) / ((double) stride)) + 1.0;
             double outputCols = ((inputNCols - kernalSize + (2.0 * padding)) / ((double) stride)) + 1.0;
 
+            printf("%f\n", outputRows);
+
             if((int) outputRows != outputRows || (int) outputCols != outputCols)
                 throw std::invalid_argument("Invalid convolution parameters");
             
@@ -133,19 +134,11 @@ class ConvolutionalLayer: public Layer {
             toRetError = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
             errorConvolutionResult = (Matrix*) malloc(sizeof(Matrix) * kernalCount);
 
-            //                  Change this when more information is given about the next layer!!!
-            //The number is the size of the incoming error
-            double errorConvOutputRows = 2.0 - kernalSize + (2.0 * (inputNRows)) + 1.0;
-            double errorConvOutputCols = 2.0 - kernalSize + (2.0 * (inputNCols)) + 1.0;
-
-            if((int) errorConvOutputRows != errorConvOutputRows || (int) errorConvOutputCols != errorConvOutputCols)
-                throw std::invalid_argument("Invalid error convolution parameters");
-            
-            for(int i = 0; i < kernalCount; i++)
-                new (&(errorConvolutionResult[i])) Matrix((int) errorConvOutputRows, (int) errorConvOutputCols);
+            for(int i = 0; i < kernalCount; i++) 
+                new (&(errorConvolutionResult[i])) Matrix(inputNRows, outputNCols);
 
             for(int i = 0; i < inputMatrixCount; i++)
-                new (&(toRetError[i])) Matrix((int) errorConvOutputRows, (int) errorConvOutputCols);
+                new (&(toRetError[i])) Matrix(inputNRows, inputNCols);
 
             //Gradient
             gradients = (Matrix*) malloc(sizeof(Matrix) * kernalCount);
@@ -153,17 +146,17 @@ class ConvolutionalLayer: public Layer {
 
             //change this when there is more information about the next layer
             //The number is meant to be the size of the incoming error
-            double gradientConvOutputRows = ((inputNRows - 2) / (double) stride) + 1.0;
-            double gradientConvOutputCols = ((inputNCols - 2) / (double) stride) + 1.0;
+            double gradientConvOutputRows = ((inputNRows - outputNRows) / (double) stride) + 1.0;
+            double gradientConvOutputCols = ((inputNCols - outputNCols) / (double) stride) + 1.0;
 
             if((int) gradientConvOutputRows != gradientConvOutputRows || (int) gradientConvOutputCols != gradientConvOutputCols)
                 throw std::invalid_argument("Invalid error convolution parameters");
             
             for(int i = 0; i < kernalCount; i++)
-                new (&(gradients[i])) Matrix((int) gradientConvOutputRows, (int) gradientConvOutputCols);
+                new (&(gradients[i])) Matrix(kernalSize, kernalSize);
 
             for(int i = 0; i < inputMatrixCount; i++) 
-                new (&(gradientConvolutionOutput[i])) Matrix((int) gradientConvOutputRows, (int) gradientConvOutputCols);
+                new (&(gradientConvolutionOutput[i])) Matrix(kernalSize, kernalSize);
 
             outputMatrixCount = kernalCount;
         }
@@ -187,11 +180,13 @@ class ConvolutionalLayer: public Layer {
             //     }
             // }
 
+            // printf("Error rows: %d, cols: %d\n", error->getNRows(), error->getNCols());
+
             //Gradient
             for(int i = 0; i < kernalCount; i++) {
                 (&gradients[i])->clear();
                 for(int j = 0; j < inputMatrixCount; j++) {
-                    convolute(&input[j], &error[i], &gradientConvolutionOutput[j], (&error[i])->getNRows(), 1, NULL, stride, padding);
+                    convolute(&input[j], &error[i], &gradientConvolutionOutput[j], (&error[i])->getNRows(), 1, NULL, error->getNRows(), padding);
 
                     (&gradients[i])->mAdd(&gradientConvolutionOutput[j]);
                 }

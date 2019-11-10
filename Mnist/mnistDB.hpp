@@ -39,10 +39,10 @@ void loadImages(FILE* fd, int count, unsigned char (*images)[IMAGE_SIZE]) {
 }
 
 void loadDataset() {
-    FILE* testLabelFD = fopen("./Data/t10k-labels.idx1-ubyte", "r");
-    FILE* testImageFD = fopen("./Data/t10k-images.idx3-ubyte", "r");
-    FILE* trainLabelFD = fopen("./Data/train-labels.idx1-ubyte", "r");
-    FILE* trainImageFD = fopen("./Data/train-images.idx3-ubyte", "r");
+    FILE* testLabelFD = fopen("Mnist/Data/t10k-labels.idx1-ubyte", "r");
+    FILE* testImageFD = fopen("Mnist/Data/t10k-images.idx3-ubyte", "r");
+    FILE* trainLabelFD = fopen("Mnist/Data/train-labels.idx1-ubyte", "r");
+    FILE* trainImageFD = fopen("Mnist/Data/train-images.idx3-ubyte", "r");
 
     loadLabels(testLabelFD, TEST_LABEL_COUNT, testLabels);
     loadImages(testImageFD, TEST_IMAGE_COUNT, testImagesBuffer);

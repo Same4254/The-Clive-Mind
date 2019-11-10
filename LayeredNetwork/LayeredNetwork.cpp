@@ -1,6 +1,8 @@
 #include "ConvolutionalLayer.cpp"
 #include "ActivationLayer.hpp"
 #include "PoolingLayer.hpp"
+#include "FullyConnectedLayer.cpp"
+#include "FlatteningLayer.hpp"
 
 class LayeredNetwork {
     public:
@@ -56,8 +58,15 @@ class LayeredNetwork {
             for(int i = 0; i < amountOfLayers; i++) {
                 if(i == 0) 
                     layers[0]->feedForward(input);
-                else
+                else {
+                    // printf("\nIndex: %d In\n", i);
+                    // layers[i - 1]->getOutput()->print();
+
                     layers[i]->feedForward(layers[i - 1]->getOutput());
+                }
+
+                // printf("\nIndex: %d Out\n", i);
+                // layers[i]->getOutput()->print();
             }
 
             return layers[amountOfLayers - 1]->getOutput();
@@ -80,28 +89,36 @@ class LayeredNetwork {
         Layer** getLayers() { return layers; }
 };
 
-int main() { 
-    ActivationFunction* sigmoid = new SigmoidFunction();
+// int main() { 
+//     srand(60);
 
-    LayeredNetwork network(2, 1, 4, 4, 1, 2, 2);
-    PoolingLayer pool(network.layers, 0, 2);
-    ActivationLayer activation(network.layers, 1, sigmoid);
+//     ActivationFunction* sigmoid = new ReluFunction();
 
-    network.layers[0] = &pool;
-    network.layers[1] = &activation;
+//     LayeredNetwork network(3, 1, 16, 16, 1, 8, 8);
+//     ConvolutionalLayer conv(network.layers, 0, 1, 2, 2);
+//     // PoolingLayer pool(network.layers, 1, 2);
+//     ActivationLayer activation(network.layers, 1, sigmoid);
 
-    network.initialize();
+//     int layers[] = {64, 10};
+//     // FullyConnectedLayer connected(network.layers, 2, 2, layers);
 
-    Matrix m(4, 4, -1, 1);
-    printf("Input: \n");
+//     network.layers[0] = &conv;
+//     // network.layers[1] = &pool;
+//     network.layers[1] = &activation;
+//     // network.layers[2] = &connected;
 
-    m.print();
+//     network.initialize();
 
-    network.feedForward(&m);
+//     Matrix m(16, 16, -1, 1);
+//     printf("Input: \n");
 
-    printf("\n Output: \n");
-    network.getOutput()->print();
+//     m.print();
 
-    Matrix label(2, 2, -1, 1);
-    network.backpropogate(&label);
-}
+//     network.feedForward(&m);
+
+//     printf("\n Output: \n");
+//     network.getOutput()->print();
+
+//     // Matrix label(2, 2, -1, 1);
+//     // network.backpropogate(&label);
+// }

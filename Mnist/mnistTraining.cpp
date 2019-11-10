@@ -3,9 +3,14 @@
 #include <time.h>
 
 #include "mnistDB.hpp"
-#include "../FullyConnectedNeuralNetwork.cpp"
+//#include "../FullyConnectedNeuralNetwork.cpp"
+#include "../LayeredNetwork/LayeredNetwork.cpp"
+
 
 using namespace std;
+
+Matrix* inputMatrix;
+Matrix* answerMatrix;
 
 int greatest(int numElements, double* data) {
     int index = 0; 
@@ -17,11 +22,13 @@ int greatest(int numElements, double* data) {
     return index;
 }
 
-int evaluate(FullyConnectedNeuralNetwork* network) {
+int evaluate(LayeredNetwork* network) {
     int correct = 0;
 
     for(int i = 0; i < TEST_IMAGE_COUNT; i++) {
-        Matrix* output = network->feedForward(testImages[i]);
+        inputMatrix->setDataUNSAFE(testImages[i]);
+
+        Matrix* output = network->feedForward(inputMatrix);
         if(greatest(10, output->getData()) == testLabels[i]) {
             correct++;
         }
@@ -33,12 +40,27 @@ int evaluate(FullyConnectedNeuralNetwork* network) {
 int main() {
     loadDataset();
 
-    srand(2348);
+    inputMatrix = new Matrix(28, 28);
+    answerMatrix = new Matrix(10, 1);
 
-    int layers[] = {784, 32, 32, 10};
-    FullyConnectedNeuralNetwork connected(4, layers);
+    ActivationFunction* reluFunction = new ReluFunction();
 
-    double percent = (evaluate(&connected) / 100.0);
+    LayeredNetwork network(5, 1, 28, 28, 1, 10, 1);
+    ConvolutionalLayer conv(network.layers, 0, 1, 3, 1);
+    ActivationLayer activation(network.layers, 1, reluFunction);
+    FlatteningLayer flatten(network.layers, 2);
+    FullyConnectedLayer full1(network.layers, 3, 50);
+    FullyConnectedLayer full2(network.layers, 4, 10);
+
+    network.layers[0] = &conv;
+    network.layers[1] = &activation;
+    network.layers[2] = &flatten;
+    network.layers[3] = &full1;
+    network.layers[4] = &full2;
+
+    network.initialize();
+
+    double percent = (evaluate(&network) / 100.0);
 
     printf("Initial Score: %f%%\n", percent);
 
@@ -54,18 +76,21 @@ int main() {
             if(lastAnswer != -1)
                 answers[lastAnswer] = 0;
             
-            connected.feedForward(trainImages[i]);
+            inputMatrix->setDataUNSAFE(trainImages[i]);
+
+            network.feedForward(inputMatrix);
 
             lastAnswer = trainLabels[i];
 
             answers[lastAnswer] = 1;
 
-            connected.backpropogate(answers);
+            answerMatrix->setDataUNSAFE(answers);
+            network.backpropogate(answerMatrix);
         }
 
         clock_t end = clock();
 
-        percent = (evaluate(&connected) / 100.0);
+        percent = (evaluate(&network) / 100.0);
 
         printf("Score: %f%%\n", percent);
 
@@ -75,4 +100,51 @@ int main() {
 
         printf("------\n");
     // }
+
+
+
+    // loadDataset();
+
+    // srand(2348);
+
+    // int layers[] = {784, 32, 32, 10};
+    // FullyConnectedNeuralNetwork connected(4, layers);
+
+    // double percent = (evaluate(&connected) / 100.0);
+
+    // printf("Initial Score: %f%%\n", percent);
+
+    // int lastAnswer = -1;
+    // double answers[10];
+
+    // for(int i = 0; i < 10; i++)
+    //     answers[i] = 0;
+
+    // clock_t start = clock();
+    // // for(int j = 0; j < 4; j++) {
+    //     for(int i = 0; i < 60000; i++) {
+    //         if(lastAnswer != -1)
+    //             answers[lastAnswer] = 0;
+            
+    //         connected.feedForward(trainImages[i]);
+
+    //         lastAnswer = trainLabels[i];
+
+    //         answers[lastAnswer] = 1;
+
+    //         connected.backpropogate(answers);
+    //     }
+
+    //     clock_t end = clock();
+
+    //     percent = (evaluate(&connected) / 100.0);
+
+    //     printf("Score: %f%%\n", percent);
+
+    //     double timeSpent = ((double)(end - start)) / CLOCKS_PER_SEC;
+
+    //     printf("Time: %f seconds\n", timeSpent);
+
+    //     printf("------\n");
+    // // }
 }

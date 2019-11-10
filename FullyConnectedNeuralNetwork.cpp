@@ -115,8 +115,72 @@ class FullyConnectedNeuralNetwork {
             return &activations[layers - 1];
         }
 
+        Matrix* feedForward(Matrix* input) {
+            // for(int i = 0; i < layerSizes[0]; i++) {
+                // (&activations[0])->set(i, 0, input[i]);
+            // }
+
+            (&activations[0])->setDataUNSAFE(input->getData());//not great, but works. TODO change this
+
+            for(int i = 1; i < layers; i++) {
+                (&weights[i - 1])->multiply(&activations[i - 1], &nets[i - 1])->mAdd(&biases[i - 1]);
+                (&nets[i - 1])->forEach(&sigmoid, &activations[i]);
+            }
+
+            return &activations[layers - 1];
+        }
+
         void backpropogate(double* answers) {
-            nesterovBackpropogate(answers);
+            // nesterovBackpropogate(answers);
+            
+            this->answers->setDataUNSAFE(answers);
+            (&activations[layers - 1])->subtract(this->answers, &error[layers - 2]);
+            backpropogate(&(error[layers - 2]));
+        }
+
+        void backpropogate(Matrix* givenDifference) {
+            for(int weightLayer = layers - 2; weightLayer >= 0; weightLayer--) {
+                if(weightLayer == layers - 2) {
+                    (&nets[weightLayer])->forEach(&sigmoidDerivative, &nets[weightLayer]);
+                    givenDifference->elementProduct(&nets[weightLayer], &error[weightLayer]);
+                } else {
+                    (&weights[weightLayer + 1])->mTranspose();
+                    (&weights[weightLayer + 1])->multiply(&(error[weightLayer + 1]), &(error[weightLayer]));
+                    (&weights[weightLayer + 1])->mTranspose();
+
+                    (&nets[weightLayer])->forEach(&sigmoidDerivative, &nets[weightLayer]);
+                    (&error[weightLayer])->elementProduct(&nets[weightLayer], &error[weightLayer]);
+                }
+
+                (&activations[weightLayer])->mTranspose();
+                (&error[weightLayer])->multiply(&activations[weightLayer], &weightGradients[weightLayer]);
+                (&activations[weightLayer])->mTranspose();
+
+                (&weightGradients[weightLayer])->mScale(learningRate);
+                (&error[weightLayer])->scale(learningRate, &biasGradients[weightLayer]);
+
+                //Momentum
+                (&weightVelocities[weightLayer])->mScale(velocityCoefficient);
+                (&weightVelocities[weightLayer])->mSubtract(&weightGradients[weightLayer]);
+                (&weights[weightLayer])->mAdd(&weightVelocities[weightLayer]);
+
+                (&biasVelocities[weightLayer])->mScale(velocityCoefficient);
+                (&biasVelocities[weightLayer])->mSubtract(&biasGradients[weightLayer]);
+                (&biases[weightLayer])->mAdd(&biasVelocities[weightLayer]);
+
+                // Nesterov
+                // (&weightVelocities[weightLayer])->scale(velocityCoefficient, &scaledWeightVelocities[weightLayer]);
+                // (&scaledWeightVelocities[weightLayer])->subtract(&weightGradients[weightLayer], &weightVelocities[weightLayer]);
+                // (&weightVelocities[weightLayer])->scale(1.0 + velocityCoefficient, &scaledScaledWeightVelocities[weightLayer]);
+                // (&scaledScaledWeightVelocities[weightLayer])->subtract(&scaledWeightVelocities[weightLayer], &weightDeltas[weightLayer]);
+                // (&weights[weightLayer])->mAdd(&weightDeltas[weightLayer]);
+
+                // (&biasVelocities[weightLayer])->scale(velocityCoefficient, &scaledBiasVelocities[weightLayer]);
+                // (&scaledBiasVelocities[weightLayer])->subtract(&biasGradients[weightLayer], &biasVelocities[weightLayer]);
+                // (&biasVelocities[weightLayer])->scale(1.0 + velocityCoefficient, &scaledScaledBiasVelocities[weightLayer]);
+                // (&scaledScaledBiasVelocities[weightLayer])->subtract(&scaledBiasVelocities[weightLayer], &biasDeltas[weightLayer]);
+                // (&biases[weightLayer])->mAdd(&biasDeltas[weightLayer]);
+            }
         }
 
         void nesterovBackpropogate(double* answers) {
