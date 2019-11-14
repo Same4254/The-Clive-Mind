@@ -3,9 +3,7 @@
 #include <time.h>
 
 #include "mnistDB.hpp"
-//#include "../FullyConnectedNeuralNetwork.cpp"
-#include "../LayeredNetwork/LayeredNetwork.cpp"
-
+#include "../LayeredNetwork/LayeredNetwork.hpp"
 
 using namespace std;
 
@@ -39,24 +37,24 @@ int evaluate(LayeredNetwork* network) {
 
 int main() {
     loadDataset();
+    srand(764);
 
     inputMatrix = new Matrix(28, 28);
     answerMatrix = new Matrix(10, 1);
 
     ActivationFunction* reluFunction = new ReluFunction();
 
-    LayeredNetwork network(5, 1, 28, 28, 1, 10, 1);
+    LayeredNetwork network(4, 1, 28, 28, 1, 10, 1);
+
     ConvolutionalLayer conv(network.layers, 0, 1, 3, 1);
-    ActivationLayer activation(network.layers, 1, reluFunction);
-    FlatteningLayer flatten(network.layers, 2);
-    FullyConnectedLayer full1(network.layers, 3, 50);
-    FullyConnectedLayer full2(network.layers, 4, 10);
+    FlatteningLayer flatten(network.layers, 1);
+    FullyConnectedLayer full1(network.layers, 2, 40);
+    FullyConnectedLayer full2(network.layers, 3, 10);
 
     network.layers[0] = &conv;
-    network.layers[1] = &activation;
-    network.layers[2] = &flatten;
-    network.layers[3] = &full1;
-    network.layers[4] = &full2;
+    network.layers[1] = &flatten;
+    network.layers[2] = &full1;
+    network.layers[3] = &full2;
 
     network.initialize();
 
@@ -71,7 +69,7 @@ int main() {
         answers[i] = 0;
 
     clock_t start = clock();
-    // for(int j = 0; j < 4; j++) {
+    for(int j = 0; j < 10; j++) {
         for(int i = 0; i < 60000; i++) {
             if(lastAnswer != -1)
                 answers[lastAnswer] = 0;
@@ -86,6 +84,10 @@ int main() {
 
             answerMatrix->setDataUNSAFE(answers);
             network.backpropogate(answerMatrix);
+
+            if(j == 3 && i == 25000) {
+                // printf("here");
+            }
         }
 
         clock_t end = clock();
@@ -99,7 +101,7 @@ int main() {
         printf("Time: %f seconds\n", timeSpent);
 
         printf("------\n");
-    // }
+    }
 
 
 

@@ -12,7 +12,12 @@
 
 #endif
 
+#ifndef RELU_FUNCTION_HPP
+#define RELU_FUNCTION_HPP
+
 #include "ReluFunction.hpp"
+
+#endif
 
 class ActivationLayer: public Layer {
     private: 

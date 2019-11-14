@@ -546,16 +546,45 @@ class Matrix {
             return result;
         }
 
-        Matrix* dialate(Matrix* output, int amount) {
-            if(output->getNRows() != (4 * (amount - 1)) + nRows || output->getNCols() != (4 * (amount - 1)) + nCols)
+        /*
+        *   Dialation refers to inserting 0s in between the data:
+        *   Dialation 1:
+        *       xxx
+        *       xxx
+        *       xxx
+        *   
+        *   Dialation 2:
+        *       x 0 x 0 x
+        *       x 0 x 0 x
+        *       x 0 x 0 x
+        * 
+        *   This is similar to padding but on the inside
+        */
+        // Matrix* dialate(Matrix* output, int amount) {
+        //     if(output->getNRows() != (3 * (amount - 1)) + nRows || output->getNCols() != (3 * (amount - 1)) + nCols)
+        //         throw std::invalid_argument("Invalid output size to dialate");
+
+        //     int index = 0;
+        //     for(int row = 0; row < output->getNRows(); row += amount) {
+        //     for(int col = 0; col < output->getNCols(); col += amount) {
+        //         output->set(row, col, data[index]);
+
+        //         index++;
+        //     }}
+
+        //     return output;
+        // }
+
+        Matrix* dialatePad(Matrix* output, int dialate, int pad) {
+            if(output->getNRows() != ((nRows - 1) * (dialate - 1)) + nRows + (2 * pad) || output->getNCols() != ((nRows - 1) * (dialate - 1)) + nCols + (2 * pad))
                 throw std::invalid_argument("Invalid output size to dialate");
 
             int index = 0;
-            for(int row = amount - 1; row < output->getNRows(); row += amount) {
-            for(int col = amount - 1; col < output->getNCols(); col += amount) {
-                    output->set(row, col, data[index]);
+            for(int row = pad; row < output->getNRows() - pad; row += dialate) {
+            for(int col = pad; col < output->getNCols() - pad; col += dialate) {
+                output->set(row, col, data[index]);
 
-                    index++;
+                index++;
             }}
 
             return output;
@@ -569,6 +598,11 @@ class Matrix {
 
             return this;
         }
+
+        // Matrix* flip(Matrix* output) {
+        //     if(nRows != output->getNRows() || nCols != output->getNCols())
+        //         throw std::invalid_argument("Invalid output size for flipping matrix");
+        // }
 
         /*
         *   This function is different from the regular transpose function.
