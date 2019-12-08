@@ -24,14 +24,14 @@ class PoolingLayer: public Layer {
                 throw std::invalid_argument("Invalid size for pooling layer");
 
             output = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
-            gradient = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
+            layerGradient = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
             poolIndecies = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
 
             numPoolIndecies = (inputNRows / size) * (inputNCols / size);
 
             for(int i = 0; i < inputMatrixCount; i++) {
                 new (&output[i]) Matrix(inputNRows / size, inputNCols / size);
-                new (&gradient[i]) Matrix(inputNRows, inputNCols);
+                new (&layerGradient[i]) Matrix(inputNRows, inputNCols);
                 new (&poolIndecies[i]) Matrix(numPoolIndecies, 2);
             }
 
@@ -73,13 +73,13 @@ class PoolingLayer: public Layer {
 
         Matrix* backpropogate(Matrix* error) {
             for(int i = 0; i < outputMatrixCount; i++) {
-                (&gradient[i])->clear();// could look at the previous positions to set them only
+                (&layerGradient[i])->clear();// could look at the previous positions to set them only
                 
                 for(int index = 0; index < numPoolIndecies; index++) {
-                    (&gradient[i])->set((&poolIndecies[i])->at(index, 0), (&poolIndecies[i])->at(index, 1), (&error[i])->getData()[index]);
+                    (&layerGradient[i])->set((&poolIndecies[i])->at(index, 0), (&poolIndecies[i])->at(index, 1), (&error[i])->getData()[index]);
                 }
             }
 
-            return gradient;
+            return layerGradient;
         }
 };

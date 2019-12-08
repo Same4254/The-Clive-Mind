@@ -59,7 +59,7 @@ class FullyConnectedLayer : public Layer {
             output = new Matrix(outputNRows, 1);
             nets = new Matrix(outputNRows, 1);
 
-            gradient = new Matrix(inputNRows, 1);
+            layerGradient = new Matrix(inputNRows, 1);
         }
 
         Matrix* feedForward(Matrix* input) {
@@ -90,9 +90,9 @@ class FullyConnectedLayer : public Layer {
 
             //Layer Gradient Calculation
             weights->mTranspose();
-            weights->multiply(error, gradient);
+            weights->multiply(error, layerGradient);
             weights->mTranspose();
 
-            return gradient;
+            return layerGradient;
         }
 };

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <iostream>
 #include <cmath>
-#include <thread>
 
 /**
  *  TODO:
@@ -29,30 +28,9 @@ class Matrix {
         double* data;
         
         int nRows, nCols;
-        int paddedNRows, paddedNCols;
-
         int length;
-        int padding;
 
         bool transposed;
-        bool flipped;
-
-        double atNoPadding(int row, int col) {
-            if(row < 0)
-                throw std::invalid_argument("Negative Row Index");
-            else if(row >= this->nRows)
-                throw std::invalid_argument("Row Index Overflow");
-
-            if(col < 0)
-                throw std::invalid_argument("Negative Col Index");
-            else if(col >= this->nCols)
-                throw std::invalid_argument("Col Index Overflow");
-
-            if(transposed)
-                return data[(col * nRows) + row];
-            else
-                return data[(row * nCols) + col];
-        }
 
         double unsafeAtRowMajor(int row, int col) {
             return data[(row * nCols) + col];
@@ -62,55 +40,8 @@ class Matrix {
             return data[(col * nRows) + row];
         }
 
-        void setNoPadding(int row, int col, double value) {
-            if(row < 0)
-                throw std::invalid_argument("Negative Row Index");
-            else if(row >= this->nRows)
-                throw std::invalid_argument("Row Index Overflow");
-
-            if(col < 0)
-                throw std::invalid_argument("Negative Col Index");
-            else if(col >= this->nCols)
-                throw std::invalid_argument("Col Index Overflow");
-
-            if(transposed)
-                data[(col * nRows) + row] = value;
-            else
-                data[(row * nCols) + col] = value;
-        }
-
         void unsafeSet(int row, int col, double value) {
             data[(row * nCols) + col] = value;
-        }
-
-        Matrix* slaveMultiply(Matrix* other, Matrix* result, int startRow, int endRow) {
-            if(result->transposed) {
-                for(int i = startRow; i < endRow; i++) {
-                for(int j = 0; j < other->paddedNCols; j++) {
-                    double sum = 0.0;
-
-                    for(int k = 0; k < this->paddedNCols; k++) {
-                        sum += (transposed ? data[(k * nRows) + i] : data[(i * nCols) + k])
-                                                        * (other->transposed ? other->data[(j * other->nRows) + k] : other->data[(k * other->nCols) + j]);
-                    }
-
-                    result->data[(j * result->nRows) + i] = sum;
-                }}
-            } else {
-                for(int i = startRow; i < endRow; i++) {
-                for(int j = 0; j < other->paddedNCols; j++) {
-                    double sum = 0.0;
-
-                    for(int k = 0; k < this->paddedNCols; k++) {
-                        sum += (transposed ? data[(k * nRows) + i] : data[(i * nCols) + k])
-                                                        * (other->transposed ? other->data[(j * other->nRows) + k] : other->data[(k * other->nCols) + j]);
-                    }
-
-                    result->data[(i * result->nCols) + j] = sum;
-                }}
-            }
-
-            return result;
         }
 
     public:
@@ -127,11 +58,9 @@ class Matrix {
             this->nRows = nRows;
             this->nCols = nCols;
             this->length = nRows * nCols;
-            this->padding = 0;
-            this->paddedNRows = nRows;
-            this->paddedNCols = nCols;
+            this->nRows = nRows;
+            this->nCols = nCols;
             this->transposed = false;
-            this->flipped = false;
         }
 
         /*
@@ -169,9 +98,8 @@ class Matrix {
             for(int i = 0; i < other->length; i++)
                 this->data[i] = other->data[i];
 
-            this->padding = other->padding;
-            this->paddedNRows = other->paddedNRows;
-            this->paddedNCols = other->paddedNCols;
+            this->nRows = other->nRows;
+            this->nCols = other->nCols;
 
             this->transposed = other->transposed;
         }
@@ -222,22 +150,16 @@ class Matrix {
         double at(int row, int col) {
             if(row < 0)
                 throw std::invalid_argument("Negative Row Index");
-            else if(row >= this->paddedNRows)
+            else if(row >= this->nRows)
                 throw std::invalid_argument("Row Index Overflow");
 
             if(col < 0)
                 throw std::invalid_argument("Negative Col Index");
-            else if(col >= this->paddedNCols)
+            else if(col >= this->nCols)
                 throw std::invalid_argument("Col Index Overflow");
 
-            if(row - padding < 0 || row - padding >= this->nRows)
-                return 0.0;
-            
-            if(col - padding < 0 || col - padding >= this->nCols)
-                return 0.0;
-
             //Row-Major vs Col-Major
-            return data[((row - padding) * (transposed ? nRows : nCols)) + col - padding];
+            return data[(row * (transposed ? nRows : nCols)) + col];
         }
 
         /*
@@ -252,19 +174,16 @@ class Matrix {
         Matrix* set(int row, int col, double value) {
             if(row < 0)
                 throw std::invalid_argument("Negative Row Index");
-            else if(row >= this->paddedNRows)
+            else if(row >= this->nRows)
                 throw std::invalid_argument("Row Index Overflow");
 
             if(col < 0)
                 throw std::invalid_argument("Negative Col Index");
-            else if(col >= this->paddedNCols)
+            else if(col >= this->nCols)
                 throw std::invalid_argument("Col Index Overflow");
 
-            if(col < padding || col - padding >= this->nCols || row < padding || row - padding >= this->nRows)
-                throw std::invalid_argument("Cannot Set padded value");
-
             //Row-Major vs Col-Major
-            this->data[((row - padding) * (transposed ? nRows : nCols)) + col - padding] = value;
+            this->data[(row * (transposed ? nRows : nCols)) + col] = value;
 
             return this;
         }
@@ -293,25 +212,20 @@ class Matrix {
         *   Returns the result matrix.
         */
         Matrix* add(Matrix* other, Matrix* result) {
-            if(other->paddedNCols != this->paddedNCols || result->paddedNCols != this->paddedNCols || 
-               other->paddedNRows != this->paddedNRows || result->paddedNRows != this->paddedNRows)
+            if(other->nCols != this->nCols || result->nCols != this->nCols || 
+               other->nRows != this->nRows || result->nRows != this->nRows)
                 throw std::invalid_argument("Unequal Matrix Size When Adding");
-
-            int minPadding = std::min(this->padding, other->padding);
-
-            if(result->padding > minPadding)
-                throw std::invalid_argument("Invalid Padding In Result Matrix When Adding");
 
             //This needs to run fast, so this will not call the at or set functions. Everything needs to be done here.
             if(result->transposed) {
-                for(int row = result->padding; row < result->paddedNRows - result->padding; row++) {
-                for(int col = result->padding; col < result->paddedNCols - result->padding; col++) {
+                for(int row = 0; row < result->nRows; row++) {
+                for(int col = 0; col < result->nCols; col++) {
                     result->data[(col * nRows) + row] = (transposed ? data[(col * nRows) + row] : data[(row * nCols) + col])
                                                         + (other->transposed ? other->data[(col * nRows) + row] : other->data[(row * nCols) + col]);
                 }}
             } else {
-                for(int row = result->padding; row < result->paddedNRows - result->padding; row++) {
-                for(int col = result->padding; col < result->paddedNCols - result->padding; col++) {
+                for(int row = 0; row < result->nRows; row++) {
+                for(int col = 0; col < result->nCols; col++) {
                     result->data[(row * nCols) + col] = (transposed ? data[(col * nRows) + row] : data[(row * nCols) + col])
                                                         + (other->transposed ? other->data[(col * nRows) + row] : other->data[(row * nCols) + col]);
                 }}
@@ -335,24 +249,19 @@ class Matrix {
         *   Returns the result matrix.
         */
         Matrix* subtract(Matrix* other, Matrix* result) {
-            if(other->paddedNCols != this->paddedNCols || result->paddedNCols != this->paddedNCols || 
-               other->paddedNRows != this->paddedNRows || result->paddedNRows != this->paddedNRows)
+            if(other->nCols != this->nCols || result->nCols != this->nCols || 
+               other->nRows != this->nRows || result->nRows != this->nRows)
                 throw std::invalid_argument("Unequal Matrix Size When Subtracting");
 
-            int minPadding = std::min(this->padding, other->padding);
-
-            if(result->padding > minPadding)
-                throw std::invalid_argument("Invalid Padding In Result Matrix When Subtracting");
-
             if(result->transposed) {
-                for(int row = result->padding; row < result->paddedNRows - result->padding; row++) {
-                for(int col = result->padding; col < result->paddedNCols - result->padding; col++) {
+                for(int row = 0; row < result->nRows; row++) {
+                for(int col = 0; col < result->nCols; col++) {
                     result->data[(col * nRows) + row] = (transposed ? data[(col * nRows) + row] : data[(row * nCols) + col])
                                                         - (other->transposed ? other->data[(col * nRows) + row] : other->data[(row * nCols) + col]);
                 }}
             } else {
-                for(int row = result->padding; row < result->paddedNRows - result->padding; row++) {
-                for(int col = result->padding; col < result->paddedNCols - result->padding; col++) {
+                for(int row = 0; row < result->nRows; row++) {
+                for(int col = 0; col < result->nCols; col++) {
                     result->data[(row * nCols) + col] = (transposed ? data[(col * nRows) + row] : data[(row * nCols) + col])
                                                         - (other->transposed ? other->data[(col * nRows) + row] : other->data[(row * nCols) + col]);
                 }}
@@ -377,24 +286,19 @@ class Matrix {
         *   Returns the result matrix.
         */
         Matrix* elementProduct(Matrix* other, Matrix* result) {
-            if(other->paddedNCols != this->paddedNCols || result->paddedNCols != this->paddedNCols || 
-               other->paddedNRows != this->paddedNRows || result->paddedNRows != this->paddedNRows)
+            if(other->nCols != this->nCols || result->nCols != this->nCols || 
+               other->nRows != this->nRows || result->nRows != this->nRows)
                 throw std::invalid_argument("Unequal Matrix Size When Multiplying");
 
-            int minPadding = std::min(this->padding, other->padding);
-
-            if(result->padding > minPadding)
-                throw std::invalid_argument("Invalid Padding In Result Matrix When Multiplying");
-
             if(result->transposed) {
-                for(int row = result->padding; row < result->paddedNRows - result->padding; row++) {
-                for(int col = result->padding; col < result->paddedNCols - result->padding; col++) {
+                for(int row = 0; row < result->nRows; row++) {
+                for(int col = 0; col < result->nCols; col++) {
                     result->data[(col * nRows) + row] = (transposed ? data[(col * nRows) + row] : data[(row * nCols) + col])
                                                         * (other->transposed ? other->data[(col * nRows) + row] : other->data[(row * nCols) + col]);
                 }}
             } else {
-                for(int row = result->padding; row < result->paddedNRows - result->padding; row++) {
-                for(int col = result->padding; col < result->paddedNCols - result->padding; col++) {
+                for(int row = 0; row < result->nRows; row++) {
+                for(int col = 0; col < result->nCols; col++) {
                     result->data[(row * nCols) + col] = (transposed ? data[(col * nRows) + row] : data[(row * nCols) + col])
                                                         * (other->transposed ? other->data[(col * nRows) + row] : other->data[(row * nCols) + col]);
                 }}
@@ -403,19 +307,39 @@ class Matrix {
             return result;
         }
 
+        /*
+        *   The elementWiseProduct is the sum of the products of the elements of two matricies. 
+        * 
+        *   a b c  *  g h i = ga + bh + ci + dk + el + mf
+        *   d e f     k l m
+        * 
+        *   However, convolution asks for a smaller matrix to do this on parts of a bigger matrix.
+        *   Thus the large matrix can call this method and provide the small matrix and where it wants
+        *       the small matrix to go.
+        * 
+        *   The large matrix must call this, not the small.
+        *   This has no support for mTransposed matricies
+        */
         double elementWiseProduct(Matrix* other, int startRow, int startCol, int nRows, int nCols) {
             double sum = 0.0;
 
             for(int row = startRow; row < nRows + startRow; row++) {
             for(int col = startCol; col < nCols + startCol; col++) {
-                // sum += data[(row * this->nCols) + col] * 
-                //        other->data[((row - startRow) * other->nCols) + (col - startCol)];
+                sum += data[(row * this->nCols) + col] * other->data[((row - startRow) * other->nCols) + (col - startCol)];
+            }}
 
-                sum += (flipped ? data[((this->nRows - row - 1) * this->nCols) + (this->nCols - col - 1)] : data[(row * this->nCols) + col]) * 
-                       (other->flipped ? other->data[(((other->nRows - row - 1) + startRow) * other->nCols) + ((other->nCols - col - 1) + startCol)] : other->data[((row - startRow) * other->nCols) + (col - startCol)]);
+            return sum;
+        }
 
-                // sum += (transposed ? data[(col * this->nRows) + row] : data[(row * this->nCols) + col]) * 
-                //         (other->transposed ? other->data[((col - startCol) * other->nRows) + (row - startRow)] : other->data[((row - startRow) * other->nCols) + (col - startCol)]);
+        /*
+        *   This is the same as the original elementWiseProduct function except it accesses the smaller matrix as if it were turned 180 degrees.
+        */
+        double flippedElementWiseProduct(Matrix* other, int startRow, int startCol, int nRows, int nCols) {
+            double sum = 0.0;
+
+            for(int row = startRow; row < nRows + startRow; row++) {
+            for(int col = startCol; col < nCols + startCol; col++) {
+                sum += data[(row * this->nCols) + col] * other->data[(((other->nRows - row - 1) + startRow) * other->nCols) + ((other->nCols - col - 1) + startCol)];
             }}
 
             return sum;
@@ -456,18 +380,18 @@ class Matrix {
             if(result == this || result == other)
                 throw std::invalid_argument("Can't store the result of multiplication in the same matrix");
 
-            if(this->paddedNCols != other->paddedNRows)
+            if(this->nCols != other->nRows)
                 throw std::invalid_argument("Invalid matrix size to multiply");
             
-            if(result->paddedNRows != this->paddedNRows || result->paddedNCols != other->paddedNCols)
+            if(result->nRows != this->nRows || result->nCols != other->nCols)
                 throw std::invalid_argument("Invalid result matrix size to multiply");
 
             if(result->transposed) {
-                for(int i = 0; i < this->paddedNRows; i++) {
-                for(int j = 0; j < other->paddedNCols; j++) {
+                for(int i = 0; i < this->nRows; i++) {
+                for(int j = 0; j < other->nCols; j++) {
                     double sum = 0.0;
 
-                    for(int k = 0; k < this->paddedNCols; k++) {
+                    for(int k = 0; k < this->nCols; k++) {
                         sum += (transposed ? data[(k * nRows) + i] : data[(i * nCols) + k])
                                                         * (other->transposed ? other->data[(j * other->nRows) + k] : other->data[(k * other->nCols) + j]);
                     }
@@ -475,11 +399,11 @@ class Matrix {
                     result->data[(j * result->nRows) + i] = sum;
                 }}
             } else {
-                for(int i = 0; i < this->paddedNRows; i++) {
-                for(int j = 0; j < other->paddedNCols; j++) {
+                for(int i = 0; i < this->nRows; i++) {
+                for(int j = 0; j < other->nCols; j++) {
                     double sum = 0.0;
 
-                    for(int k = 0; k < this->paddedNCols; k++) {
+                    for(int k = 0; k < this->nCols; k++) {
                         sum += (transposed ? data[(k * nRows) + i] : data[(i * nCols) + k])
                                                         * (other->transposed ? other->data[(j * other->nRows) + k] : other->data[(k * other->nCols) + j]);
                     }
@@ -487,39 +411,6 @@ class Matrix {
                     result->data[(i * result->nCols) + j] = sum;
                 }}
             }
-
-            return result;
-        }
-
-        /*
-        *   Threaded Matrix multiplication. 
-        * 
-        *   Required dimensions: a x b and b x c
-        *   The two matricies being multiplied cannot be the matrix as the result matrix.
-        * 
-        *   This will split the work between multiple threads.
-        *   Only use this for very large matricies, otherwise the work of setting up threads is greater
-        *       than the work of just doing it in one.
-        * 
-        *   Returns the result matrix.
-        */
-        Matrix* threadMultiply(Matrix* other, Matrix* result) {
-            int amountOFThreads = 2;
-            std::thread threads[amountOFThreads];
-
-            int row = 0;
-            int amountOfRows = nRows / amountOFThreads;
-            for(int i = 0; i < amountOFThreads; i++) {
-                if(i == amountOFThreads - 1)
-                    threads[i] = std::thread(&Matrix::slaveMultiply, this, other, result, row, nRows);
-                else
-                    threads[i] = std::thread(&Matrix::slaveMultiply, this, other, result, row, row + amountOfRows);
-
-                row += amountOfRows;
-            }
-
-            for(int i = 0; i < amountOFThreads; i++)
-                threads[i].join();
 
             return result;
         }
@@ -540,10 +431,26 @@ class Matrix {
             
             for(int row = 0; row < this->nRows; row++) {
             for(int col = 0; col < this->nCols; col++) {
-                result->setNoPadding(col, row, this->atNoPadding(row, col));
+                result->set(col, row, this->at(row, col));
             }}
 
             return result;
+        }
+
+        /*
+        *   This function is different from the regular transpose function.
+        *   Instead of copying data, this will swap the number of rows and columns
+        *       to change the way data is accessed in the at and set fucntions.
+        *   There is a transpose flag that will be flipped as well.
+        */
+        Matrix* mTranspose() {
+            int temp = this->nRows;
+            this->nRows = this->nCols;
+            this->nCols = temp;
+
+            this->transposed = !this->transposed;
+
+            return this;
         }
 
         /*
@@ -558,23 +465,13 @@ class Matrix {
         *       x 0 x 0 x
         *       x 0 x 0 x
         * 
-        *   This is similar to padding but on the inside
+        *   Padding 1:
+        *       0 0 0 0 0
+        *       0 x x x 0
+        *       0 x x x 0
+        *       0 x x x 0
+        *       0 0 0 0 0 
         */
-        // Matrix* dialate(Matrix* output, int amount) {
-        //     if(output->getNRows() != (3 * (amount - 1)) + nRows || output->getNCols() != (3 * (amount - 1)) + nCols)
-        //         throw std::invalid_argument("Invalid output size to dialate");
-
-        //     int index = 0;
-        //     for(int row = 0; row < output->getNRows(); row += amount) {
-        //     for(int col = 0; col < output->getNCols(); col += amount) {
-        //         output->set(row, col, data[index]);
-
-        //         index++;
-        //     }}
-
-        //     return output;
-        // }
-
         Matrix* dialatePad(Matrix* output, int dialate, int pad) {
             if(output->getNRows() != ((nRows - 1) * (dialate - 1)) + nRows + (2 * pad) || output->getNCols() != ((nRows - 1) * (dialate - 1)) + nCols + (2 * pad))
                 throw std::invalid_argument("Invalid output size to dialate");
@@ -590,39 +487,6 @@ class Matrix {
             return output;
         }
 
-        Matrix* mFlip() {
-            flipped = !flipped;
-
-            if(transposed && flipped)
-                throw std::logic_error("Cannot be both flipped and transposed");
-
-            return this;
-        }
-
-        // Matrix* flip(Matrix* output) {
-        //     if(nRows != output->getNRows() || nCols != output->getNCols())
-        //         throw std::invalid_argument("Invalid output size for flipping matrix");
-        // }
-
-        /*
-        *   This function is different from the regular transpose function.
-        *   Instead of copying data, this will swap the number of rows and columns
-        *       to change the way data is accessed in the at and set fucntions.
-        *   There is a transpose flag that will be flipped as well.
-        */
-        Matrix* mTranspose() {
-            int temp = this->nRows;
-            this->nRows = this->nCols;
-            this->nCols = temp;
-
-            this->paddedNRows = (2 * padding) + this->nRows;
-            this->paddedNCols = (2 * padding) + this->nCols;
-
-            this->transposed = !this->transposed;
-
-            return this;
-        }
-
         /*
         *   This will take a function pointer that takes a double and returns a double. This function will take in the different elements of 
         *       this matrix, apply the function and store the result in the result matrix.
@@ -632,8 +496,6 @@ class Matrix {
         *   Returns the result matrix.
         */
         Matrix* forEach(double (*function)(double), Matrix* result) {
-            if(this->padding != result->padding)
-                throw std::invalid_argument("Invalid padding for a for each function");
             if(this->nRows != result->nRows || this->nCols != result->nCols)
                 throw std::invalid_argument("Invalid number of rows and cols for a for each");
 
@@ -645,28 +507,6 @@ class Matrix {
 
         Matrix* mForEach(double (*function)(double)) {
             return forEach(function, this);
-        }
-
-        /*
-        *   Setting the padding of the matrix means adding an outter layer of 0s that encapsulate the data.
-        *   This is done atomically without actually adding any 0s to the data.
-        *   
-        *   x -> data
-        *   padding = 1
-        * 
-        *   0 0 0 0
-        *   0 x x 0
-        *   0 0 0 0
-        */
-        Matrix* setPadding(int padding) {
-            if(padding < 0)
-                throw std::invalid_argument("Cannot Set Negative Padding");
-
-            this->padding = padding;
-            this->paddedNRows = nRows + (2 * padding);
-            this->paddedNCols = nCols + (2 * padding);
-
-            return this;
         }
 
         /*
@@ -690,16 +530,15 @@ class Matrix {
         }
 
         double* getData() { return data; }
-        int getNRows() { return paddedNRows; }
-        int getNCols() { return paddedNCols; }
+        int getNRows() { return nRows; }
+        int getNCols() { return nCols; }
         int getLength() { return length; }
-        int getPadding() { return padding; }
 
         void print() {
-            for(int row = 0; row < nRows + (2 * padding); row++) {
+            for(int row = 0; row < nRows; row++) {
                 std::cout << "[";
-                for(int col = 0; col < nCols + (2 * padding); col++) {
-                    if(col != nCols + (2 * padding) - 1)
+                for(int col = 0; col < nCols; col++) {
+                    if(col != nCols - 1)
                         std::cout << at(row, col) << ", ";
                     else
                         std::cout << at(row, col);

@@ -54,11 +54,11 @@ class ConvolutionalLayer : public Layer {
 
         Matrix* bias;
 
-        Matrix* convolute(Matrix* input, Matrix* filter, Matrix* output, int s) {
-            return convolute(input, filter, 0, output, s);
+        Matrix* convolute(Matrix* input, Matrix* filter, Matrix* output, int s, bool flipped) {
+            return convolute(input, filter, 0, output, s, flipped);
         }
 
-        Matrix* convolute(Matrix* input, Matrix* filter, double bias, Matrix* output, int s) {
+        Matrix* convolute(Matrix* input, Matrix* filter, double bias, Matrix* output, int s, bool flipped) {
             double outputRows = ((input->getNRows() - filter->getNRows()) / ((double) s)) + 1.0;
             double outputCols = ((input->getNCols() - filter->getNRows()) / ((double) s)) + 1.0;
 
@@ -70,7 +70,11 @@ class ConvolutionalLayer : public Layer {
 
             for(int row = 0; row <= input->getNRows() - filter->getNRows(); row += s) {
             for(int col = 0; col <= input->getNCols() - filter->getNRows(); col += s) {
-                double sum = input->elementWiseProduct(filter, row, col, filter->getNRows(), filter->getNRows());
+                double sum = 0.0;
+                if(flipped)
+                    sum = input->flippedElementWiseProduct(filter, row, col, filter->getNRows(), filter->getNRows());
+                else
+                    sum = input->elementWiseProduct(filter, row, col, filter->getNRows(), filter->getNRows());
 
                 sum += bias;
 
@@ -88,10 +92,6 @@ class ConvolutionalLayer : public Layer {
         }
 
         void initialize() {
-            // weights = new Matrix(kernalSize, kernalSize, -1.0, 1.0);
-            // weights = new Matrix*[outputMatrixCount];
-            // weightGradient = new Matrix(kernalSize, kernalSize);
-
             weights = new Matrix*[outputMatrixCount];
             weightUpdater = new MomentumUpdater*[outputMatrixCount];
             for(int i = 0; i < outputMatrixCount; i++) {
@@ -106,16 +106,11 @@ class ConvolutionalLayer : public Layer {
 
             bias = new Matrix(1, outputMatrixCount, -1.0, 1.0);
             biasGradient = new Matrix(1, outputMatrixCount);
-
             weightGradient = new Matrix(kernalSize, kernalSize);
 
-            // weightUpdater = new MomentumUpdater(outputMatrixCount, kernalSize, kernalSize);
             biasUpdater = new MomentumUpdater(1, outputMatrixCount);
 
-            activationFunction = new ReluFunction();
-
-            // biases = new Matrix(outputNRows, 1, -1.0, 1.0);
-            // biasGradient = new Matrix(outputNRows, 1, -1.0, 1.0);
+            activationFunction = new SigmoidFunction();
 
             double outputRows = ((inputNRows - kernalSize) / ((double) stride)) + 1.0;
             double outputCols = ((inputNCols - kernalSize) / ((double) stride)) + 1.0;
@@ -141,9 +136,9 @@ class ConvolutionalLayer : public Layer {
 
             layerGradientConvolutionOutput = new Matrix(inputNRows, inputNCols);
 
-            gradient = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
+            layerGradient = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
             for(int i = 0; i < inputMatrixCount; i++) {
-                new (&gradient[i]) Matrix(inputNRows, inputNCols);
+                new (&layerGradient[i]) Matrix(inputNRows, inputNCols);
             }
         }
 
@@ -152,10 +147,13 @@ class ConvolutionalLayer : public Layer {
 
             // weights->multiply(input, nets);
             for(int i = 0; i < outputMatrixCount; i++) {
-                (&nets[i])->clear();
                 for(int inputMatrixIndex = 0; inputMatrixIndex < inputMatrixCount; inputMatrixIndex++) {
-                    convolute(&input[inputMatrixIndex], &weights[i][inputMatrixIndex], bias->at(0, i), convolutionOutput, stride);
-                    (&nets[i])->mAdd(convolutionOutput);
+                    convolute(&input[inputMatrixIndex], &weights[i][inputMatrixIndex], bias->at(0, i), convolutionOutput, stride, false);
+
+                    if(inputMatrixIndex == 0)//instead of clearing the matrix from the last forward operation, just copy the data
+                        (&nets[i])->copy(convolutionOutput);    
+                    else
+                        (&nets[i])->mAdd(convolutionOutput);
                 }
 
                 activationFunction->applyFunction(&nets[i], &output[i]);
@@ -169,10 +167,9 @@ class ConvolutionalLayer : public Layer {
             error->elementProduct(nets, error);
 
             //Weight Gradient Calculation
-            // int s = ;
             for(int i = 0; i < outputMatrixCount; i++) {
                 for(int j = 0; j < inputMatrixCount; j++) {
-                    convolute(&input[j], &error[i], weightGradient, (int) (input->getNRows() - error->getNRows()) / (kernalSize - 1));
+                    convolute(&input[j], &error[i], weightGradient, (int) (input->getNRows() - error->getNRows()) / (kernalSize - 1), false);
 
                     //Parameter Update
                     weightGradient->mScale(learningRate);
@@ -186,18 +183,16 @@ class ConvolutionalLayer : public Layer {
 
             //Layer Gradient Calculation
             for(int i = 0; i < inputMatrixCount; i++) {
-                (&gradient[i])->clear();
+                (&layerGradient[i])->clear();
                 for(int j = 0; j < outputMatrixCount; j++) {
                     (&error[j])->dialatePad(errorDialatedPadded, stride, kernalSize - 1);
 
-                    (&weights[j][i])->mFlip();
-                    convolute(errorDialatedPadded, &weights[j][i], layerGradientConvolutionOutput, 1);
-                    (&weights[j][i])->mFlip();
+                    convolute(errorDialatedPadded, &weights[j][i], layerGradientConvolutionOutput, 1, true);
 
-                    (&gradient[i])->mAdd(layerGradientConvolutionOutput);
+                    (&layerGradient[i])->mAdd(layerGradientConvolutionOutput);
                 }
             }
 
-            return gradient;
+            return layerGradient;
         }
 };

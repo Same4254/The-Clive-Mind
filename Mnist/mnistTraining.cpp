@@ -42,11 +42,9 @@ int main() {
     inputMatrix = new Matrix(28, 28);
     answerMatrix = new Matrix(10, 1);
 
-    ActivationFunction* reluFunction = new ReluFunction();
-
     LayeredNetwork network(4, 1, 28, 28, 1, 10, 1);
 
-    ConvolutionalLayer conv(network.layers, 0, 1, 3, 1);
+    ConvolutionalLayer conv(network.layers, 0, 1, 5, 1);
     FlatteningLayer flatten(network.layers, 1);
     FullyConnectedLayer full1(network.layers, 2, 40);
     FullyConnectedLayer full2(network.layers, 3, 10);
@@ -70,7 +68,7 @@ int main() {
 
     clock_t start = clock();
     for(int j = 0; j < 10; j++) {
-        for(int i = 0; i < 60000; i++) {
+        for(int i = 0; i < 20000; i++) {
             if(lastAnswer != -1)
                 answers[lastAnswer] = 0;
             
@@ -84,10 +82,6 @@ int main() {
 
             answerMatrix->setDataUNSAFE(answers);
             network.backpropogate(answerMatrix);
-
-            if(j == 3 && i == 25000) {
-                // printf("here");
-            }
         }
 
         clock_t end = clock();

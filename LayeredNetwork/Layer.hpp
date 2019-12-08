@@ -1,7 +1,7 @@
-#ifndef ACTIVATION_FUNCTION_HPP
-#define ACTIVATION_FUNCTION_HPP
+#ifndef MATRIX_HPP
 
-#include "ActivationFunction.hpp"
+#define MATRIX_HPP
+#include "../Matrix/Matrix.hpp"
 
 #endif
 
@@ -16,7 +16,7 @@ class Layer {
         int outputNCols;
 
         Matrix* output;
-        Matrix* gradient;
+        Matrix* layerGradient;
 
         Layer** networkLayers;
         int index;
@@ -55,5 +55,5 @@ class Layer {
         void setOutputNCols(int outputNCols) { this->outputNCols = outputNCols; }
 
         Matrix* getOutput() { return output; }
-        Matrix* getGradient() { return gradient; }
+        Matrix* getGradient() { return layerGradient; }
 };

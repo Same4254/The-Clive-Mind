@@ -30,11 +30,11 @@ class ActivationLayer: public Layer {
 
         void initialize() { 
             output = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
-            gradient = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
+            layerGradient = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
 
             for(int i = 0; i < inputMatrixCount; i++) {
                 new (&output[i]) Matrix(inputNRows, inputNCols);
-                new (&gradient[i]) Matrix(inputNRows, inputNCols);
+                new (&layerGradient[i]) Matrix(inputNRows, inputNCols);
             }
 
             outputMatrixCount = inputMatrixCount;
@@ -45,7 +45,7 @@ class ActivationLayer: public Layer {
         Matrix* feedForward(Matrix* input) { 
             for(int i = 0; i < inputMatrixCount; i++) {
                 function->applyFunction(&(input[i]), &(output[i]));
-                function->applyDerivativeFunction(&(input[i]), &(gradient[i]));
+                function->applyDerivativeFunction(&(input[i]), &(layerGradient[i]));
             }
 
             return output;
@@ -53,7 +53,7 @@ class ActivationLayer: public Layer {
 
         Matrix* backpropogate(Matrix* error) { 
             for(int i = 0; i < inputMatrixCount; i++)
-                (&gradient[i])->elementProduct(&error[i], &gradient[i]);
-            return gradient;
+                (&layerGradient[i])->elementProduct(&error[i], &layerGradient[i]);
+            return layerGradient;
         }
 };

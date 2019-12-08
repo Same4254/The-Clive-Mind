@@ -18,9 +18,9 @@ class FlatteningLayer : public Layer {
 
             output = new Matrix(outputNRows, outputNCols);
             
-            gradient = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
+            layerGradient = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
             for(int i = 0; i < inputMatrixCount; i++) {
-                new (&gradient[i]) Matrix(inputNRows, inputNCols);
+                new (&layerGradient[i]) Matrix(inputNRows, inputNCols);
             }
         }
 
@@ -44,12 +44,12 @@ class FlatteningLayer : public Layer {
             int index = 0;
             for(int matrix = 0; matrix < inputMatrixCount; matrix++) {
                 for(int i = 0; i < inputNRows * inputNCols; i++) {
-                    (&gradient[matrix])->getData()[i] = error->getData()[index];
+                    (&layerGradient[matrix])->getData()[i] = error->getData()[index];
 
                     index++;
                 }
             }
 
-            return gradient;
+            return layerGradient;
         }
 };
