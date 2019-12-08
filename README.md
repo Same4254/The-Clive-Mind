@@ -1,3 +1,3 @@
 # The Clive Mind
 
-!(/cluster.jpg)
+!(/Cluster.jpg)
