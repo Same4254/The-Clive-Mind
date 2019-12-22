@@ -1,11 +1,19 @@
-#include "ConvolutionalLayer.hpp"
-#include "ActivationLayer.hpp"
-#include "PoolingLayer.hpp"
+// #include "ConvolutionalLayer.hpp"
+// #include "ActivationLayer.hpp"
+// #include "PoolingLayer.hpp"
 #include "FullyConnectedLayer.hpp"
-#include "FlatteningLayer.hpp"
+// #include "FlatteningLayer.hpp"
+
+#ifndef NETWORK_INFORMATION_CPP
+#define NETWORK_INFORMATION_CPP
+
+#include "NetworkInformation.cpp"
+
+#endif
 
 class LayeredNetwork {
-    public:
+    private:
+        NetworkInformation* networkInformation;
         Layer** layers;
         int amountOfLayers;
 
@@ -34,9 +42,10 @@ class LayeredNetwork {
             layers = new Layer*[amountOfLayers];
 
             error = (Matrix*) malloc(sizeof(Matrix) * outputMatrixCount);
-            for(int i = 0; i < outputMatrixCount; i++) {
+            for(int i = 0; i < outputMatrixCount; i++)
                 new (&error[i]) Matrix(outputNRows, outputNCols);
-            }
+
+            networkInformation = new NetworkInformation();
         }
 
         void initialize() { 
@@ -65,19 +74,26 @@ class LayeredNetwork {
             return layers[amountOfLayers - 1]->getOutput();
         }
 
-        void backpropogate(Matrix* labels) {
-            for(int i = 0; i < outputMatrixCount; i++) {
+        void calculateGradients(Matrix* labels) {
+            for(int i = 0; i < outputMatrixCount; i++)
                 getOutput()->subtract((&labels[i]), &error[i]);
-            }
 
             for(int i = amountOfLayers - 1; i >= 0; i--) {
                 if(i == amountOfLayers - 1)
-                    layers[i]->backpropogate(error);
+                    layers[i]->calculateGradient(error);
                 else 
-                    layers[i]->backpropogate(layers[i + 1]->getGradient());
+                    layers[i]->calculateGradient(layers[i + 1]->getGradient());
             }
         }
 
+        void update() {
+            for(int i = 0; i < amountOfLayers; i++)
+                layers[i]->update();
+        }
+
+        NetworkInformation* getNetworkInformation() { return networkInformation; }
         Matrix* getOutput() { return layers[amountOfLayers - 1]->getOutput(); }
+
+        int getAmountOfLayers() { return amountOfLayers; }
         Layer** getLayers() { return layers; }
 };

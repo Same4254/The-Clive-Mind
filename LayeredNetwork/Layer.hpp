@@ -5,6 +5,13 @@
 
 #endif
 
+#ifndef NETWORK_INFORMATION_CPP
+#define NETWORK_INFORMATION_CPP
+
+#include "NetworkInformation.cpp"
+
+#endif
+
 class Layer {
     protected:
         int inputMatrixCount;
@@ -15,28 +22,49 @@ class Layer {
         int outputNRows;
         int outputNCols;
 
+        int parameterLength;
+        double* parameters;
+
+        int gradientLength;
+        double* gradientInfo;
+
         Matrix* output;
         Matrix* layerGradient;
 
-        Layer** networkLayers;
+        NetworkInformation* networkInformation;
+        Layer** layers;
         int index;
 
     public:
-        Layer(Layer** networkLayers, int index) {
-            this->networkLayers = networkLayers;
+        Layer(NetworkInformation* networkInformation, Layer** layers, int index) {
+            this->networkInformation = networkInformation;
+            this->layers = layers;
             this->index = index;
+
+            parameterLength = 0;
+            parameters = NULL;
+
+            gradientLength = 0;
+            gradientInfo = NULL;
         }
 
         virtual void initialize() {
             if(index != 0) {
-                inputMatrixCount = networkLayers[index - 1]->outputMatrixCount;
-                inputNCols = networkLayers[index - 1]->outputNCols;
-                inputNRows = networkLayers[index - 1]->outputNRows;
+                inputMatrixCount = layers[index - 1]->outputMatrixCount;
+                inputNCols = layers[index - 1]->outputNCols;
+                inputNRows = layers[index - 1]->outputNRows;
             }
         }
 
         virtual Matrix* feedForward(Matrix* input) = 0;
-        virtual Matrix* backpropogate(Matrix* error) = 0;
+        virtual Matrix* calculateGradient(Matrix* error) = 0;
+        virtual void update() = 0;
+
+        int getParameterLength() { return parameterLength; }
+        double* getParameters() { return parameters; }
+
+        int getGradientLength() { return gradientLength; }
+        double* getGradientInfo() { return gradientInfo; }
 
         int getInputMatrixCount() { return inputMatrixCount; }
         int getInputNRows() { return inputNRows; }

@@ -3,31 +3,34 @@
 #include <time.h>
 
 #include "mnistDB.hpp"
+
+#ifndef LAYERED_NETWORK_HPP
+#define LAYERED_NETWORK_HPP
+
 #include "../LayeredNetwork/LayeredNetwork.hpp"
 
-using namespace std;
+#endif
+
+// #include "../LayeredNetwork/MPINetworkSendRecv.cpp"
+
+// #ifndef MPI_H
+// #define MPI_H
+
+// #include <mpi.h>
+
+// #endif
 
 Matrix* inputMatrix;
 Matrix* answerMatrix;
-
-int greatest(int numElements, double* data) {
-    int index = 0; 
-
-    for(int i = 1; i < numElements; i++)
-        if(data[index] < data[i])
-            index = i;
-
-    return index;
-}
 
 int evaluate(LayeredNetwork* network) {
     int correct = 0;
 
     for(int i = 0; i < TEST_IMAGE_COUNT; i++) {
-        inputMatrix->setDataUNSAFE(testImages[i]);
+        inputMatrix->setData(testImages[i]);
 
         Matrix* output = network->feedForward(inputMatrix);
-        if(greatest(10, output->getData()) == testLabels[i]) {
+        if(output->greatestIndex() == testLabels[i]) {
             correct++;
         }
     }
@@ -36,111 +39,172 @@ int evaluate(LayeredNetwork* network) {
 }
 
 int main() {
+    // MPI_Init(NULL, NULL);
+
+    // int id;
+    // MPI_Comm_rank(MPI_COMM_WORLD, &id);
+
     loadDataset();
-    srand(764);
+    srand(6854);
 
-    inputMatrix = new Matrix(28, 28);
-    answerMatrix = new Matrix(10, 1);
+    inputMatrix = new Matrix(NULL, 784, 1);
+    answerMatrix = new Matrix(10, 1, 0);
 
-    LayeredNetwork network(4, 1, 28, 28, 1, 10, 1);
+    LayeredNetwork network(3, 1, 784, 1, 1, 10, 1);
 
-    ConvolutionalLayer conv(network.layers, 0, 1, 5, 1);
-    FlatteningLayer flatten(network.layers, 1);
-    FullyConnectedLayer full1(network.layers, 2, 40);
-    FullyConnectedLayer full2(network.layers, 3, 10);
+    network.getNetworkInformation()->setLearningRate(0.01);
+    network.getNetworkInformation()->setVelocityCoefficient(0.9);
+    network.getNetworkInformation()->setBatchSize(20);
 
-    network.layers[0] = &conv;
-    network.layers[1] = &flatten;
-    network.layers[2] = &full1;
-    network.layers[3] = &full2;
+    FullyConnectedLayer full1(network.getNetworkInformation(), network.getLayers(), 0, 32);
+    FullyConnectedLayer full2(network.getNetworkInformation(), network.getLayers(), 1, 32);
+    FullyConnectedLayer full3(network.getNetworkInformation(), network.getLayers(), 2, 10);
+
+    network.getLayers()[0] = &full1;
+    network.getLayers()[1] = &full2;
+    network.getLayers()[2] = &full3;
 
     network.initialize();
-
+    
     double percent = (evaluate(&network) / 100.0);
 
-    printf("Initial Score: %f%%\n", percent);
+    printf("Master Initial Score: %f%%\n", percent);
 
     int lastAnswer = -1;
-    double answers[10];
-
-    for(int i = 0; i < 10; i++)
-        answers[i] = 0;
 
     clock_t start = clock();
-    for(int j = 0; j < 10; j++) {
-        for(int i = 0; i < 20000; i++) {
+    // for(int j = 0; j < 10; j++) {
+        for(int i = 0; i < 60000; i++) {
             if(lastAnswer != -1)
-                answers[lastAnswer] = 0;
+                answerMatrix->set(lastAnswer, 0, 0);
+                // answers[lastAnswer] = 0;
             
-            inputMatrix->setDataUNSAFE(trainImages[i]);
+            inputMatrix->setData(trainImages[i]);
 
             network.feedForward(inputMatrix);
 
             lastAnswer = trainLabels[i];
+            answerMatrix->set(lastAnswer, 0, 1);
 
-            answers[lastAnswer] = 1;
+            network.calculateGradients(answerMatrix);
 
-            answerMatrix->setDataUNSAFE(answers);
-            network.backpropogate(answerMatrix);
+            if(network.getNetworkInformation()->incrementBatchIndex()) {
+                network.update();
+            }
         }
 
         clock_t end = clock();
 
         percent = (evaluate(&network) / 100.0);
 
-        printf("Score: %f%%\n", percent);
+        printf("Master Score: %f%%\n", percent);
 
         double timeSpent = ((double)(end - start)) / CLOCKS_PER_SEC;
 
-        printf("Time: %f seconds\n", timeSpent);
+        printf("Master Time: %f seconds\n", timeSpent);
 
-        printf("------\n");
-    }
+        printf("Master ------\n");
+
+        // sendRecv.sendParameters();
+    // }
 
 
+    // MPINetworkSendRecv sendRecv(&network);
 
-    // loadDataset();
+    // if(id == 0) {
+    //     double percent = (evaluate(&network) / 100.0);
 
-    // srand(2348);
+    //     printf("Master Initial Score: %f%%\n", percent);
 
-    // int layers[] = {784, 32, 32, 10};
-    // FullyConnectedNeuralNetwork connected(4, layers);
+    //     int lastAnswer = -1;
 
-    // double percent = (evaluate(&connected) / 100.0);
+    //     clock_t start = clock();
+    //     for(int j = 0; j < 10; j++) {
+    //         for(int i = 0; i < 20000; i++) {
+    //             if(lastAnswer != -1)
+    //                 answerMatrix->set(lastAnswer, 0, 0);
+    //                 // answers[lastAnswer] = 0;
+                
+    //             inputMatrix->setDataUNSAFE(trainImages[i]);
 
-    // printf("Initial Score: %f%%\n", percent);
+    //             network.feedForward(inputMatrix);
 
-    // int lastAnswer = -1;
-    // double answers[10];
+    //             lastAnswer = trainLabels[i];
 
-    // for(int i = 0; i < 10; i++)
-    //     answers[i] = 0;
+    //             answerMatrix->set(lastAnswer, 0, 1);
 
-    // clock_t start = clock();
-    // // for(int j = 0; j < 4; j++) {
-    //     for(int i = 0; i < 60000; i++) {
-    //         if(lastAnswer != -1)
-    //             answers[lastAnswer] = 0;
-            
-    //         connected.feedForward(trainImages[i]);
+    //             // answerMatrix->setDataUNSAFE(answers);
+    //             // network.backpropogate(answerMatrix);
+    //             network.calculateGradients(answerMatrix);
 
-    //         lastAnswer = trainLabels[i];
+    //             if(network.getNetworkInformation()->incrementBatchIndex())
+    //                 network.update();
+    //         }
 
-    //         answers[lastAnswer] = 1;
+    //         clock_t end = clock();
 
-    //         connected.backpropogate(answers);
+    //         percent = (evaluate(&network) / 100.0);
+
+    //         printf("Master Score: %f%%\n", percent);
+
+    //         double timeSpent = ((double)(end - start)) / CLOCKS_PER_SEC;
+
+    //         printf("Master Time: %f seconds\n", timeSpent);
+
+    //         printf("Master ------\n");
+
+    //         sendRecv.sendParameters();
     //     }
+    // } else {
+    //     sendRecv.recvParameters();
 
-    //     clock_t end = clock();
+    //     double percent = (evaluate(&network) / 100.0);
 
-    //     percent = (evaluate(&connected) / 100.0);
+    //     printf("Slave Initial Score: %f%%\n", percent);
 
-    //     printf("Score: %f%%\n", percent);
+    //     int lastAnswer = -1;
+    //     double answers[10];
 
-    //     double timeSpent = ((double)(end - start)) / CLOCKS_PER_SEC;
+    //     for(int i = 0; i < 10; i++)
+    //         answers[i] = 0;
 
-    //     printf("Time: %f seconds\n", timeSpent);
+    //     clock_t start = clock();
+    //     for(int j = 0; j < 10; j++) {
+    //         for(int i = 0; i < 20000; i++) {
+    //             if(lastAnswer != -1)
+    //                 answers[lastAnswer] = 0;
+                
+    //             inputMatrix->setDataUNSAFE(trainImages[i]);
 
-    //     printf("------\n");
-    // // }
+    //             network.feedForward(inputMatrix);
+
+    //             lastAnswer = trainLabels[i];
+
+    //             answers[lastAnswer] = 1;
+
+    //             answerMatrix->setDataUNSAFE(answers);
+    //             // network.backpropogate(answerMatrix);
+    //             network.calculateGradients(answerMatrix);
+
+    //             if(network.getNetworkInformation()->incrementBatchIndex())
+    //                 network.update();
+    //         }
+
+    //         clock_t end = clock();
+
+    //         percent = (evaluate(&network) / 100.0);
+
+    //         printf("Slave Score: %f%%\n", percent);
+
+    //         double timeSpent = ((double)(end - start)) / CLOCKS_PER_SEC;
+
+    //         printf("Slave Time: %f seconds\n", timeSpent);
+
+    //         printf("Slave ------\n");
+
+    //         sendRecv.sendParameters();
+    //     }
+    // }
+
+    // MPI_Finalize();
 }

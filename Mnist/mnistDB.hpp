@@ -3,8 +3,6 @@
 #include <stdint.h>
 #include <netinet/in.h>
 
-using namespace std;
-
 #define TEST_LABEL_COUNT 10000
 #define TEST_IMAGE_COUNT 10000
 

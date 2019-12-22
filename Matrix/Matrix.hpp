@@ -30,8 +30,6 @@ class Matrix {
         int nRows, nCols;
         int length;
 
-        bool transposed;
-
         double unsafeAtRowMajor(int row, int col) {
             return data[(row * nCols) + col];
         }
@@ -58,9 +56,6 @@ class Matrix {
             this->nRows = nRows;
             this->nCols = nCols;
             this->length = nRows * nCols;
-            this->nRows = nRows;
-            this->nCols = nCols;
-            this->transposed = false;
         }
 
         /*
@@ -90,6 +85,11 @@ class Matrix {
                 data[i] = (max - min) * ((double) rand() / (double) RAND_MAX) + min;
         }
 
+        Matrix(double* data, int nRows, int nCols, double min, double max) : Matrix(data, nRows, nCols) {
+            for(int i = 0; i < length; i++)
+                data[i] = (max - min) * ((double) rand() / (double) RAND_MAX) + min;
+        }
+
         /*
         *   This will construct a new matrix that is of the same size of the given matrix.
         *   The value of the data, padding, and transpose information will all be copied.
@@ -100,12 +100,10 @@ class Matrix {
 
             this->nRows = other->nRows;
             this->nCols = other->nCols;
-
-            this->transposed = other->transposed;
         }
 
         /*
-        *   Frees the data pointer
+        *   Be FREEEEE!
         */
         ~Matrix() { 
             free(data);
@@ -117,8 +115,17 @@ class Matrix {
         *   This will NOT free up the old pointer
         *   This will NOT adjust the nRows and nCols
         */
-        Matrix* setDataUNSAFE(double* data) {
+        Matrix* setData(double* data) {
             this->data = data;
+
+            return this;
+        }
+
+        Matrix* setData(double* data, int nRows, int nCols) {
+            this->data = data;
+            this->nRows = nRows;
+            this->nCols = nCols;
+            this->length = nRows * nCols;
 
             return this;
         }
@@ -159,7 +166,7 @@ class Matrix {
                 throw std::invalid_argument("Col Index Overflow");
 
             //Row-Major vs Col-Major
-            return data[(row * (transposed ? nRows : nCols)) + col];
+            return data[(row * nCols) + col];
         }
 
         /*
@@ -183,7 +190,7 @@ class Matrix {
                 throw std::invalid_argument("Col Index Overflow");
 
             //Row-Major vs Col-Major
-            this->data[(row * (transposed ? nRows : nCols)) + col] = value;
+            this->data[(row * nCols) + col] = value;
 
             return this;
         }
@@ -216,20 +223,8 @@ class Matrix {
                other->nRows != this->nRows || result->nRows != this->nRows)
                 throw std::invalid_argument("Unequal Matrix Size When Adding");
 
-            //This needs to run fast, so this will not call the at or set functions. Everything needs to be done here.
-            if(result->transposed) {
-                for(int row = 0; row < result->nRows; row++) {
-                for(int col = 0; col < result->nCols; col++) {
-                    result->data[(col * nRows) + row] = (transposed ? data[(col * nRows) + row] : data[(row * nCols) + col])
-                                                        + (other->transposed ? other->data[(col * nRows) + row] : other->data[(row * nCols) + col]);
-                }}
-            } else {
-                for(int row = 0; row < result->nRows; row++) {
-                for(int col = 0; col < result->nCols; col++) {
-                    result->data[(row * nCols) + col] = (transposed ? data[(col * nRows) + row] : data[(row * nCols) + col])
-                                                        + (other->transposed ? other->data[(col * nRows) + row] : other->data[(row * nCols) + col]);
-                }}
-            }
+            for(int i = 0; i < length; i++)
+                result->data[i] = data[i] + other->data[i];
 
             return result;
         }
@@ -253,19 +248,8 @@ class Matrix {
                other->nRows != this->nRows || result->nRows != this->nRows)
                 throw std::invalid_argument("Unequal Matrix Size When Subtracting");
 
-            if(result->transposed) {
-                for(int row = 0; row < result->nRows; row++) {
-                for(int col = 0; col < result->nCols; col++) {
-                    result->data[(col * nRows) + row] = (transposed ? data[(col * nRows) + row] : data[(row * nCols) + col])
-                                                        - (other->transposed ? other->data[(col * nRows) + row] : other->data[(row * nCols) + col]);
-                }}
-            } else {
-                for(int row = 0; row < result->nRows; row++) {
-                for(int col = 0; col < result->nCols; col++) {
-                    result->data[(row * nCols) + col] = (transposed ? data[(col * nRows) + row] : data[(row * nCols) + col])
-                                                        - (other->transposed ? other->data[(col * nRows) + row] : other->data[(row * nCols) + col]);
-                }}
-            }
+            for(int i = 0; i < length; i++)
+                result->data[i] = data[i] - other->data[i];
 
             return result;
         }
@@ -290,19 +274,8 @@ class Matrix {
                other->nRows != this->nRows || result->nRows != this->nRows)
                 throw std::invalid_argument("Unequal Matrix Size When Multiplying");
 
-            if(result->transposed) {
-                for(int row = 0; row < result->nRows; row++) {
-                for(int col = 0; col < result->nCols; col++) {
-                    result->data[(col * nRows) + row] = (transposed ? data[(col * nRows) + row] : data[(row * nCols) + col])
-                                                        * (other->transposed ? other->data[(col * nRows) + row] : other->data[(row * nCols) + col]);
-                }}
-            } else {
-                for(int row = 0; row < result->nRows; row++) {
-                for(int col = 0; col < result->nCols; col++) {
-                    result->data[(row * nCols) + col] = (transposed ? data[(col * nRows) + row] : data[(row * nCols) + col])
-                                                        * (other->transposed ? other->data[(col * nRows) + row] : other->data[(row * nCols) + col]);
-                }}
-            }
+            for(int i = 0; i < length; i++)
+                result->data[i] = data[i] * other->data[i];
 
             return result;
         }
@@ -386,31 +359,130 @@ class Matrix {
             if(result->nRows != this->nRows || result->nCols != other->nCols)
                 throw std::invalid_argument("Invalid result matrix size to multiply");
 
-            if(result->transposed) {
-                for(int i = 0; i < this->nRows; i++) {
-                for(int j = 0; j < other->nCols; j++) {
-                    double sum = 0.0;
+            for(int i = 0; i < this->nRows; i++) {
+            for(int j = 0; j < other->nCols; j++) {
+                double sum = 0.0;
 
-                    for(int k = 0; k < this->nCols; k++) {
-                        sum += (transposed ? data[(k * nRows) + i] : data[(i * nCols) + k])
-                                                        * (other->transposed ? other->data[(j * other->nRows) + k] : other->data[(k * other->nCols) + j]);
-                    }
+                for(int k = 0; k < this->nCols; k++) {
+                    sum += data[(i * nCols) + k] * other->data[(k * other->nCols) + j];
+                }
 
-                    result->data[(j * result->nRows) + i] = sum;
-                }}
-            } else {
-                for(int i = 0; i < this->nRows; i++) {
-                for(int j = 0; j < other->nCols; j++) {
-                    double sum = 0.0;
+                result->data[(i * result->nCols) + j] = sum;
+            }}
 
-                    for(int k = 0; k < this->nCols; k++) {
-                        sum += (transposed ? data[(k * nRows) + i] : data[(i * nCols) + k])
-                                                        * (other->transposed ? other->data[(j * other->nRows) + k] : other->data[(k * other->nCols) + j]);
-                    }
+            return result;
+        }
 
-                    result->data[(i * result->nCols) + j] = sum;
-                }}
-            }
+        /*
+        *   Multiplies the matricies as if "other" is transposed
+        */
+        Matrix* multiplyOtherTransposed(Matrix* other, Matrix* result) {
+            if(result == this || result == other)
+                throw std::invalid_argument("Can't store the result of multiplication in the same matrix");
+
+            if(this->nCols != other->nCols)
+                throw std::invalid_argument("Invalid matrix size to multiply");
+            
+            if(result->nRows != this->nRows || result->nCols != other->nRows)
+                throw std::invalid_argument("Invalid result matrix size to multiply");
+
+            for(int i = 0; i < this->nRows; i++) {
+            for(int j = 0; j < other->nRows; j++) {
+                double sum = 0.0;
+
+                for(int k = 0; k < this->nCols; k++) {
+                    sum += data[(i * nCols) + k] * other->data[(j * other->nCols) + k];
+                }
+
+                result->data[(i * result->nCols) + j] = sum;
+            }}
+
+            return result;
+        }
+
+        /*
+        *   Multiplies the matricies as if "other" is transposed, and adds the adder matrix
+        */
+        Matrix* multiplyOtherTransposedAdded(Matrix* other, Matrix* adder, Matrix* result) {
+            if(result == this || result == other)
+                throw std::invalid_argument("Can't store the result of multiplication in the same matrix");
+
+            if(adder->nRows != result->nRows || adder->nCols != result->nCols)
+                throw std::invalid_argument("Invalid adder size to multiply");
+
+            if(this->nCols != other->nCols)
+                throw std::invalid_argument("Invalid matrix size to multiply");
+            
+            if(result->nRows != this->nRows || result->nCols != other->nRows)
+                throw std::invalid_argument("Invalid result matrix size to multiply");
+
+            for(int i = 0; i < this->nRows; i++) {
+            for(int j = 0; j < other->nRows; j++) {
+                double sum = 0.0;
+
+                for(int k = 0; k < this->nCols; k++) {
+                    sum += data[(i * nCols) + k] * other->data[(j * other->nCols) + k];
+                }
+
+                result->data[(i * result->nCols) + j] = sum + adder->data[(i * result->nCols) + j];
+            }}
+
+            return result;
+        }
+
+        /*
+        *   Multiplies the matricies as if the caller matrix is transposed
+        */
+        Matrix* multiplyInputTransposed(Matrix* other, Matrix* result) {
+            if(result == this || result == other)
+                throw std::invalid_argument("Can't store the result of multiplication in the same matrix");
+
+            if(this->nRows != other->nRows)
+                throw std::invalid_argument("Invalid matrix size to multiply");
+            
+            if(result->nRows != this->nCols || result->nCols != other->nCols)
+                throw std::invalid_argument("Invalid result matrix size to multiply");
+
+            for(int i = 0; i < this->nCols; i++) {
+            for(int j = 0; j < other->nCols; j++) {
+                double sum = 0.0;
+
+                for(int k = 0; k < this->nRows; k++) {
+                    sum += data[(k * nCols) + i] * other->data[(k * other->nCols) + j];
+                }
+
+                result->data[(i * result->nCols) + j] = sum;
+            }}
+
+            return result;
+        }
+
+        /*
+        *   Multiplies the matricies as if the caller matrix is transposed, and adds the values from the adder matrix
+        */
+        Matrix* multiplyInputTransposedAdded(Matrix* other, Matrix* adder, Matrix* result) {
+            if(result == this || result == other)
+                throw std::invalid_argument("Can't store the result of multiplication in the same matrix");
+
+            if(adder->nRows != result->nRows || adder->nCols != result->nCols)
+                throw std::invalid_argument("Invalid adder size to multiply");
+
+            if(this->nRows != other->nRows)
+                throw std::invalid_argument("Invalid matrix size to multiply");
+            
+            if(result->nRows != this->nCols || result->nCols != other->nCols)
+                throw std::invalid_argument("Invalid result matrix size to multiply");
+
+            for(int i = 0; i < this->nCols; i++) {
+            for(int j = 0; j < other->nCols; j++) {
+                double sum = 0.0;
+
+                for(int k = 0; k < this->nRows; k++) {
+                    sum += data[(k * nCols) + i] * other->data[(k * other->nCols) + j];
+                }
+
+                result->data[(i * result->nCols) + j] = sum + adder->data[(i * result->nCols) + j];
+            }}
 
             return result;
         }
@@ -423,9 +495,6 @@ class Matrix {
         *   The number of columns in this matrix must equal the number of rows in the result matrix.
         */
         Matrix* transpose(Matrix* result) {
-            if(this == result)
-                return mTranspose();
-
             if(result->nRows != this->nCols || result->nCols != this->nRows)
                 throw std::invalid_argument("Invalid Result Matrix Size to Transpose");
             
@@ -435,22 +504,6 @@ class Matrix {
             }}
 
             return result;
-        }
-
-        /*
-        *   This function is different from the regular transpose function.
-        *   Instead of copying data, this will swap the number of rows and columns
-        *       to change the way data is accessed in the at and set fucntions.
-        *   There is a transpose flag that will be flipped as well.
-        */
-        Matrix* mTranspose() {
-            int temp = this->nRows;
-            this->nRows = this->nCols;
-            this->nCols = temp;
-
-            this->transposed = !this->transposed;
-
-            return this;
         }
 
         /*
@@ -527,6 +580,25 @@ class Matrix {
                 result += this->data[i];
 
             return result;
+        }
+
+        double greatest() {
+            double g = data[0];
+
+            for(int i = 1; i < length; i++)
+                if(data[i] > g)
+                    g = data[i];
+
+            return g;
+        }
+
+        double greatestIndex() {
+            int i = 0;
+            for(int j = 1; j < length; j++) 
+                if(data[j] > data[i])
+                    i = j;
+            
+            return i;
         }
 
         double* getData() { return data; }

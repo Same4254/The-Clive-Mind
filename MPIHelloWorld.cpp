@@ -9,28 +9,22 @@ int main(int argc, char** argv) {
     int id;
     MPI_Comm_rank(MPI_COMM_WORLD, &id);
 
+    int nodeCount;
+    MPI_Comm_size(MPI_COMM_WORLD, &nodeCount);
+
+    printf("%d\n", nodeCount);
+
+    double* data = (double*) calloc(10, sizeof(double));
+
     if(id == 0) {
-        Matrix m = Matrix(4, 4);
+        MPI_Reduce(MPI_IN_PLACE, data, 10, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
-        for(int i = 0; i < 16; i++) {
-            m.getData()[i] = i;
-        }
-
-        printf("Master Matrix\n");
-        m.print();
-
-        MPI_Send(m.getData(), m.getLength(), MPI_DOUBLE, 1, 0, MPI_COMM_WORLD);
-
+        // printf("%f\n", data[0]);
     } else {
-        double* data = (double*) calloc(16, sizeof(double));
+        data[0] = 1;
+        data[1] = 2;
 
-        Matrix m(data, 2, 2);
-        Matrix m2(&(data[4]), 2, 2);
-
-        MPI_Recv(data, 16, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-        printf("Slave\n");
-        m2.print();
+        MPI_Reduce(data, NULL, 10, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     }
 
     MPI_Finalize();
