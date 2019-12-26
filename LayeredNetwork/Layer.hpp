@@ -48,6 +48,14 @@ class Layer {
             gradientInfo = NULL;
         }
 
+        virtual ~Layer() {
+            free(parameters);
+            free(gradientInfo);
+
+            delete output;
+            delete layerGradient;
+        }
+
         virtual void initialize() {
             if(index != 0) {
                 inputMatrixCount = layers[index - 1]->outputMatrixCount;

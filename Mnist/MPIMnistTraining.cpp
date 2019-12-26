@@ -36,7 +36,11 @@ int evaluate(LayeredNetwork* network, Matrix* inputMatrix) {
 int main() {
     MPI_Init(NULL, NULL);
 
-    loadDataset();
+    if(!loadDataset()) {
+        printf("Could not load dataset!");
+        return -1;
+    }
+
     srand(6854);
 
     int id;
@@ -56,13 +60,13 @@ int main() {
     network.getNetworkInformation()->setVelocityCoefficient(0.9);
     network.getNetworkInformation()->setBatchSize(localBatchSize);
 
-    FullyConnectedLayer full1(network.getNetworkInformation(), network.getLayers(), 0, 32);
-    FullyConnectedLayer full2(network.getNetworkInformation(), network.getLayers(), 1, 32);
-    FullyConnectedLayer full3(network.getNetworkInformation(), network.getLayers(), 2, 10);
+    FullyConnectedLayer* full1 = new FullyConnectedLayer(network.getNetworkInformation(), network.getLayers(), 0, 32);
+    FullyConnectedLayer* full2 = new FullyConnectedLayer(network.getNetworkInformation(), network.getLayers(), 1, 32);
+    FullyConnectedLayer* full3 = new FullyConnectedLayer(network.getNetworkInformation(), network.getLayers(), 2, 10);
 
-    network.getLayers()[0] = &full1;
-    network.getLayers()[1] = &full2;
-    network.getLayers()[2] = &full3;
+    network.getLayers()[0] = full1;
+    network.getLayers()[1] = full2;
+    network.getLayers()[2] = full3;
 
     network.initialize();
 
@@ -123,15 +127,15 @@ int main() {
         }
     }
 
-    if(id == 0) {
-        double percent = (evaluate(&network, inputMatrix) / 100.0);
-        printf("Master Final Score: %f%%\n", percent);
-    }
+    // if(id == 0) {
+    //     double percent = (evaluate(&network, inputMatrix) / 100.0);
+    //     printf("Master Final Score: %f%%\n", percent);
+    // }
 
-    if(id == 1) {
-        double percent = (evaluate(&network, inputMatrix) / 100.0);
-        printf("Worker Final Score: %f%%\n", percent);
-    }
+    // if(id == 1) {
+    //     double percent = (evaluate(&network, inputMatrix) / 100.0);
+    //     printf("Worker Final Score: %f%%\n", percent);
+    // }
 
     MPI_Finalize();
 

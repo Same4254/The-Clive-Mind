@@ -11,6 +11,10 @@ class ReluFunction: public ActivationFunction {
             
         }
 
+        ~ReluFunction() {
+            
+        }
+
         double applyFunction(double x) {
             return std::max(0.0, x);
         }

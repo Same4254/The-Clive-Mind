@@ -5,17 +5,10 @@
 
 #endif
 
-#ifndef SIGMOID_FUNCTION_HPP
-#define SIGMOID_FUNCTION_HPP
+#ifndef ACTIVATION_FUNCTION_HPP
+#define ACTIVATION_FUNCTION_HPP
 
-#include "SigmoidFunction.hpp"
-
-#endif
-
-#ifndef RELU_FUNCTION_HPP
-#define RELU_FUNCTION_HPP
-
-#include "ReluFunction.hpp"
+#include "ActivationFunction.hpp"
 
 #endif
 
@@ -24,8 +17,12 @@ class ActivationLayer: public Layer {
         ActivationFunction* function;
 
     public:
-        ActivationLayer(Layer** networkLayers, int index, ActivationFunction* function) : Layer(networkLayers, index) { 
+        ActivationLayer(NetworkInformation* networkInformation, Layer** layers, int index, ActivationFunction* function) : Layer(networkInformation, layers, index) { 
             this->function = function;
+        }
+
+        ~ActivationLayer() {
+        
         }
 
         void initialize() { 
@@ -51,9 +48,13 @@ class ActivationLayer: public Layer {
             return output;
         }
 
-        Matrix* backpropogate(Matrix* error) { 
+        Matrix* calculateGradient(Matrix* error) { 
             for(int i = 0; i < inputMatrixCount; i++)
                 (&layerGradient[i])->elementProduct(&error[i], &layerGradient[i]);
             return layerGradient;
+        }
+
+        void update() {
+
         }
 };

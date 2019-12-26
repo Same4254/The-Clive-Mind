@@ -20,33 +20,51 @@ unsigned char trainImagesBuffer[TRAIN_IMAGE_COUNT][IMAGE_SIZE];
 double testImages[TEST_IMAGE_COUNT][IMAGE_SIZE];
 double trainImages[TRAIN_IMAGE_COUNT][IMAGE_SIZE];
 
-void loadLabels(FILE* fd, int count, unsigned char* labels) {
+bool loadLabels(FILE* fd, int count, unsigned char* labels) {
     int32_t buff[2];//magic number and label count
-    fread(buff, sizeof(int32_t), 2, fd);
 
-    fread(labels, 1, count, fd);
+    if(fread(buff, sizeof(int32_t), 2, fd) != 2)
+        return false;
+
+    if(fread(labels, 1, count, fd) != count)
+        return false;
+
+    return true;
 }
 
-void loadImages(FILE* fd, int count, unsigned char (*images)[IMAGE_SIZE]) {
+bool loadImages(FILE* fd, int count, unsigned char (*images)[IMAGE_SIZE]) {
     int32_t buff[4];//magic number, image count, image length, image width
-    fread(buff, sizeof(int32_t), 4, fd);
 
-    for(int i = 0; i < count; i++) {
-        fread(images[i], 1, IMAGE_SIZE, fd);
-    }
+    if(fread(buff, sizeof(int32_t), 4, fd) != 4)
+        return false;
+
+    for(int i = 0; i < count; i++)
+        if(fread(images[i], 1, IMAGE_SIZE, fd) != IMAGE_SIZE)
+            return false;
+
+    return true;
 }
 
-void loadDataset() {
+bool loadDataset() {
     FILE* testLabelFD = fopen("Mnist/Data/t10k-labels.idx1-ubyte", "r");
     FILE* testImageFD = fopen("Mnist/Data/t10k-images.idx3-ubyte", "r");
     FILE* trainLabelFD = fopen("Mnist/Data/train-labels.idx1-ubyte", "r");
     FILE* trainImageFD = fopen("Mnist/Data/train-images.idx3-ubyte", "r");
 
-    loadLabels(testLabelFD, TEST_LABEL_COUNT, testLabels);
-    loadImages(testImageFD, TEST_IMAGE_COUNT, testImagesBuffer);
+    if(testLabelFD == NULL || testImageFD == NULL || trainLabelFD == NULL || trainImageFD == NULL)
+        return false;
 
-    loadLabels(trainLabelFD, TRAIN_LABEL_COUNT, trainLabels);
-    loadImages(trainImageFD, TRAIN_IMAGE_COUNT, trainImagesBuffer);
+    if(!loadLabels(testLabelFD, TEST_LABEL_COUNT, testLabels))
+        return false;
+
+    if(!loadImages(testImageFD, TEST_IMAGE_COUNT, testImagesBuffer))
+        return false;
+
+    if(!loadLabels(trainLabelFD, TRAIN_LABEL_COUNT, trainLabels))
+        return false;
+
+    if(!loadImages(trainImageFD, TRAIN_IMAGE_COUNT, trainImagesBuffer))
+        return false;
 
     for(int i = 0; i < TEST_IMAGE_COUNT; i++) {
     for(int j = 0; j < 784; j++) {
@@ -62,4 +80,6 @@ void loadDataset() {
     fclose(testImageFD);
     fclose(trainImageFD);
     fclose(trainLabelFD);
+
+    return true;
 }

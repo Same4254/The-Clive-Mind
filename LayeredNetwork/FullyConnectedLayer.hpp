@@ -12,19 +12,18 @@
 
 #endif
 
-#ifndef SIGMOID_FUNCTION_HPP
-#define SIGMOID_FUNCTION_HPP
+// #ifndef SIGMOID_FUNCTION_HPP
+// #define SIGMOID_FUNCTION_HPP
 
-#include "SigmoidFunction.hpp"
+// #include "SigmoidFunction.hpp"
 
-#endif
+// #endif
 
 class FullyConnectedLayer : public Layer {
     private:
         Matrix* weights;
         Matrix* biases;
 
-        Matrix* nets;
         Matrix* weightGradient;
         Matrix* biasGradient;
 
@@ -33,13 +32,29 @@ class FullyConnectedLayer : public Layer {
         Updater* weightUpdater;
         Updater* biasUpdater;
 
-        ActivationFunction* activationFunction;
-
     public:
         FullyConnectedLayer(NetworkInformation* networkInformation, Layer** layers, int index, int numNodes) : Layer(networkInformation, layers, index) {
             outputMatrixCount = 1;
             outputNCols = 1;
             outputNRows = numNodes;
+        }
+
+        ~FullyConnectedLayer() {
+            //Parameter and Gradients pointers are cleared by the Layer class. Just de-refrence the
+            weights->setData(NULL);
+            biases->setData(NULL);
+
+            delete weights;
+            delete biases;
+
+            weightGradient->setData(NULL);
+            biasGradient->setData(NULL);
+
+            delete weightGradient;
+            delete biasGradient;
+
+            delete weightUpdater;
+            delete biasUpdater;
         }
 
         void initialize() {
@@ -57,41 +72,23 @@ class FullyConnectedLayer : public Layer {
             weightUpdater = new MomentumUpdater(networkInformation, outputNRows, inputNRows);
             biasUpdater = new MomentumUpdater(networkInformation, outputNRows, 1);
 
-            activationFunction = new SigmoidFunction();
-
             biases = new Matrix(&(parameters[lenWeights]), outputNRows, 1, -1.0, 1.0);
             biasGradient = new Matrix(&(gradientInfo[lenWeights]), outputNRows, 1, -1.0, 1.0);
 
             output = new Matrix(outputNRows, 1);
-            nets = new Matrix(outputNRows, 1);
-
             layerGradient = new Matrix(inputNRows, 1);
         }
 
         Matrix* feedForward(Matrix* input) {
             this->input = input;
 
-            weights->multiply(input, nets);
-            nets->mAdd(biases);
-            activationFunction->applyFunction(nets, output);
+            weights->multiply(input, output);
+            output->mAdd(biases);
 
             return output;
         }
 
         Matrix* calculateGradient(Matrix* error) {
-            activationFunction->applyDerivativeFunction(nets);
-            error->elementProduct(nets, error);
-
-            // //Layer Gradient Calculation
-            // weights->mTranspose();
-            // weights->multiply(error, layerGradient);
-            // weights->mTranspose();
-
-            // //Weight Gradient Calculation
-            // input->mTranspose();
-            // error->multiply(input, weightGradient);
-            // input->mTranspose();
-
             if(index != 0)
                 weights->multiplyInputTransposed(error, layerGradient);
 

@@ -11,6 +11,10 @@ class NetworkInformation {
             batchIndex = 0;
         }
 
+        ~NetworkInformation() {
+            
+        }
+
         double getLearningRate() { return learningRate; }
         void setLearningRate(double learningRate) { this->learningRate = learningRate; }
 

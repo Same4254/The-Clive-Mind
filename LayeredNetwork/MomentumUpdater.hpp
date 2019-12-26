@@ -14,6 +14,10 @@ class MomentumUpdater : public Updater {
             this->velocity = new Matrix(parameterRows, parameterCols);
         }
 
+        ~MomentumUpdater() {
+            delete velocity;
+        }
+
         void update(Matrix* parameter, Matrix* gradient) {
             velocity->mScale(networkInformation->getVelocityCoefficient());
             velocity->mSubtract(gradient);

@@ -2,27 +2,6 @@
 #include <iostream>
 #include <cmath>
 
-/**
- *  TODO:
- *      Inline modifier may be beneficial for the set and at methods....
- *      Flipping the matrix is something that should be fully implemented
- * 
- *  The goal of the matrix class is to abstract away the matrix operations.
- *  The Matrix class also allows for preallocated matricies to take in the result of another matrix operation.
- *      This is beneficial to not create matricies on the fly over and over again and fill up memory.
- *      Every operation will have a place in memory if the result cannot be put into a matrix that called it.
- * 
- *  In addition, it provides 0 padding at no extra cost (and it can be changed).
- *      - Assume zero padded values will always be zero (cannot be changed)
- *      - Do NOT allocate memory for all of the zeros
- *      - From the front end, it should appear as though the matrix contains these zeros.
- *          Getting (0, 0) on a 1 padded matrix should always return 0.
- *      - Check if the asked coordinate is inside the padded area.
- *          If in a padded area, return 0;
- *          Otherwise translate the coordinate to get the value inside the actual data.
- *          
- *          (1, 1) in a 1 padded matrix is (0, 0) in the actual data.
- */
 class Matrix {
     private:
         double* data;

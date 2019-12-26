@@ -1,5 +1,5 @@
 // #include "ConvolutionalLayer.hpp"
-// #include "ActivationLayer.hpp"
+#include "ActivationLayer.hpp"
 // #include "PoolingLayer.hpp"
 #include "FullyConnectedLayer.hpp"
 // #include "FlatteningLayer.hpp"
@@ -46,6 +46,17 @@ class LayeredNetwork {
                 new (&error[i]) Matrix(outputNRows, outputNCols);
 
             networkInformation = new NetworkInformation();
+        }
+
+        ~LayeredNetwork() {
+            for(int i = 0; i < amountOfLayers; i++)
+                delete layers[i];
+            delete[] layers;
+
+            for(int i = 0; i < outputMatrixCount; i++)
+                delete &error[i];
+
+            delete networkInformation;
         }
 
         void initialize() { 
