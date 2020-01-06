@@ -12,6 +12,7 @@
 
 #endif
 
+//Sources: https://ruder.io/optimizing-gradient-descent/index.html#adam
 class Updater {
     protected:
         NetworkInformation* networkInformation;

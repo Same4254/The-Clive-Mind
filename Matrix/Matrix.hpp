@@ -131,7 +131,6 @@ class Matrix {
         *   This will check if the row and column indecies are within the bounds of the matrix.
         *   In addition, this will take into account whether this matrix is transposed, if it is
         *       this will simply change the way the 1D index is calculated and return the value.
-        *   If the value is within the bounds of the padding, a 0.0 will be returned.
         */
         double at(int row, int col) {
             if(row < 0)
@@ -185,7 +184,7 @@ class Matrix {
             double sum = 0.0;
 
             for(int i = 0; i < length; i++) {
-                sum += pow(data[i], 2.0);
+                sum += std::pow(data[i], 2.0);
             }
 
             return sqrt(sum);
@@ -218,6 +217,23 @@ class Matrix {
         }
 
         /*
+        *   Adds the adder value to all of the elements in the matrix
+        */
+        Matrix* add(double adder, Matrix* result) {
+            if(result->nCols != this->nCols || result->nRows != this->nRows)
+                throw std::invalid_argument("Unequal Matrix Size When Adding");
+
+            for(int i = 0; i < length; i++)
+                result->data[i] = data[i] + adder;
+
+            return result;
+        }
+
+        Matrix* mAdd(double adder) {
+            return add(adder, this);
+        }
+
+        /*
         *   Same as the addition function except this is subtraction.
         * 
         *   Returns the result matrix.
@@ -242,6 +258,16 @@ class Matrix {
             return subtract(other, this);
         }
 
+        Matrix* pow(double p, Matrix* result) {
+            if(result->nCols != this->nCols || result->nRows != this->nRows)
+                throw std::invalid_argument("Unequal Matrix Size When Powing");
+
+            for(int i = 0; i < length; i++)
+                result->data[i] = std::pow(data[i], p);
+
+            return result;
+        }
+
         /*
         *   This will multiply all of the elements of the given matricies and store the result in the result matrix.
         *      The dimensions of all matricies involved must have the same dimensions.
@@ -251,10 +277,31 @@ class Matrix {
         Matrix* elementProduct(Matrix* other, Matrix* result) {
             if(other->nCols != this->nCols || result->nCols != this->nCols || 
                other->nRows != this->nRows || result->nRows != this->nRows)
-                throw std::invalid_argument("Unequal Matrix Size When Multiplying");
+                throw std::invalid_argument("Unequal Matrix Size When Element Producting");
 
             for(int i = 0; i < length; i++)
                 result->data[i] = data[i] * other->data[i];
+
+            return result;
+        }
+
+        Matrix* mElementProduct(Matrix* other) {
+            elementProduct(other, this);
+        }
+
+        /*
+        *   This will divide all of the elements of the given matricies and store the result in the result matrix.
+        *      The dimensions of all matricies involved must have the same dimensions.
+        * 
+        *   Returns the result of dividing the elements of the caller matrix by the elements of the given matrix. Stored in result matrix
+        */
+        Matrix* elementDivision(Matrix* other, Matrix* result) {
+            if(other->nCols != this->nCols || result->nCols != this->nCols || 
+               other->nRows != this->nRows || result->nRows != this->nRows)
+                throw std::invalid_argument("Unequal Matrix Size When Dividing");
+
+            for(int i = 0; i < length; i++)
+                result->data[i] = data[i] / other->data[i];
 
             return result;
         }

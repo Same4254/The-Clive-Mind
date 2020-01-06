@@ -5,14 +5,15 @@
 using json = nlohmann::json;
 
 int main() {
-    json j;
-    j["pi"] = 3.1415;
-    j["hello"] = "bye";
+    // json j;
 
-    std::ofstream outputStream("Test.json");
-    outputStream << std::setw(4) << j;
+    // json::array()
 
-    double a = 5;
+    // j["pi"] = 3.1415;
+    // j["hello"] = "bye";
 
-    outputStream << a;
+    // std::ofstream outputStream("Test.json");
+    // outputStream << std::setw(4) << j;
+
+    // outputStream << a;
 }

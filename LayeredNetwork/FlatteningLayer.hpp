@@ -7,7 +7,7 @@
 
 class FlatteningLayer : public Layer {
     public:
-        FlatteningLayer(Layer** layers, int index) : Layer(layers, index) {
+        FlatteningLayer(NetworkInformation* networkInformation, Layer** layers, int index) : Layer(networkInformation, layers, index) {
 
         }
 
@@ -40,7 +40,7 @@ class FlatteningLayer : public Layer {
             return output;
         }
 
-        Matrix* backpropogate(Matrix* error) {
+        Matrix* calculateGradient(Matrix* error) {
             int index = 0;
             for(int matrix = 0; matrix < inputMatrixCount; matrix++) {
                 for(int i = 0; i < inputNRows * inputNCols; i++) {
@@ -51,5 +51,9 @@ class FlatteningLayer : public Layer {
             }
 
             return layerGradient;
+        }
+        
+        void update() {
+            
         }
 };

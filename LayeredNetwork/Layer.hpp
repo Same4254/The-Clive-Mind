@@ -25,11 +25,19 @@ class Layer {
         int parameterLength;
         double* parameters;
 
-        int gradientLength;
-        double* gradientInfo;
+        int parameterGradientInfoLength;
+        double* parameterGradientInfo;
 
+        int layerGradientInfoLength;
+        double* layerGradientInfo;
+
+        int outputInfoLength;
+        double* outputInfo;
+
+        Matrix* input;
         Matrix* output;
         Matrix* layerGradient;
+        Matrix* error;
 
         NetworkInformation* networkInformation;
         Layer** layers;
@@ -44,13 +52,19 @@ class Layer {
             parameterLength = 0;
             parameters = NULL;
 
-            gradientLength = 0;
-            gradientInfo = NULL;
+            parameterGradientInfoLength = 0;
+            parameterGradientInfo = NULL;
+
+            outputInfoLength = 0;
+            outputInfo = NULL;
+
+            layerGradientInfoLength = 0;
+            layerGradientInfo = NULL;
         }
 
         virtual ~Layer() {
             free(parameters);
-            free(gradientInfo);
+            free(parameterGradientInfo);
 
             delete output;
             delete layerGradient;
@@ -64,15 +78,20 @@ class Layer {
             }
         }
 
-        virtual Matrix* feedForward(Matrix* input) = 0;
-        virtual Matrix* calculateGradient(Matrix* error) = 0;
+        virtual void postInitialize() = 0;
+        virtual Matrix* feedForward() = 0;
+        virtual Matrix* calculateGradient() = 0;
         virtual void update() = 0;
 
         int getParameterLength() { return parameterLength; }
         double* getParameters() { return parameters; }
 
-        int getGradientLength() { return gradientLength; }
-        double* getGradientInfo() { return gradientInfo; }
+        int getParameterGradientInfoLength() { return parameterGradientInfoLength; }
+        double* getParameterGradientInfo() { return parameterGradientInfo; }
+
+        Matrix* getLayerGradient() { return layerGradient; }
+        int getLayerGradientInfoLength() { return layerGradientInfoLength; }
+        double* getLayerGradientInfo() { return layerGradientInfo; }
 
         int getInputMatrixCount() { return inputMatrixCount; }
         int getInputNRows() { return inputNRows; }
@@ -82,6 +101,7 @@ class Layer {
         int getOutputNRows() { return outputNRows; }
         int getOutputNCols() { return outputNCols; }
 
+        void setInputMatrix(Matrix* input) { this->input = input; }
         void setInputMatrixCount(int inputMatrixCount) { this->inputMatrixCount = inputMatrixCount; }
         void setInputNRows(int inputNRows) { this->inputNRows = inputNRows; }
         void setInputNCols(int inputNCols) { this->inputNCols = inputNCols; }
@@ -90,6 +110,10 @@ class Layer {
         void setOutputNRows(int outputNRows) { this->outputNRows = outputNRows; }
         void setOutputNCols(int outputNCols) { this->outputNCols = outputNCols; }
 
+        Matrix* getError() { return error; }
+        void setError(Matrix* error) { this->error = error; }
+
         Matrix* getOutput() { return output; }
-        Matrix* getGradient() { return layerGradient; }
+        double* getOutputInfo() { return outputInfo; }
+        int getOutputInfoLength() { return outputInfoLength; }
 };

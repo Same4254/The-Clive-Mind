@@ -19,6 +19,7 @@ class MomentumUpdater : public Updater {
         }
 
         void update(Matrix* parameter, Matrix* gradient) {
+            gradient->mScale(networkInformation->getLearningRate());
             velocity->mScale(networkInformation->getVelocityCoefficient());
             velocity->mSubtract(gradient);
             parameter->mAdd(velocity);

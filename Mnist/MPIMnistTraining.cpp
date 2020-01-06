@@ -18,16 +18,12 @@ int evaluate(LayeredNetwork* network, Matrix* inputMatrix) {
     int correct = 0;
 
     for(int i = 0; i < TEST_IMAGE_COUNT; i++) {
-    // for(int i = 0; i < 2; i++) {
         inputMatrix->setData(testImages[i]);
 
         Matrix* output = network->feedForward(inputMatrix);
 
-        // printf("%d\n", output->greatest());   
-
-        if(output->greatestIndex() == testLabels[i]) {
+        if(output->greatestIndex() == testLabels[i])
             correct++;
-        }
     }
 
     return correct;
@@ -54,23 +50,41 @@ int main() {
     int localBatchSize = 10;
     int globalBatchsize = localBatchSize * workerCount;
 
-    LayeredNetwork network(3, 1, 784, 1, 1, 10, 1);
+    // LayeredNetwork network(3, 1, 784, 1, 1, 10, 1);
 
-    network.getNetworkInformation()->setLearningRate(0.01);
-    network.getNetworkInformation()->setVelocityCoefficient(0.9);
-    network.getNetworkInformation()->setBatchSize(localBatchSize);
+    // network.getNetworkInformation()->setLearningRate(0.01);
+    // network.getNetworkInformation()->setVelocityCoefficient(0.9);
+    // network.getNetworkInformation()->setBatchSize(localBatchSize);
 
-    FullyConnectedLayer* full1 = new FullyConnectedLayer(network.getNetworkInformation(), network.getLayers(), 0, 32);
-    FullyConnectedLayer* full2 = new FullyConnectedLayer(network.getNetworkInformation(), network.getLayers(), 1, 32);
-    FullyConnectedLayer* full3 = new FullyConnectedLayer(network.getNetworkInformation(), network.getLayers(), 2, 10);
+    // FullyConnectedLayer* full1 = new FullyConnectedLayer(network.getNetworkInformation(), network.getLayers(), 0, 32);
+    // FullyConnectedLayer* full2 = new FullyConnectedLayer(network.getNetworkInformation(), network.getLayers(), 1, 32);
+    // FullyConnectedLayer* full3 = new FullyConnectedLayer(network.getNetworkInformation(), network.getLayers(), 2, 10);
 
-    network.getLayers()[0] = full1;
-    network.getLayers()[1] = full2;
-    network.getLayers()[2] = full3;
+    // network.getLayers()[0] = full1;
+    // network.getLayers()[1] = full2;
+    // network.getLayers()[2] = full3;
+
+    LayeredNetwork network(7, 1, 28, 28, 1, 10, 1);
+
+    ConvolutionalLayer* conv = new ConvolutionalLayer(network.getNetworkInformation(), network.getLayers(), 0, 1, 4, 1);
+    ActivationLayer* act = new ActivationLayer(network.getNetworkInformation(), network.getLayers(), 1, new SigmoidFunction());
+    FlatteningLayer* flat = new FlatteningLayer(network.getNetworkInformation(), network.getLayers(), 2);
+    FullyConnectedLayer* full = new FullyConnectedLayer(network.getNetworkInformation(), network.getLayers(), 3, 30);
+    ActivationLayer* act2 = new ActivationLayer(network.getNetworkInformation(), network.getLayers(), 4, new SigmoidFunction());
+    FullyConnectedLayer* full2 = new FullyConnectedLayer(network.getNetworkInformation(), network.getLayers(), 5, 10);
+    ActivationLayer* act3 = new ActivationLayer(network.getNetworkInformation(), network.getLayers(), 6, new SigmoidFunction());
+
+    network.getLayers()[0] = conv;
+    network.getLayers()[1] = act;
+    network.getLayers()[2] = flat;
+    network.getLayers()[3] = full;
+    network.getLayers()[4] = act2;
+    network.getLayers()[5] = full2;
+    network.getLayers()[6] = act3;
 
     network.initialize();
 
-    Matrix* inputMatrix = new Matrix(NULL, 784, 1);
+    Matrix* inputMatrix = new Matrix(NULL, 28, 28);
 
     for(int i = 0; i < network.getAmountOfLayers(); i++) {
         MPI_Bcast(network.getLayers()[i]->getParameters(), network.getLayers()[i]->getParameterLength(), MPI_DOUBLE, 0, MPI_COMM_WORLD);

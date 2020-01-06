@@ -12,53 +12,30 @@
 
 #endif
 
-#ifndef RELU_FUNCTION_HPP
-#define RELU_FUNCTION_HPP
-
-#include "ReluFunction.hpp"
-
-#endif
-
-#ifndef SIGMOID_FUNCTION_HPP
-#define SIGMOID_FUNCTION_HPP
-
-#include "SigmoidFunction.hpp"
-
-#endif
-
 class ConvolutionalLayer : public Layer {
     private:
         Matrix** weights;
-        Matrix* biases;
+        Matrix** weightGradient;
+        Updater** weightUpdater;
 
-        Matrix* nets;
-        Matrix* convolutionOutput;
-
-        Matrix* weightGradient;
+        Matrix* bias;
         Matrix* biasGradient;
-
-        Matrix* input;
-
-        Matrix* errorDialatedPadded;
-        Matrix* layerGradientConvolutionOutput;
-
-        MomentumUpdater** weightUpdater;
         Updater* biasUpdater;
 
-        ActivationFunction* activationFunction;
-
-        double learningRate = 0.01;
+        Matrix* errorDialatedPadded;
 
         int kernalSize;
         int stride;
 
-        Matrix* bias;
-
         Matrix* convolute(Matrix* input, Matrix* filter, Matrix* output, int s, bool flipped) {
-            return convolute(input, filter, 0, output, s, flipped);
+            return convolute(input, filter, 0, output, s, flipped, NULL);
         }
 
-        Matrix* convolute(Matrix* input, Matrix* filter, double bias, Matrix* output, int s, bool flipped) {
+        Matrix* convolute(Matrix* input, Matrix* filter, Matrix* output, int s, bool flipped, Matrix* adder) {
+            return convolute(input, filter, 0, output, s, flipped, adder);
+        }
+
+        Matrix* convolute(Matrix* input, Matrix* filter, double bias, Matrix* output, int s, bool flipped, Matrix* adder) {
             double outputRows = ((input->getNRows() - filter->getNRows()) / ((double) s)) + 1.0;
             double outputCols = ((input->getNCols() - filter->getNRows()) / ((double) s)) + 1.0;
 
@@ -78,39 +55,46 @@ class ConvolutionalLayer : public Layer {
 
                 sum += bias;
 
-                output->set(row / s, col / s, sum);
+                if(adder == NULL)
+                    output->set(row / s, col / s, sum);
+                else
+                    output->set(row / s, col / s, sum + adder->at(row / s, col / s));
             }}
 
             return output;
         }
 
     public:
-        ConvolutionalLayer(Layer** networkLayers, int index, int kernalCount, int kernalSize, int stride) : Layer(networkLayers, index) {
+        ConvolutionalLayer(NetworkInformation* networkInformation, Layer** networkLayers, int index, int kernalCount, int kernalSize, int stride) : Layer(networkInformation, networkLayers, index) {
             this->kernalSize = kernalSize;
             this->stride = stride;
             outputMatrixCount = kernalCount;
         }
 
         void initialize() {
+            parameterGradientInfoLength = parameterLength = (kernalSize * kernalSize * outputMatrixCount * inputMatrixCount) + outputMatrixCount;
+
+            parameters = (double*) calloc(parameterLength, sizeof(double));
+            parameterGradientInfo = (double*) calloc(parameterGradientInfoLength, sizeof(double));
+
             weights = new Matrix*[outputMatrixCount];
-            weightUpdater = new MomentumUpdater*[outputMatrixCount];
+            weightGradient = new Matrix*[outputMatrixCount];
+            weightUpdater = new Updater*[outputMatrixCount];
             for(int i = 0; i < outputMatrixCount; i++) {
                 weights[i] = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
+                weightGradient[i] = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
                 weightUpdater[i] = (MomentumUpdater*) malloc(sizeof(MomentumUpdater) * inputMatrixCount);
 
                 for(int j = 0; j < inputMatrixCount; j++) {
-                    new (&(weights[i][j])) Matrix(kernalSize, kernalSize, -1.0, 1.0);
-                    new (&(weightUpdater[i][j])) MomentumUpdater(kernalSize, kernalSize);
+                    new (&(weights[i][j])) Matrix(&(parameters[((i * inputMatrixCount) + j) * kernalSize * kernalSize]), kernalSize, kernalSize, -1.0, 1.0);
+                    new (&(weightGradient[i][j])) Matrix(&(parameterGradientInfo[((i * inputMatrixCount) + j) * kernalSize * kernalSize]), kernalSize, kernalSize);
+                    new (&(weightUpdater[i][j])) MomentumUpdater(networkInformation, kernalSize, kernalSize);
                 }
             }
 
-            bias = new Matrix(1, outputMatrixCount, -1.0, 1.0);
-            biasGradient = new Matrix(1, outputMatrixCount);
-            weightGradient = new Matrix(kernalSize, kernalSize);
-
-            biasUpdater = new MomentumUpdater(1, outputMatrixCount);
-
-            activationFunction = new SigmoidFunction();
+            bias = new Matrix(&(parameters[parameterLength - outputMatrixCount]), 1, outputMatrixCount, -1.0, 1.0);
+            biasGradient = new Matrix(&(parameterGradientInfo[parameterLength - outputMatrixCount]), 1, outputMatrixCount);
+            biasUpdater = new MomentumUpdater(networkInformation, 1, outputMatrixCount);
 
             double outputRows = ((inputNRows - kernalSize) / ((double) stride)) + 1.0;
             double outputCols = ((inputNCols - kernalSize) / ((double) stride)) + 1.0;
@@ -121,78 +105,92 @@ class ConvolutionalLayer : public Layer {
             outputNRows = (int) outputRows;
             outputNCols = (int) outputCols;
 
-            nets = (Matrix*) malloc(sizeof(Matrix) * outputMatrixCount);
+            outputInfoLength = outputNRows * outputNCols * outputMatrixCount;
+            outputInfo = (double*) calloc(outputInfoLength, sizeof(double));
+
             output = (Matrix*) malloc(sizeof(Matrix) * outputMatrixCount);
-
-            for(int i = 0; i < outputMatrixCount; i++) {
-                new (&nets[i]) Matrix(outputNRows, outputNCols);
-                new (&output[i]) Matrix(outputNRows, outputNCols);
-            }
-
-            convolutionOutput = new Matrix(outputNRows, outputNCols);
+            for(int i = 0; i < outputMatrixCount; i++)
+                new (&output[i]) Matrix(&outputInfo[outputNRows * outputNCols * i], outputNRows, outputNCols);
 
             errorDialatedPadded = new Matrix(((outputNRows - 1) * (stride - 1)) + outputNRows + (2 * (kernalSize - 1)), 
                                              ((outputNCols - 1) * (stride - 1)) + outputNCols + (2 * (kernalSize - 1)));
 
-            layerGradientConvolutionOutput = new Matrix(inputNRows, inputNCols);
+            if(index != 0) {
+                input = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
 
-            layerGradient = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
-            for(int i = 0; i < inputMatrixCount; i++) {
-                new (&layerGradient[i]) Matrix(inputNRows, inputNCols);
+                for(int i = 0; i < inputMatrixCount; i++) {
+                    new (&input[i]) Matrix(&(layers[index - 1]->getOutputInfo()[inputNCols * inputNRows * i]), inputNRows, inputNCols);
+                }
+
+                layerGradient = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
+                layerGradientInfoLength = layers[index - 1]->getOutputInfoLength();
+                layerGradientInfo = (double*) calloc(layerGradientInfoLength, sizeof(double));
+
+                for(int i = 0; i < inputMatrixCount; i++) {
+                    new (&layerGradient[i]) Matrix(&layerGradientInfo[inputNRows * inputNCols * i], inputNRows, inputNCols);
+                }
             }
         }
 
-        Matrix* feedForward(Matrix* input) {
-            this->input = input;
+        void postInitialize() {
+            if(index != networkInformation->getAmountOfLayers() - 1) {
+                error = (Matrix*) malloc(sizeof(Matrix) * outputMatrixCount);
+                for(int i = 0; i < outputMatrixCount; i++)
+                    new (&error[i]) Matrix(&(layers[index + 1]->getLayerGradientInfo()[outputNRows * outputNCols * i]), outputNRows, outputNCols);
+            }
+        }
 
-            // weights->multiply(input, nets);
+        Matrix* feedForward() {
             for(int i = 0; i < outputMatrixCount; i++) {
                 for(int inputMatrixIndex = 0; inputMatrixIndex < inputMatrixCount; inputMatrixIndex++) {
-                    convolute(&input[inputMatrixIndex], &weights[i][inputMatrixIndex], bias->at(0, i), convolutionOutput, stride, false);
-
-                    if(inputMatrixIndex == 0)//instead of clearing the matrix from the last forward operation, just copy the data
-                        (&nets[i])->copy(convolutionOutput);    
+                    if(inputMatrixIndex == 0)
+                        convolute(&input[inputMatrixIndex], &weights[i][inputMatrixIndex], bias->at(0, i), &output[i], stride, false, NULL);
                     else
-                        (&nets[i])->mAdd(convolutionOutput);
+                        convolute(&input[inputMatrixIndex], &weights[i][inputMatrixIndex], bias->at(0, i), &output[i], stride, false, &output[i]);
                 }
-
-                activationFunction->applyFunction(&nets[i], &output[i]);
             }
 
             return output;
         }
 
-        Matrix* backpropogate(Matrix* error) {
-            activationFunction->applyDerivativeFunction(nets);
-            error->elementProduct(nets, error);
+        Matrix* calculateGradient() {
+            if(index != 0) {
+                //Layer Gradient Calculation
+                for(int i = 0; i < inputMatrixCount; i++) {
+                    for(int j = 0; j < outputMatrixCount; j++) {
+                        (&error[j])->dialatePad(errorDialatedPadded, stride, kernalSize - 1);
+
+                        if(i == 0 && j == 0)
+                            convolute(errorDialatedPadded, &weights[j][i], (&layerGradient[i]), 1, true);
+                        else
+                            convolute(errorDialatedPadded, &weights[j][i], (&layerGradient[i]), 1, true, (&layerGradient[i]));
+                    }
+                }
+            }
 
             //Weight Gradient Calculation
             for(int i = 0; i < outputMatrixCount; i++) {
                 for(int j = 0; j < inputMatrixCount; j++) {
-                    convolute(&input[j], &error[i], weightGradient, (int) (input->getNRows() - error->getNRows()) / (kernalSize - 1), false);
-
-                    //Parameter Update
-                    weightGradient->mScale(learningRate);
-                    (&(weightUpdater[i][j]))->update(&(weights[i][j]), weightGradient);
+                    if(networkInformation->getBatchIndex() == 0)
+                        convolute(&input[j], &error[i], &(weightGradient[i][j]), (int) (input->getNRows() - error->getNRows()) / (kernalSize - 1), false);
+                    else
+                        convolute(&input[j], &error[i], &(weightGradient[i][j]), (int) (input->getNRows() - error->getNRows()) / (kernalSize - 1), false, &(weightGradient[i][j]));
                 }
 
-                biasGradient->getData()[i] = error->sumElements() * learningRate;
-            }
-
-            biasUpdater->update(bias, biasGradient);
-
-            //Layer Gradient Calculation
-            for(int i = 0; i < inputMatrixCount; i++) {
-                (&layerGradient[i])->clear();
-                for(int j = 0; j < outputMatrixCount; j++) {
-                    (&error[j])->dialatePad(errorDialatedPadded, stride, kernalSize - 1);
-
-                    convolute(errorDialatedPadded, &weights[j][i], layerGradientConvolutionOutput, 1, true);
-
-                    (&layerGradient[i])->mAdd(layerGradientConvolutionOutput);
-                }
+                if(networkInformation->getBatchIndex() == 0)
+                    biasGradient->getData()[i] = (&error[i])->sumElements();
+                else
+                    biasGradient->getData()[i] += (&error[i])->sumElements();
             }
 
             return layerGradient;
+        }
+
+        void update() {
+            for(int i = 0; i < outputMatrixCount; i++)
+            for(int j = 0; j < inputMatrixCount; j++)
+                (&weightUpdater[i][j])->update(&weights[i][j], &weightGradient[i][j]);
+
+            biasUpdater->update(bias, biasGradient);
         }
 };

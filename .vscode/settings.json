@@ -69,6 +69,11 @@
         "utility": "cpp",
         "bit": "cpp",
         "*.tcc": "cpp",
-        "memory_resource": "cpp"
+        "memory_resource": "cpp",
+        "forward_list": "cpp",
+        "map": "cpp",
+        "iomanip": "cpp",
+        "cinttypes": "cpp",
+        "valarray": "cpp"
     }
 }

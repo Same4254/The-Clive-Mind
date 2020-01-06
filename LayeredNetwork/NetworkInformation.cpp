@@ -2,9 +2,12 @@ class NetworkInformation {
     private:
         double learningRate, velocityCoefficient;
         int batchSize, batchIndex;
+        int amountOfLayers;
 
     public:
-        NetworkInformation() {
+        NetworkInformation(int amountOfLayers) {
+            this->amountOfLayers = amountOfLayers;
+
             learningRate = 0.0;
             velocityCoefficient = 0.0;
             batchSize = 1;
@@ -14,6 +17,8 @@ class NetworkInformation {
         ~NetworkInformation() {
             
         }
+
+        int getAmountOfLayers() { return amountOfLayers; }
 
         double getLearningRate() { return learningRate; }
         void setLearningRate(double learningRate) { this->learningRate = learningRate; }

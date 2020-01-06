@@ -12,6 +12,20 @@
 
 #endif
 
+#ifndef RMS_UPDATER_HPP
+#define RMS_UPDATER_HPP
+
+#include "RMSUpdater.hpp"
+
+#endif
+
+#ifndef ADAM_UPDATER_HPP
+#define ADAM_UPDATER_HPP
+
+#include "AdamUpdater.hpp"
+
+#endif
+
 // #ifndef SIGMOID_FUNCTION_HPP
 // #define SIGMOID_FUNCTION_HPP
 
@@ -26,8 +40,6 @@ class FullyConnectedLayer : public Layer {
 
         Matrix* weightGradient;
         Matrix* biasGradient;
-
-        Matrix* input;
 
         Updater* weightUpdater;
         Updater* biasUpdater;
@@ -58,48 +70,66 @@ class FullyConnectedLayer : public Layer {
         }
 
         void initialize() {
-            int lenWeights = (outputNRows * inputNRows);
+            int lenWeights = (outputNRows * inputNRows * inputNCols);
             parameterLength = lenWeights + outputNRows;
-            gradientLength = lenWeights + outputNRows;
+            parameterGradientInfoLength = lenWeights + outputNRows;
 
             //allocate contiguous memory for weights, biases, and gradients
             parameters = (double*) calloc(parameterLength, sizeof(double));
-            gradientInfo = (double*) calloc(gradientLength, sizeof(double));
+            parameterGradientInfo = (double*) calloc(parameterGradientInfoLength, sizeof(double));
 
-            weights = new Matrix(&(parameters[0]), outputNRows, inputNRows, -1.0, 1.0);
-            weightGradient = new Matrix(&(gradientInfo[0]), outputNRows, inputNRows);
+            weights = new Matrix(parameters, outputNRows, inputNRows * inputNCols, -1.0, 1.0);
+            weightGradient = new Matrix(parameterGradientInfo, outputNRows, inputNRows * inputNCols);
 
-            weightUpdater = new MomentumUpdater(networkInformation, outputNRows, inputNRows);
+            weightUpdater = new MomentumUpdater(networkInformation, outputNRows, inputNRows * inputNCols);
             biasUpdater = new MomentumUpdater(networkInformation, outputNRows, 1);
 
-            biases = new Matrix(&(parameters[lenWeights]), outputNRows, 1, -1.0, 1.0);
-            biasGradient = new Matrix(&(gradientInfo[lenWeights]), outputNRows, 1, -1.0, 1.0);
+            // weightUpdater = new RMSUpdater(networkInformation, outputNRows, inputNRows);
+            // biasUpdater = new RMSUpdater(networkInformation, outputNRows, 1);
 
-            output = new Matrix(outputNRows, 1);
-            layerGradient = new Matrix(inputNRows, 1);
+            // weightUpdater = new AdamUpdater(networkInformation, outputNRows, inputNRows);
+            // biasUpdater = new AdamUpdater(networkInformation, outputNRows, 1);
+
+            biases = new Matrix(&(parameters[lenWeights]), outputNRows, 1, -1.0, 1.0);
+            biasGradient = new Matrix(&(parameterGradientInfo[lenWeights]), outputNRows, 1, -1.0, 1.0);
+
+            outputInfoLength = outputNRows;
+            outputInfo = (double*) calloc(outputInfoLength, sizeof(double));
+
+            output = new Matrix(outputInfo, outputInfoLength, 1);
+
+            if(index != 0) {
+                input = new Matrix(layers[index - 1]->getOutputInfo(), inputNRows * inputNCols, 1);
+
+                layerGradientInfoLength = layers[index - 1]->getOutputInfoLength();
+                layerGradientInfo = (double*) calloc(layerGradientInfoLength, sizeof(double));
+
+                layerGradient = new Matrix(layerGradientInfo, inputNRows * inputNCols, 1);
+            }
         }
 
-        Matrix* feedForward(Matrix* input) {
-            this->input = input;
+        void postInitialize() {
+            if(index != networkInformation->getAmountOfLayers() - 1)
+                error = new Matrix(layers[index + 1]->getLayerGradientInfo(), outputNRows, 1);
+        }
 
+        Matrix* feedForward() {
             weights->multiply(input, output);
             output->mAdd(biases);
 
             return output;
         }
 
-        Matrix* calculateGradient(Matrix* error) {
+        Matrix* calculateGradient() {
             if(index != 0)
                 weights->multiplyInputTransposed(error, layerGradient);
 
-            if(networkInformation->getBatchIndex() == 0)
+            if(networkInformation->getBatchIndex() == 0) {
                 error->multiplyOtherTransposed(input, weightGradient);
-            else
+                biasGradient->copy(error);
+            } else {
                 error->multiplyOtherTransposedAdded(input, weightGradient, weightGradient);
-
-            if(networkInformation->getBatchIndex() == networkInformation->getBatchSize() - 1) {
-                weightGradient->mScale(networkInformation->getLearningRate());
-                error->scale(networkInformation->getLearningRate(), biasGradient);
+                biasGradient->mAdd(error);
             }
 
             return layerGradient;
