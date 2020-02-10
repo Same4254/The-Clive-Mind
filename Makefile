@@ -13,6 +13,10 @@ all: $(OBJECTS)
 mnist: $(OBJECTS)
 	$(CC) $(CPPFLAGS) Experiments/Mnist/mnistTraining.cpp -o mnist-test $(patsubst %.cpp, build/%.o, $(notdir $(SOURCES)))
 
+.PHONY: test
+test: $(OBJECTS)
+	$(CC) $(CPPFLAGS) Tests/MatrixTest.cpp -o matrix-test $(patsubst %.cpp, build/%.o, $(notdir $(SOURCES)))
+
 .PHONY: clean
 clean:
 	rm build/*

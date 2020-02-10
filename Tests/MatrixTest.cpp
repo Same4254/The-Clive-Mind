@@ -6,30 +6,14 @@
 
 using namespace std;
 
-double add(double x) {
-    return x + 1;
-}
-
 int main() {
-    Matrix m1(11, 11);
-    // for(int i = 0; i < m1.getLength(); i++) {
-    //     m1.getData()[i] = i;
-    // }
+    Matrix m(100, 100, -1, 1);
+    Matrix m2(100, 100, -1, 1);
+    Matrix m3(100, 100);
 
-    Matrix m2(4, 4);
-    for(int i = 0; i < m2.getLength(); i++) {
-        m2.getData()[i] = i;
+    for(int i = 0; i < 1000; i++) {
+        m.multiply(&m2, &m3);
     }
 
-    m1.print();
-
-    printf("\n");
-
-    m2.print();
-
-    printf("\n");
-
-    m2.dialatePad(&m1, 2, 2);
-
-    m1.print();
+    m3.print();
 }
