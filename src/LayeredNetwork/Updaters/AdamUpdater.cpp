@@ -1,6 +1,6 @@
-#include "LayeredNetwork/AdamUpdater.hpp"
+#include "LayeredNetwork/Updaters/AdamUpdater.hpp"
 
-AdamUpdater::AdamUpdater(NetworkInformation* networkInformation, int parameterRows, int parameterCols) : Updater(networkInformation, parameterRows, parameterCols) {
+AdamUpdater::AdamUpdater(NetworkInformation& networkInformation, int parameterRows, int parameterCols) : Updater(networkInformation, parameterRows, parameterCols) {
     average = new Matrix(parameterRows, parameterCols);
     average2 = new Matrix(parameterRows, parameterCols);
 
@@ -28,7 +28,7 @@ void AdamUpdater::update(Matrix* parameter, Matrix* gradient) {
     //New Average
     gradient->pow(2, squared);
     
-    average->mScale(b1);
+    average->mScale(b1);//need to be saved in learningData
     average2->mScale(b2);
 
     gradient->scale(1.0 - b1, scaled);
@@ -38,7 +38,7 @@ void AdamUpdater::update(Matrix* parameter, Matrix* gradient) {
     average2->mAdd(squared);
 
     //Delta
-    average->scale(networkInformation->getLearningRate(), gradient);//Place holder
+    average->scale(networkInformation.getLearningRate(), gradient);//Place holder
     average2->pow(.5, root);
     root->mAdd(epsilon);
 

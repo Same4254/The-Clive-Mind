@@ -1,39 +1,12 @@
 #include "LayeredNetwork/LayeredNetwork.hpp"
 
-LayeredNetwork::LayeredNetwork(int amountOfLayers, int inputMatrixCount, int inputNRows, int inputNCols, int outputMatrixCount, int outputNRows, int outputNCols) { 
-    this->amountOfLayers = amountOfLayers;
-
-    this->inputMatrixCount = inputMatrixCount;
-    this->inputNRows = inputNRows;
-    this->inputNCols = inputNCols;
-
-    this->outputMatrixCount = outputMatrixCount;
-    this->outputNRows = outputNRows;
-    this->outputNCols = outputNCols;
-
-    layers = new Layer*[amountOfLayers];
-
-    error = (Matrix*) malloc(sizeof(Matrix) * outputMatrixCount);
-    for(int i = 0; i < outputMatrixCount; i++)
-        new (&error[i]) Matrix(outputNRows, outputNCols);
-
-    networkInformation = new NetworkInformation(amountOfLayers);
+LayeredNetwork::LayeredNetwork(int inputMatrixCount, int inputNRows, int inputNCols) : networkInformation(layers), inputMatrixCount(inputMatrixCount), inputNRows(inputNRows), inputNCols(inputNCols) {
+    
 }
 
 LayeredNetwork::~LayeredNetwork() {
-    if(amountOfLayers > 0) {
-        layers[amountOfLayers - 1]->setError(NULL);
+    if(layers.size() > 0)
         layers[0]->setInputMatrix(NULL);
-    }
-
-    for(int i = 0; i < amountOfLayers; i++)
-        delete layers[i];
-    delete[] layers;
-
-    for(int i = 0; i < outputMatrixCount; i++)
-        delete &error[i];
-
-    delete networkInformation;
 }
 
 void LayeredNetwork::initialize() { 
@@ -41,58 +14,45 @@ void LayeredNetwork::initialize() {
     layers[0]->setInputNRows(inputNRows);
     layers[0]->setInputNCols(inputNCols);
 
-    layers[amountOfLayers - 1]->setOutputMatrixCount(outputMatrixCount);
-    layers[amountOfLayers - 1]->setOutputNRows(outputNRows);
-    layers[amountOfLayers - 1]->setOutputNCols(outputNCols);
-
-    for(int i = 0; i < amountOfLayers; i++) {
+    for(int i = 0; i < layers.size(); i++) {
         layers[i]->Layer::initialize();
         layers[i]->initialize();
     }
 
-    for(int i = 0; i < amountOfLayers; i++) {
+    for(int i = 0; i < layers.size(); i++)
         layers[i]->postInitialize();
-    }
 
-    layers[amountOfLayers - 1]->setError(error);
+    outputMatrixCount = layers[layers.size() - 1]->getOutputMatrixCount();
+    outputNRows = layers[layers.size() - 1]->getOutputNRows();
+    outputNCols = layers[layers.size() - 1]->getOutputNCols();
 }
 
 Matrix* LayeredNetwork::feedForward(Matrix* input) {
     layers[0]->setInputMatrix(input);
 
-    for(int i = 0; i < amountOfLayers; i++) {
-        if(i == 0) 
-            layers[0]->feedForward();
-        else
-            layers[i]->feedForward();
-    }
+    for(int i = 0; i < layers.size(); i++)
+        layers[i]->feedForward();
 
-    return layers[amountOfLayers - 1]->getOutput();
+    return getOutput();
 }
 
 void LayeredNetwork::calculateGradients(Matrix* labels) {
-    for(int i = 0; i < outputMatrixCount; i++)
-        (&getOutput()[i])->subtract((&labels[i]), &error[i]);
+    Matrix* output = getOutput();
+    Matrix* error = layers[layers.size() - 1]->getError();
 
-    for(int i = amountOfLayers - 1; i >= 0; i--) {
-        if(i == amountOfLayers - 1)
-            layers[i]->calculateGradient();
-        else 
-            layers[i]->calculateGradient();
-    }
+    for(int i = 0; i < outputMatrixCount; i++)
+        (&output[i])->subtract(&labels[i], &error[i]);
+
+    for(int i = layers.size() - 1; i >= 0; i--)
+        layers[i]->calculateGradient();
 }
 
 void LayeredNetwork::update() {
-    for(int i = 0; i < amountOfLayers; i++)
+    for(int i = 0; i < layers.size(); i++)
         layers[i]->update();
 }
 
-void LayeredNetwork::writeState(FILE* fd) {
-    
-}
+NetworkInformation& LayeredNetwork::getNetworkInformation() { return networkInformation; }
+Matrix* LayeredNetwork::getOutput() { return layers[layers.size() - 1]->getOutput(); }
 
-NetworkInformation* LayeredNetwork::getNetworkInformation() { return networkInformation; }
-Matrix* LayeredNetwork::getOutput() { return layers[amountOfLayers - 1]->getOutput(); }
-
-int LayeredNetwork::getAmountOfLayers() { return amountOfLayers; }
-Layer** LayeredNetwork::getLayers() { return layers; }
+std::vector<std::unique_ptr<Layer>>& LayeredNetwork::getLayers() { return layers; }

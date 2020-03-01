@@ -1,4 +1,4 @@
-#include "LayeredNetwork/ConvolutionalLayer.hpp"
+#include "LayeredNetwork/Layers/ConvolutionalLayer.hpp"
 
 Matrix* ConvolutionalLayer::convolute(Matrix* input, Matrix* filter, Matrix* output, int s, bool flipped) {
     return convolute(input, filter, 0, output, s, flipped, NULL);
@@ -37,7 +37,7 @@ Matrix* ConvolutionalLayer::convolute(Matrix* input, Matrix* filter, double bias
     return output;
 }
 
-ConvolutionalLayer::ConvolutionalLayer(NetworkInformation* networkInformation, Layer** networkLayers, int index, int kernalCount, int kernalSize, int stride) : Layer(networkInformation, networkLayers, index) {
+ConvolutionalLayer::ConvolutionalLayer(NetworkInformation& networkInformation, int index, int kernalCount, int kernalSize, int stride) : Layer(networkInformation, index) {
     this->kernalSize = kernalSize;
     this->stride = stride;
     outputMatrixCount = kernalCount;
@@ -91,11 +91,11 @@ void ConvolutionalLayer::initialize() {
         input = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
 
         for(int i = 0; i < inputMatrixCount; i++) {
-            new (&input[i]) Matrix(&(layers[index - 1]->getOutputInfo()[inputNCols * inputNRows * i]), inputNRows, inputNCols);
+            new (&input[i]) Matrix(&(networkInformation.getLayers()[index - 1]->getOutputInfo()[inputNCols * inputNRows * i]), inputNRows, inputNCols);
         }
 
         layerGradient = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
-        layerGradientInfoLength = layers[index - 1]->getOutputInfoLength();
+        layerGradientInfoLength = networkInformation.getLayers()[index - 1]->getOutputInfoLength();
         layerGradientInfo = (double*) calloc(layerGradientInfoLength, sizeof(double));
 
         for(int i = 0; i < inputMatrixCount; i++) {
@@ -105,10 +105,10 @@ void ConvolutionalLayer::initialize() {
 }
 
 void ConvolutionalLayer::postInitialize() {
-    if(index != networkInformation->getAmountOfLayers() - 1) {
+    if(index != networkInformation.getAmountOfLayers() - 1) {
         error = (Matrix*) malloc(sizeof(Matrix) * outputMatrixCount);
         for(int i = 0; i < outputMatrixCount; i++)
-            new (&error[i]) Matrix(&(layers[index + 1]->getLayerGradientInfo()[outputNRows * outputNCols * i]), outputNRows, outputNCols);
+            new (&error[i]) Matrix(&(networkInformation.getLayers()[index + 1]->getLayerGradientInfo()[outputNRows * outputNCols * i]), outputNRows, outputNCols);
     }
 }
 
@@ -143,13 +143,13 @@ Matrix* ConvolutionalLayer::calculateGradient() {
     //Weight Gradient Calculation
     for(int i = 0; i < outputMatrixCount; i++) {
         for(int j = 0; j < inputMatrixCount; j++) {
-            if(networkInformation->getBatchIndex() == 0)
+            if(networkInformation.getBatchIndex() == 0)
                 convolute(&input[j], &error[i], &(weightGradient[i][j]), (int) (input->getNRows() - error->getNRows()) / (kernalSize - 1), false);
             else
                 convolute(&input[j], &error[i], &(weightGradient[i][j]), (int) (input->getNRows() - error->getNRows()) / (kernalSize - 1), false, &(weightGradient[i][j]));
         }
 
-        if(networkInformation->getBatchIndex() == 0)
+        if(networkInformation.getBatchIndex() == 0)
             biasGradient->getData()[i] = (&error[i])->sumElements();
         else
             biasGradient->getData()[i] += (&error[i])->sumElements();

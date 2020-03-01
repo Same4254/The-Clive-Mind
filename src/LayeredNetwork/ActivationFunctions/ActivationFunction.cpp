@@ -1,4 +1,6 @@
-#include "LayeredNetwork/ActivationFunction.hpp"
+#include "LayeredNetwork/ActivationFunctions/ActivationFunction.hpp"
+
+ActivationFunction::~ActivationFunction() { }
 
 Matrix* ActivationFunction::applyFunction(Matrix* matrix, Matrix* result) {
     for(int i = 0; i < matrix->getLength(); i++)

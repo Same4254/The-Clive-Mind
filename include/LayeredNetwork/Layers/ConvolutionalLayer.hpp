@@ -1,8 +1,8 @@
 #ifndef CONVOLUTIONAL_LAYER_HPP
 #define CONVOLUTIONAL_LAYER_HPP
 
-#include "LayeredNetwork/Layer.hpp"
-#include "LayeredNetwork/MomentumUpdater.hpp"
+#include "LayeredNetwork/Layers/Layer.hpp"
+#include "LayeredNetwork/Updaters/MomentumUpdater.hpp"
 
 class ConvolutionalLayer : public Layer {
 private:
@@ -24,7 +24,7 @@ private:
     Matrix* convolute(Matrix* input, Matrix* filter, double bias, Matrix* output, int s, bool flipped, Matrix* adder);
 
 public:
-    ConvolutionalLayer(NetworkInformation* networkInformation, Layer** networkLayers, int index, int kernalCount, int kernalSize, int stride);
+    ConvolutionalLayer(NetworkInformation& networkInformation, int index, int kernalCount, int kernalSize, int stride);
 
     void initialize();
     void postInitialize();

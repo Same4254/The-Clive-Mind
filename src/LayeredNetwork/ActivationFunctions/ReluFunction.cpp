@@ -1,12 +1,7 @@
-#include "LayeredNetwork/ReluFunction.hpp"
+#include "LayeredNetwork/ActivationFunctions/ReluFunction.hpp"
 
-ReluFunction::ReluFunction() {
-        
-}
-
-ReluFunction::~ReluFunction() {
-    
-}
+ReluFunction::ReluFunction() { }
+ReluFunction::~ReluFunction() { }
 
 double ReluFunction::applyFunction(double x) {
     return std::max(0.0, x);

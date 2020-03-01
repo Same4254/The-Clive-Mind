@@ -1,6 +1,6 @@
-#include "LayeredNetwork/FullyConnectedLayer.hpp"
+#include "LayeredNetwork/Layers/FullyConnectedLayer.hpp"
 
-FullyConnectedLayer::FullyConnectedLayer(NetworkInformation* networkInformation, Layer** layers, int index, int numNodes) : Layer(networkInformation, layers, index) {
+FullyConnectedLayer::FullyConnectedLayer(NetworkInformation& networkInformation, UpdaterID updaterID, int index, int numNodes) : Layer(networkInformation, index), updaterID(updaterID) {
     outputMatrixCount = 1;
     outputNCols = 1;
     outputNRows = numNodes;
@@ -36,14 +36,16 @@ void FullyConnectedLayer::initialize() {
     weights = new Matrix(parameters, outputNRows, inputNRows * inputNCols, -1.0, 1.0);
     weightGradient = new Matrix(parameterGradientInfo, outputNRows, inputNRows * inputNCols);
 
-    weightUpdater = new MomentumUpdater(networkInformation, outputNRows, inputNRows * inputNCols);
-    biasUpdater = new MomentumUpdater(networkInformation, outputNRows, 1);
-
-    // weightUpdater = new RMSUpdater(networkInformation, outputNRows, inputNRows);
-    // biasUpdater = new RMSUpdater(networkInformation, outputNRows, 1);
-
-    // weightUpdater = new AdamUpdater(networkInformation, outputNRows, inputNRows);
-    // biasUpdater = new AdamUpdater(networkInformation, outputNRows, 1);
+    if(updaterID == Momentum) {
+        weightUpdater = new MomentumUpdater(networkInformation, outputNRows, inputNRows * inputNCols);
+        biasUpdater = new MomentumUpdater(networkInformation, outputNRows, 1);
+    } else if(updaterID == Adam) {
+        weightUpdater = new AdamUpdater(networkInformation, outputNRows, inputNRows);
+        biasUpdater = new AdamUpdater(networkInformation, outputNRows, 1);
+    } else if(updaterID == RMS) {
+        weightUpdater = new RMSUpdater(networkInformation, outputNRows, inputNRows);
+        biasUpdater = new RMSUpdater(networkInformation, outputNRows, 1);
+    }
 
     biases = new Matrix(&(parameters[lenWeights]), outputNRows, 1, -1.0, 1.0);
     biasGradient = new Matrix(&(parameterGradientInfo[lenWeights]), outputNRows, 1, -1.0, 1.0);
@@ -54,9 +56,9 @@ void FullyConnectedLayer::initialize() {
     output = new Matrix(outputInfo, outputInfoLength, 1);
 
     if(index != 0) {
-        input = new Matrix(layers[index - 1]->getOutputInfo(), inputNRows * inputNCols, 1);
+        input = new Matrix(networkInformation.getLayers()[index - 1]->getOutputInfo(), inputNRows * inputNCols, 1);
 
-        layerGradientInfoLength = layers[index - 1]->getOutputInfoLength();
+        layerGradientInfoLength = networkInformation.getLayers()[index - 1]->getOutputInfoLength();
         layerGradientInfo = (double*) calloc(layerGradientInfoLength, sizeof(double));
 
         layerGradient = new Matrix(layerGradientInfo, inputNRows * inputNCols, 1);
@@ -64,8 +66,10 @@ void FullyConnectedLayer::initialize() {
 }
 
 void FullyConnectedLayer::postInitialize() {
-    if(index != networkInformation->getAmountOfLayers() - 1)
-        error = new Matrix(layers[index + 1]->getLayerGradientInfo(), outputNRows, 1);
+    if(index != networkInformation.getAmountOfLayers() - 1)
+        error = new Matrix(networkInformation.getLayers()[index + 1]->getLayerGradientInfo(), outputNRows, 1);
+    else
+        error = new Matrix(outputNRows, 1);
 }
 
 Matrix* FullyConnectedLayer::feedForward() {
@@ -79,7 +83,7 @@ Matrix* FullyConnectedLayer::calculateGradient() {
     if(index != 0)
         weights->multiplyInputTransposed(error, layerGradient);
 
-    if(networkInformation->getBatchIndex() == 0) {
+    if(networkInformation.getBatchIndex() == 0) {
         error->multiplyOtherTransposed(input, weightGradient);
         biasGradient->copyData(error);
     } else {

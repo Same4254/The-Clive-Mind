@@ -2,7 +2,7 @@
 #define POOLING_LAYER_HPP
 
 #include <vector>
-#include "LayeredNetwork/Layer.hpp"
+#include "LayeredNetwork/Layers/Layer.hpp"
 
 class PoolingLayer: public Layer {
 private:
@@ -12,7 +12,7 @@ private:
     int numPoolIndecies;
 
 public:
-    PoolingLayer(NetworkInformation* networkInformation, Layer** layers, int index, int size);
+    PoolingLayer(NetworkInformation& networkInformation, int index, int size);
 
     void initialize();
 

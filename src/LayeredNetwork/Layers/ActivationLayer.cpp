@@ -1,7 +1,12 @@
-#include "LayeredNetwork/ActivationLayer.hpp"
+#include "LayeredNetwork/Layers/ActivationLayer.hpp"
 
-ActivationLayer::ActivationLayer(NetworkInformation* networkInformation, Layer** layers, int index, ActivationFunction* function) : Layer(networkInformation, layers, index) { 
-    this->function = function;
+ActivationLayer::ActivationLayer(NetworkInformation& networkInformation, int index, ActivationID activationID) 
+    : Layer(networkInformation, index) { 
+
+    if(activationID == Sigmoid)
+        function = new SigmoidFunction();
+    else if(activationID == Relu)
+        function = new ReluFunction();
 }
 
 ActivationLayer::~ActivationLayer() {
@@ -31,16 +36,20 @@ void ActivationLayer::initialize() {
         input = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
 
         for(int i = 0; i < inputMatrixCount; i++) {
-            new (&input[i]) Matrix(&layers[index - 1]->getOutputInfo()[inputNCols * inputNRows * i], inputNRows, inputNCols);
+            new (&input[i]) Matrix(&networkInformation.getLayers()[index - 1]->getOutputInfo()[inputNCols * inputNRows * i], inputNRows, inputNCols);
         }
     }
 }
 
 void ActivationLayer::postInitialize() {
-    if(index != networkInformation->getAmountOfLayers() - 1) {
+    if(index != networkInformation.getAmountOfLayers() - 1) {
         error = (Matrix*) malloc(sizeof(Matrix) * outputMatrixCount);
         for(int i = 0; i < outputMatrixCount; i++)
-            new (&error[i]) Matrix(&layers[index + 1]->getLayerGradientInfo()[outputNRows * outputNCols * i], outputNRows, outputNCols);
+            new (&error[i]) Matrix(&networkInformation.getLayers()[index + 1]->getLayerGradientInfo()[outputNRows * outputNCols * i], outputNRows, outputNCols);
+    } else {
+        error = (Matrix*) malloc(sizeof(Matrix) * outputMatrixCount);
+        for(int i = 0; i < outputMatrixCount; i++)
+            new (&error[i]) Matrix(outputNRows, outputNCols);
     }
 }
 

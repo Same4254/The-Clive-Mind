@@ -4,6 +4,17 @@
 #include "Matrix.hpp"
 #include "LayeredNetwork/NetworkInformation.hpp"
 
+//Resolve circle dependency
+class NetworkInformation;
+
+enum UpdaterID {
+    Momentum, Adam, RMS
+};
+
+enum ActivationID {
+    Sigmoid, Relu
+};
+
 class Layer {
 protected:
     int inputMatrixCount;
@@ -31,12 +42,11 @@ protected:
     Matrix* layerGradient;
     Matrix* error;
 
-    NetworkInformation* networkInformation;
-    Layer** layers;
+    NetworkInformation& networkInformation;
     int index;
 
 public:
-    Layer(NetworkInformation* networkInformation, Layer** layers, int index);
+    Layer(NetworkInformation& networkInformation, int index);
 
     virtual ~Layer();
     virtual void initialize();
@@ -74,7 +84,7 @@ public:
     void setOutputNCols(int outputNCols);
 
     Matrix* getError();
-    void setError(Matrix* error);
+    // void setError(Matrix* error);
 
     Matrix* getOutput();
     double* getOutputInfo();

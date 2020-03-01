@@ -1,8 +1,7 @@
-#include "LayeredNetwork/SigmoidFunction.hpp"
+#include "LayeredNetwork/ActivationFunctions/SigmoidFunction.hpp"
 
-SigmoidFunction::SigmoidFunction() {
-        
-}
+SigmoidFunction::SigmoidFunction() {}
+SigmoidFunction::~SigmoidFunction() {}
 
 double SigmoidFunction::applyFunction(double x) {
     return 1.0 / (1.0 + exp(-x));

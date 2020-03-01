@@ -1,19 +1,16 @@
 #include "LayeredNetwork/NetworkInformation.hpp"
 
-NetworkInformation::NetworkInformation(int amountOfLayers) {
-    this->amountOfLayers = amountOfLayers;
-
-    learningRate = 0.0;
-    velocityCoefficient = 0.0;
+NetworkInformation::NetworkInformation(std::vector<std::unique_ptr<Layer>>& layers) : layers(layers) {
+    learningRate = 0.001;
+    velocityCoefficient = 0.9;
     batchSize = 1;
     batchIndex = 0;
 }
 
-NetworkInformation::~NetworkInformation() {
-    
-}
+NetworkInformation::~NetworkInformation() { }
 
-int NetworkInformation::getAmountOfLayers() { return amountOfLayers; }
+int NetworkInformation::getAmountOfLayers() { return layers.size(); }
+std::vector<std::unique_ptr<Layer>>& NetworkInformation::getLayers() { return layers; }
 
 double NetworkInformation::getLearningRate() { return learningRate; }
 void NetworkInformation::setLearningRate(double learningRate) { this->learningRate = learningRate; }

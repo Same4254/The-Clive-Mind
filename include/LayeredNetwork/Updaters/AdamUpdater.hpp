@@ -1,7 +1,7 @@
 #ifndef ADAM_UPDATER_HPP
 #define ADAM_UPDATER_HPP
 
-#include "LayeredNetwork/Updater.hpp"
+#include "LayeredNetwork/Updaters/Updater.hpp"
 
 class AdamUpdater : public Updater {
 private:
@@ -14,8 +14,7 @@ private:
     Matrix* delta;
 
 public:
-    AdamUpdater(NetworkInformation* networkInformation, int parameterRows, int parameterCols);
-
+    AdamUpdater(NetworkInformation& networkInformation, int parameterRows, int parameterCols);
     ~AdamUpdater();
 
     void update(Matrix* parameter, Matrix* gradient);

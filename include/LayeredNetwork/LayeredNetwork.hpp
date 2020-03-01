@@ -1,18 +1,17 @@
 #ifndef LAYERED_NETWORK_HPP
 #define LAYERED_NETWORK_HPP
 
-#include "LayeredNetwork/ConvolutionalLayer.hpp"
-#include "LayeredNetwork/ActivationLayer.hpp"
-#include "LayeredNetwork/FullyConnectedLayer.hpp"
-#include "LayeredNetwork/NetworkInformation.hpp"
-
 #include <stdio.h>
+#include <memory>
+#include <vector>
+
+#include "LayeredNetwork/NetworkInformation.hpp"
+#include "LayeredNetwork/Layers/Layer.hpp"
 
 class LayeredNetwork {
 private:
-    NetworkInformation* networkInformation;
-    Layer** layers;
-    int amountOfLayers;
+    NetworkInformation networkInformation;
+    std::vector<std::unique_ptr<Layer>> layers;
 
     int inputMatrixCount;
     int inputNRows;
@@ -22,11 +21,8 @@ private:
     int outputNRows;
     int outputNCols;
 
-    Matrix* error;
-
 public:
-    LayeredNetwork(int amountOfLayers, int inputMatrixCount, int inputNRows, int inputNCols, int outputMatrixCount, int outputNRows, int outputNCols);
-
+    LayeredNetwork(int inputMatrixCount, int inputNRows, int inputNCols);
     ~LayeredNetwork();
 
     void initialize();
@@ -35,12 +31,9 @@ public:
     void calculateGradients(Matrix* labels);
     void update();
 
-    void writeState(FILE* fd);
-
-    NetworkInformation* getNetworkInformation();
+    NetworkInformation& getNetworkInformation();
     Matrix* getOutput();
 
-    int getAmountOfLayers();
-    Layer** getLayers();
+    std::vector<std::unique_ptr<Layer>>& getLayers();
 };
 #endif

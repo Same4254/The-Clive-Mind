@@ -1,6 +1,6 @@
-#include "LayeredNetwork/PoolingLayer.hpp"
+#include "LayeredNetwork/Layers/PoolingLayer.hpp"
 
-PoolingLayer::PoolingLayer(NetworkInformation* networkInformation, Layer** layers, int index, int size) : Layer(networkInformation, layers, index) { 
+PoolingLayer::PoolingLayer(NetworkInformation& networkInformation, int index, int size) : Layer(networkInformation, index) { 
     this->size = size;
 }
 

@@ -1,7 +1,7 @@
 #ifndef RELU_FUNCTION_HPP
 #define RELU_FUNCTION_HPP
 
-#include "LayeredNetwork/ActivationFunction.hpp"
+#include "LayeredNetwork/ActivationFunctions/ActivationFunction.hpp"
 
 class ReluFunction: public ActivationFunction {
 public:

@@ -7,15 +7,14 @@
 //Source: https://ruder.io/optimizing-gradient-descent/index.html#adam
 class Updater {
 protected:
-    NetworkInformation* networkInformation;
+    NetworkInformation& networkInformation;
     int parameterRows, parameterCols;
 
     double* learningData;
     int learningDataLength;
 
 public:
-    Updater(NetworkInformation* networkInformation, int parameterRows, int parameterCols);
-
+    Updater(NetworkInformation& networkInformation, int parameterRows, int parameterCols);
     virtual ~Updater();
 
     virtual void update(Matrix* parameters, Matrix* gradient) = 0;

@@ -1,11 +1,6 @@
-// #include "include/LayeredNetwork/Layer.hpp"
-#include "LayeredNetwork/Layer.hpp"
+#include "LayeredNetwork/Layers/Layer.hpp"
 
-Layer::Layer(NetworkInformation* networkInformation, Layer** layers, int index) {
-    this->networkInformation = networkInformation;
-    this->layers = layers;
-    this->index = index;
-
+Layer::Layer(NetworkInformation& networkInformation, int index) : networkInformation(networkInformation), index(index) {
     parameterLength = 0;
     parameters = NULL;
 
@@ -37,7 +32,7 @@ Layer::~Layer() {
         for(int i = 0; i < inputMatrixCount; i++) {
             input[i].setData(NULL);
             delete &input[i];
-        }    
+        }
     }
 
     if(layerGradient != NULL) {
@@ -69,9 +64,9 @@ Layer::~Layer() {
 
 void Layer::initialize() {
     if(index != 0) {
-        inputMatrixCount = layers[index - 1]->outputMatrixCount;
-        inputNCols = layers[index - 1]->outputNCols;
-        inputNRows = layers[index - 1]->outputNRows;
+        inputMatrixCount = networkInformation.getLayers()[index - 1]->outputMatrixCount;
+        inputNCols = networkInformation.getLayers()[index - 1]->outputNCols;
+        inputNRows = networkInformation.getLayers()[index - 1]->outputNRows;
     }
 }
 
@@ -103,7 +98,6 @@ void Layer::setOutputNRows(int outputNRows) { this->outputNRows = outputNRows; }
 void Layer::setOutputNCols(int outputNCols) { this->outputNCols = outputNCols; }
 
 Matrix* Layer::getError() { return error; }
-void Layer::setError(Matrix* error) { this->error = error; }
 
 Matrix* Layer::getOutput() { return output; }
 double* Layer::getOutputInfo() { return outputInfo; }

@@ -9,7 +9,7 @@ unsigned char trainImagesBuffer[TRAIN_IMAGE_COUNT][IMAGE_SIZE];
 double testImages[TEST_IMAGE_COUNT][IMAGE_SIZE];
 double trainImages[TRAIN_IMAGE_COUNT][IMAGE_SIZE];
 
-bool loadLabels(FILE* fd, int count, unsigned char* labels) {
+bool loadLabels(FILE* fd, unsigned int count, unsigned char* labels) {
     int32_t buff[2];//magic number and label count
 
     if(fread(buff, sizeof(int32_t), 2, fd) != 2)
@@ -21,13 +21,13 @@ bool loadLabels(FILE* fd, int count, unsigned char* labels) {
     return true;
 }
 
-bool loadImages(FILE* fd, int count, unsigned char (*images)[IMAGE_SIZE]) {
+bool loadImages(FILE* fd, unsigned int count, unsigned char (*images)[IMAGE_SIZE]) {
     int32_t buff[4];//magic number, image count, image length, image width
 
     if(fread(buff, sizeof(int32_t), 4, fd) != 4)
         return false;
 
-    for(int i = 0; i < count; i++)
+    for(unsigned int i = 0; i < count; i++)
         if(fread(images[i], 1, IMAGE_SIZE, fd) != IMAGE_SIZE)
             return false;
 

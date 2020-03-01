@@ -1,10 +1,11 @@
 #ifndef FULLY_CONNECTED_LAYER_HPP
 #define FULLY_CONNECTED_LAYER_HPP
 
-#include "LayeredNetwork/Layer.hpp"
-#include "LayeredNetwork/MomentumUpdater.hpp"
-#include "LayeredNetwork/RMSUpdater.hpp"
-#include "LayeredNetwork/AdamUpdater.hpp"
+#include "LayeredNetwork/Layers/Layer.hpp"
+
+#include "LayeredNetwork/Updaters/MomentumUpdater.hpp"
+#include "LayeredNetwork/Updaters/AdamUpdater.hpp"
+#include "LayeredNetwork/Updaters/RMSUpdater.hpp"
 
 class FullyConnectedLayer : public Layer {
 private:
@@ -14,12 +15,12 @@ private:
     Matrix* weightGradient;
     Matrix* biasGradient;
 
+    UpdaterID updaterID;
     Updater* weightUpdater;
     Updater* biasUpdater;
 
 public:
-    FullyConnectedLayer(NetworkInformation* networkInformation, Layer** layers, int index, int numNodes);
-
+    FullyConnectedLayer(NetworkInformation& networkInformation, UpdaterID updaterID, int index, int numNodes);
     ~FullyConnectedLayer();
 
     void initialize();

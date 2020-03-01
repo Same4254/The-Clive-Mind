@@ -23,7 +23,7 @@ extern unsigned char trainImagesBuffer[TRAIN_IMAGE_COUNT][IMAGE_SIZE];
 extern double testImages[TEST_IMAGE_COUNT][IMAGE_SIZE];
 extern double trainImages[TRAIN_IMAGE_COUNT][IMAGE_SIZE];
 
-bool loadLabels(FILE* fd, int count, unsigned char* labels);
-bool loadImages(FILE* fd, int count, unsigned char (*images)[IMAGE_SIZE]);
+bool loadLabels(FILE* fd, unsigned int count, unsigned char* labels);
+bool loadImages(FILE* fd, unsigned int count, unsigned char (*images)[IMAGE_SIZE]);
 bool loadDataset();
 #endif

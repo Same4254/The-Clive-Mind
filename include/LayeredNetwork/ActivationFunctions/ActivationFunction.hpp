@@ -5,6 +5,8 @@
 
 class ActivationFunction {
 public: 
+    virtual ~ActivationFunction();
+
     /**
     *   This will apply the function on the elements in the matrix and store the result in the result matrix 
     * 

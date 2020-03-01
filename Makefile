@@ -1,5 +1,5 @@
 CC = g++
-CPPFLAGS = -Wall -std=c++17 -O3 -I include/
+CPPFLAGS = -std=c++17 -Wall -O3 -I include/
 
 SOURCES := $(shell find src/ -type f -iname '*.cpp')
 OBJECTS := $(foreach x, $(basename $(SOURCES)), $(x).o)
