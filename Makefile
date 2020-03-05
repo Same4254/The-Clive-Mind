@@ -1,22 +1,26 @@
-CC = g++
-CPPFLAGS = -std=c++17 -Wall -O3 -I include/
+SRC_DIR := ./src/
+BIN_DIR := ./bin/
 
-SOURCES := $(shell find src/ -type f -iname '*.cpp')
-OBJECTS := $(foreach x, $(basename $(SOURCES)), $(x).o)
+SOURCE_FILES := cpp
+OBJECT_FILES := o
+
+CC       := g++
+CPPFLAGS := -std=c++17 -O3 -Wall -I include/
+
+SOURCES := $(shell find $(SRC_DIR) -name "*.$(SOURCE_FILES)")
+OBJECTS := $(patsubst $(SRC_DIR)%.$(SOURCE_FILES), $(BIN_DIR)%.$(OBJECT_FILES), $(SOURCES))
 
 all: $(OBJECTS)
 
-%.o: %.cpp
-	$(CC) -c $(CPPFLAGS) $^ -o $(patsubst %.cpp, build/%.o, $(notdir $^))
+$(BIN_DIR)%$(OBJECT_FILES): $(SRC_DIR)%$(SOURCE_FILES)
+	@mkdir -p $(@D)
+
+	$(CC) $(CPPFLAGS) -c $< -o $@
 
 .PHONY: mnist
 mnist: $(OBJECTS)
-	$(CC) $(CPPFLAGS) Experiments/Mnist/mnistTraining.cpp -o mnist-test $(patsubst %.cpp, build/%.o, $(notdir $(SOURCES)))
-
-.PHONY: test
-test: $(OBJECTS)
-	$(CC) $(CPPFLAGS) Tests/MatrixTest.cpp -o matrix-test $(patsubst %.cpp, build/%.o, $(notdir $(SOURCES)))
+	$(CC) $(CPPFLAGS) Experiments/Mnist/mnistTraining.cpp -o mnist-test $(OBJECTS)
 
 .PHONY: clean
 clean:
-	rm build/*
+	rm -r -f $(BIN_DIR)*

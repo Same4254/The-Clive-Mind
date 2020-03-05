@@ -1,6 +1,7 @@
 #ifndef LAYER_HPP
 #define LAYER_HPP
 
+#include <stdio.h>
 #include "Matrix.hpp"
 #include "LayeredNetwork/NetworkInformation.hpp"
 
@@ -47,11 +48,10 @@ protected:
 
 public:
     Layer(NetworkInformation& networkInformation, int index);
-
     virtual ~Layer();
     virtual void initialize();
-
     virtual void postInitialize() = 0;
+
     virtual Matrix* feedForward() = 0;
     virtual Matrix* calculateGradient() = 0;
     virtual void update() = 0;
