@@ -27,6 +27,31 @@ void LayeredNetwork::initialize() {
     outputNCols = layers[layers.size() - 1]->getOutputNCols();
 }
 
+void LayeredNetwork::toFile(char* filename) {
+    FILE* file = fopen(filename, "w");
+
+    int amountOfLayers = layers.size();
+
+    fwrite(&amountOfLayers, sizeof(int), 1, file);
+    fwrite(&inputMatrixCount, sizeof(int), 1, file);
+    fwrite(&inputNRows, sizeof(int), 1, file);
+    fwrite(&inputNCols, sizeof(int), 1, file);
+
+    for(int i = 0; i < amountOfLayers; i++) {
+        int id = (int) layers[i]->getLayerID();
+
+        fwrite(&id, sizeof(int), 1, file);
+        layers[i]->writeConstructInfo(file);
+    }
+
+    for(int i = 0; i < amountOfLayers; i++) {
+        layers[i]->writeState(file);
+        layers[i]->Layer::writeState(file);
+    }
+
+    fclose(file);
+}
+
 Matrix* LayeredNetwork::feedForward(Matrix* input) {
     layers[0]->setInputMatrix(input);
 

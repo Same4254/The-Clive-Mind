@@ -10,7 +10,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}",
-            "args": ["-std=c++17"],
+            "args": ["-std=c++17 -I include/"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

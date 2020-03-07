@@ -3,10 +3,6 @@
 
 #include "LayeredNetwork/Layers/Layer.hpp"
 
-#include "LayeredNetwork/Updaters/MomentumUpdater.hpp"
-#include "LayeredNetwork/Updaters/AdamUpdater.hpp"
-#include "LayeredNetwork/Updaters/RMSUpdater.hpp"
-
 class FullyConnectedLayer : public Layer {
 private:
     Matrix* weights;
@@ -16,8 +12,7 @@ private:
     Matrix* biasGradient;
 
     UpdaterID updaterID;
-    Updater* weightUpdater;
-    Updater* biasUpdater;
+    std::unique_ptr<Updater> weightUpdater, biasUpdater;
 
 public:
     FullyConnectedLayer(NetworkInformation& networkInformation, UpdaterID updaterID, int index, int numNodes);
@@ -25,6 +20,10 @@ public:
 
     void initialize();
     void postInitialize();
+    
+    void writeConstructInfo(FILE* file);
+    void writeState(FILE* file);
+    void loadState(FILE* file);
 
     Matrix* feedForward();
     Matrix* calculateGradient();

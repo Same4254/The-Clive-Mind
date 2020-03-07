@@ -74,6 +74,7 @@
         "map": "cpp",
         "iomanip": "cpp",
         "cinttypes": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "regex": "cpp"
     }
 }

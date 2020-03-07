@@ -1,6 +1,6 @@
 #include "LayeredNetwork/Layers/FullyConnectedLayer.hpp"
 
-FullyConnectedLayer::FullyConnectedLayer(NetworkInformation& networkInformation, UpdaterID updaterID, int index, int numNodes) : Layer(networkInformation, index), updaterID(updaterID) {
+FullyConnectedLayer::FullyConnectedLayer(NetworkInformation& networkInformation, UpdaterID updaterID, int index, int numNodes) : Layer(networkInformation, Full, index), updaterID(updaterID) {
     outputMatrixCount = 1;
     outputNCols = 1;
     outputNRows = numNodes;
@@ -19,9 +19,6 @@ FullyConnectedLayer::~FullyConnectedLayer() {
 
     delete weightGradient;
     delete biasGradient;
-
-    delete weightUpdater;
-    delete biasUpdater;
 }
 
 void FullyConnectedLayer::initialize() {
@@ -36,16 +33,19 @@ void FullyConnectedLayer::initialize() {
     weights = new Matrix(parameters, outputNRows, inputNRows * inputNCols, -1.0, 1.0);
     weightGradient = new Matrix(parameterGradientInfo, outputNRows, inputNRows * inputNCols);
 
-    if(updaterID == Momentum) {
-        weightUpdater = new MomentumUpdater(networkInformation, outputNRows, inputNRows * inputNCols);
-        biasUpdater = new MomentumUpdater(networkInformation, outputNRows, 1);
-    } else if(updaterID == Adam) {
-        weightUpdater = new AdamUpdater(networkInformation, outputNRows, inputNRows);
-        biasUpdater = new AdamUpdater(networkInformation, outputNRows, 1);
-    } else if(updaterID == RMS) {
-        weightUpdater = new RMSUpdater(networkInformation, outputNRows, inputNRows);
-        biasUpdater = new RMSUpdater(networkInformation, outputNRows, 1);
-    }
+    weightUpdater = createUpdaterFromID(updaterID, networkInformation, outputNRows, inputNRows * inputNCols);
+    biasUpdater = createUpdaterFromID(updaterID, networkInformation, outputNRows, 1);
+
+    // if(updaterID == Momentum) {
+    //     weightUpdater = new MomentumUpdater(networkInformation, outputNRows, inputNRows * inputNCols);
+    //     biasUpdater = new MomentumUpdater(networkInformation, outputNRows, 1);
+    // } else if(updaterID == Adam) {
+    //     weightUpdater = new AdamUpdater(networkInformation, outputNRows, inputNRows);
+    //     biasUpdater = new AdamUpdater(networkInformation, outputNRows, 1);
+    // } else if(updaterID == RMS) {
+    //     weightUpdater = new RMSUpdater(networkInformation, outputNRows, inputNRows);
+    //     biasUpdater = new RMSUpdater(networkInformation, outputNRows, 1);
+    // }
 
     biases = new Matrix(&(parameters[lenWeights]), outputNRows, 1, -1.0, 1.0);
     biasGradient = new Matrix(&(parameterGradientInfo[lenWeights]), outputNRows, 1, -1.0, 1.0);
@@ -70,6 +70,22 @@ void FullyConnectedLayer::postInitialize() {
         error = new Matrix(networkInformation.getLayers()[index + 1]->getLayerGradientInfo(), outputNRows, 1);
     else
         error = new Matrix(outputNRows, 1);
+}
+
+void FullyConnectedLayer::writeConstructInfo(FILE* file) {
+    int updater = (int) updaterID;
+    fwrite(&updater, sizeof(int), 1, file);
+    fwrite(&outputNRows, sizeof(int), 1, file);
+}
+
+void FullyConnectedLayer::writeState(FILE* file) {
+    weightUpdater->toFile(file);
+    biasUpdater->toFile(file);
+}
+
+void FullyConnectedLayer::loadState(FILE* file) {
+    weightUpdater->loadState(file);
+    biasUpdater->loadState(file);
 }
 
 Matrix* FullyConnectedLayer::feedForward() {

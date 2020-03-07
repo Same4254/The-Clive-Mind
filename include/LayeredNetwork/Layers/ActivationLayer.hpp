@@ -10,6 +10,7 @@
 class ActivationLayer: public Layer {
 private: 
     ActivationFunction* function;
+    ActivationID activationID;
 
 public:
     ActivationLayer(NetworkInformation& networkInformation, int index, ActivationID activationID);
@@ -17,6 +18,10 @@ public:
 
     void initialize();
     void postInitialize();
+
+    void writeConstructInfo(FILE* file);
+    void writeState(FILE* file);
+    void loadState(FILE* file);
 
     Matrix* feedForward();
     Matrix* calculateGradient();

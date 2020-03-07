@@ -21,8 +21,12 @@ $(BIN_DIR)%$(OBJECT_FILES): $(SRC_DIR)%$(SOURCE_FILES) $(HEADERS)
 	$(CC) $(CPPFLAGS) -c $< -o $@
 
 .PHONY: mnist
-mnist: $(OBJECTS)
+mnist: $(OBJECTS) $(HEADERS)
 	$(CC) $(CPPFLAGS) Experiments/Mnist/mnistTraining.cpp -o mnist-test $(OBJECTS)
+
+.PHONY: test
+test: $(OBJECTS) $(HEADERS)
+	$(CC) $(CPPFLAGS) Tests/FileTest.cpp -o file-test $(OBJECTS)
 
 .PHONY: clean
 clean:

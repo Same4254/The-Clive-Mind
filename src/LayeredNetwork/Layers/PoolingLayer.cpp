@@ -1,6 +1,6 @@
 #include "LayeredNetwork/Layers/PoolingLayer.hpp"
 
-PoolingLayer::PoolingLayer(NetworkInformation& networkInformation, int index, int size) : Layer(networkInformation, index) { 
+PoolingLayer::PoolingLayer(NetworkInformation& networkInformation, int index, int size) : Layer(networkInformation, Pool, index) { 
     this->size = size;
 }
 
@@ -23,6 +23,14 @@ void PoolingLayer::initialize() {
     outputMatrixCount = inputMatrixCount;
     outputNRows = inputNRows / size;
     outputNCols = inputNCols / size;
+}
+
+void PoolingLayer::toFile(FILE* file) {
+    
+}
+
+void PoolingLayer::fromFile(FILE* file) {
+    
 }
 
 Matrix* PoolingLayer::feedForward(Matrix* input) {

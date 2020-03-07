@@ -16,6 +16,9 @@ public:
 
     void initialize();
 
+    void toFile(FILE* file);
+    void fromFile(FILE* file);
+
     Matrix* feedForward(Matrix* input);
     Matrix* backpropogate(Matrix* error);
 };

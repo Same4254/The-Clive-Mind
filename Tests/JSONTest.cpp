@@ -8,36 +8,36 @@
 #include <istream>
 
 int main() {
-    rapidjson::Document document;
-    document.SetObject();
+    // rapidjson::Document document;
+    // document.SetObject();
 
-    rapidjson::Document::AllocatorType& allocator = document.GetAllocator();
+    // rapidjson::Document::AllocatorType& allocator = document.GetAllocator();
 
     double* s = (double*) calloc(12690, sizeof(double));
 
-    rapidjson::Value object(rapidjson::kObjectType);
-	object.AddMember("Math", "50", allocator);
-	object.AddMember("Science", "70", allocator);
-	object.AddMember("English", "50", allocator);
-	object.AddMember("Social Science", "70", allocator);
+    // rapidjson::Value object(rapidjson::kObjectType);
+	// object.AddMember("Math", "50", allocator);
+	// object.AddMember("Science", "70", allocator);
+	// object.AddMember("English", "50", allocator);
+	// object.AddMember("Social Science", "70", allocator);
 
-    rapidjson::Value array(rapidjson::kArrayType);
-    for(int i = 0; i < 12690; i++) {
-        array.PushBack(s[i], allocator);
-    }
+    // rapidjson::Value array(rapidjson::kArrayType);
+    // for(int i = 0; i < 12690; i++) {
+    //     array.PushBack(s[i], allocator);
+    // }
 
-    object.AddMember("state", array, allocator);
-	document.AddMember("Marks", object, allocator);
+    // object.AddMember("state", array, allocator);
+	// document.AddMember("Marks", object, allocator);
 
-    std::ofstream ofs("output.json");
-    rapidjson::OStreamWrapper osw(ofs);
+    // std::ofstream ofs("output.json");
+    // rapidjson::OStreamWrapper osw(ofs);
     
-    rapidjson::PrettyWriter<rapidjson::OStreamWrapper> writer(osw);
-    writer.SetFormatOptions(rapidjson::kFormatSingleLineArray);
+    // rapidjson::PrettyWriter<rapidjson::OStreamWrapper> writer(osw);
+    // writer.SetFormatOptions(rapidjson::kFormatSingleLineArray);
 
-    document.Accept(writer);
+    // document.Accept(writer);
 
-    ofs.close();
+    // ofs.close();
 
     std::ifstream ifs("output.json");
     rapidjson::IStreamWrapper isw(ifs);

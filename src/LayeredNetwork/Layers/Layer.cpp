@@ -1,6 +1,16 @@
 #include "LayeredNetwork/Layers/Layer.hpp"
 
-Layer::Layer(NetworkInformation& networkInformation, int index) : networkInformation(networkInformation), index(index) {
+std::unique_ptr<Updater> Layer::createUpdaterFromID(UpdaterID id, NetworkInformation& networkInformation, int parameterRows, int parameterCols) {
+    if(id == Momentum) {
+        return std::make_unique<MomentumUpdater>(networkInformation, parameterRows, parameterCols);
+    } else if(id == Adam) {
+        return std::make_unique<AdamUpdater>(networkInformation, parameterRows, parameterCols);
+    } else if(id == RMS) {
+        return std::make_unique<RMSUpdater>(networkInformation, parameterRows, parameterCols);
+    }
+}
+
+Layer::Layer(NetworkInformation& networkInformation, LayerID layerID, int index) : networkInformation(networkInformation), layerID(layerID), index(index) {
     parameterLength = 0;
     parameters = NULL;
 
@@ -70,6 +80,18 @@ void Layer::initialize() {
     }
 }
 
+void Layer::writeConstructInfo(FILE* file) { }
+
+void Layer::writeState(FILE* file) {
+    if(parameterLength > 0)
+        fwrite(parameters, sizeof(double), parameterLength, file);
+}
+
+void Layer::loadState(FILE* file) {
+    if(parameterLength > 0)
+        fread(parameters, sizeof(double), parameterLength, file);
+}
+
 int Layer::getParameterLength() { return parameterLength; }
 double* Layer::getParameters() { return parameters; }
 
@@ -96,6 +118,8 @@ void Layer::setInputNCols(int inputNCols) { this->inputNCols = inputNCols; }
 void Layer::setOutputMatrixCount(int outputMatrixCount) { this->outputMatrixCount = outputMatrixCount; }
 void Layer::setOutputNRows(int outputNRows) { this->outputNRows = outputNRows; }
 void Layer::setOutputNCols(int outputNCols) { this->outputNCols = outputNCols; }
+
+LayerID Layer::getLayerID() { return layerID; }
 
 Matrix* Layer::getError() { return error; }
 

@@ -37,9 +37,9 @@ Matrix* ConvolutionalLayer::convolute(Matrix* input, Matrix* filter, double bias
     return output;
 }
 
-ConvolutionalLayer::ConvolutionalLayer(NetworkInformation& networkInformation, int index, int kernalCount, int kernalSize, int stride) : Layer(networkInformation, index) {
-    this->kernalSize = kernalSize;
-    this->stride = stride;
+ConvolutionalLayer::ConvolutionalLayer(NetworkInformation& networkInformation, UpdaterID updaterID, int index, int kernalCount, int kernalSize, int stride) 
+    : Layer(networkInformation, Conv, index), updaterID(updaterID), kernalSize(kernalSize), stride(stride) {
+
     outputMatrixCount = kernalCount;
 }
 
@@ -110,6 +110,14 @@ void ConvolutionalLayer::postInitialize() {
         for(int i = 0; i < outputMatrixCount; i++)
             new (&error[i]) Matrix(&(networkInformation.getLayers()[index + 1]->getLayerGradientInfo()[outputNRows * outputNCols * i]), outputNRows, outputNCols);
     }
+}
+
+void ConvolutionalLayer::toFile(FILE* file) {
+
+}
+
+void ConvolutionalLayer::fromFile(FILE* file) {
+    
 }
 
 Matrix* ConvolutionalLayer::feedForward() {

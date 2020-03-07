@@ -2,11 +2,19 @@
 #define LAYER_HPP
 
 #include <stdio.h>
+#include <memory>
+
 #include "Matrix.hpp"
 #include "LayeredNetwork/NetworkInformation.hpp"
 
-//Resolve circle dependency
-class NetworkInformation;
+#include "LayeredNetwork/Updaters/Updater.hpp"
+#include "LayeredNetwork/Updaters/MomentumUpdater.hpp"
+#include "LayeredNetwork/Updaters/AdamUpdater.hpp"
+#include "LayeredNetwork/Updaters/RMSUpdater.hpp"
+
+enum LayerID {
+    Full, Conv, Act, Pool
+};
 
 enum UpdaterID {
     Momentum, Adam, RMS
@@ -44,13 +52,20 @@ protected:
     Matrix* error;
 
     NetworkInformation& networkInformation;
+    LayerID layerID;
     int index;
 
 public:
-    Layer(NetworkInformation& networkInformation, int index);
+    static std::unique_ptr<Updater> createUpdaterFromID(UpdaterID id, NetworkInformation& networkInformation, int parameterRows, int parameterCols);
+
+    Layer(NetworkInformation& networkInformation, LayerID layerID, int index);
     virtual ~Layer();
     virtual void initialize();
     virtual void postInitialize() = 0;
+
+    virtual void writeConstructInfo(FILE* file);
+    virtual void writeState(FILE* file);
+    virtual void loadState(FILE* file);
 
     virtual Matrix* feedForward() = 0;
     virtual Matrix* calculateGradient() = 0;
@@ -83,8 +98,9 @@ public:
     void setOutputNRows(int outputNRows);
     void setOutputNCols(int outputNCols);
 
+    LayerID getLayerID();
+
     Matrix* getError();
-    // void setError(Matrix* error);
 
     Matrix* getOutput();
     double* getOutputInfo();

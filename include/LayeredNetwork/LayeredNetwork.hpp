@@ -26,6 +26,7 @@ public:
     ~LayeredNetwork();
 
     void initialize();
+    void toFile(char* filename);
 
     Matrix* feedForward(Matrix* input);
     void calculateGradients(Matrix* labels);

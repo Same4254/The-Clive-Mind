@@ -39,16 +39,18 @@ int main() {
 
     NetworkBuilder builder;
 
-    builder.inputRows(784);
+    // builder.inputRows(784);
 
-    builder.fullyConnectedLayer(UpdaterID::Momentum, 32);
-    builder.activationLayer(ActivationID::Sigmoid);
-    builder.fullyConnectedLayer(UpdaterID::Momentum, 32);
-    builder.activationLayer(ActivationID::Sigmoid);
-    builder.fullyConnectedLayer(UpdaterID::Momentum, 10);
-    builder.activationLayer(ActivationID::Sigmoid);
+    // builder.fullyConnectedLayer(UpdaterID::Momentum, 32);
+    // builder.activationLayer(ActivationID::Sigmoid);
+    // builder.fullyConnectedLayer(UpdaterID::Momentum, 32);
+    // builder.activationLayer(ActivationID::Sigmoid);
+    // builder.fullyConnectedLayer(UpdaterID::Momentum, 10);
+    // builder.activationLayer(ActivationID::Sigmoid);
 
-    LayeredNetwork* network = builder.build();
+    // LayeredNetwork* network = builder.build();
+
+    LayeredNetwork* network = builder.fromFile("state");
 
     network->getNetworkInformation().setLearningRate(0.01);
     network->getNetworkInformation().setVelocityCoefficient(0.9);
@@ -64,8 +66,8 @@ int main() {
     int lastAnswer = -1;
 
     clock_t start = clock();
-    // for(int j = 0; j < 10; j++) {
-        for(int i = 0; i < 60000; i++) {
+    // for(int j = 0; j < 2; j++) {
+        for(int i = 0; i < 1000; i++) {
             if(lastAnswer != -1)
                 answerMatrix->set(lastAnswer, 0, 0);
             
@@ -95,4 +97,6 @@ int main() {
 
         printf("------\n");
     // }
+
+    network->toFile("state");
 }

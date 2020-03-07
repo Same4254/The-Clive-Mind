@@ -6,6 +6,7 @@
 
 #include "LayeredNetwork/LayeredNetwork.hpp"
 #include "LayeredNetwork/Layers/FullyConnectedLayer.hpp"
+#include "LayeredNetwork/Layers/ConvolutionalLayer.hpp"
 #include "LayeredNetwork/Layers/ActivationLayer.hpp"
 #include "LayeredNetwork/ActivationFunctions/SigmoidFunction.hpp"
 
@@ -22,9 +23,10 @@ public:
     ~NetworkBuilder();
 
     LayeredNetwork* build();
+    LayeredNetwork* fromFile(char* filename);
 
     NetworkBuilder& fullyConnectedLayer(UpdaterID id, int numNodes);
-    // NetworkBuilder& convLayer(UpdaterID id, int kernalCount, int kernalSize, int stride);
+    NetworkBuilder& convolutionLayer(UpdaterID id, int kernalCount, int kernalSize, int stride);
     NetworkBuilder& activationLayer(ActivationID id);
 
     void matrixCount(int inputMatrixCount) { this->inputMatrixCount = inputMatrixCount; }

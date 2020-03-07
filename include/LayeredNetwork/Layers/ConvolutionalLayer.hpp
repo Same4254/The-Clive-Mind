@@ -14,6 +14,8 @@ private:
     Matrix* biasGradient;
     Updater* biasUpdater;
 
+    UpdaterID updaterID;
+
     Matrix* errorDialatedPadded;
 
     int kernalSize;
@@ -24,10 +26,13 @@ private:
     Matrix* convolute(Matrix* input, Matrix* filter, double bias, Matrix* output, int s, bool flipped, Matrix* adder);
 
 public:
-    ConvolutionalLayer(NetworkInformation& networkInformation, int index, int kernalCount, int kernalSize, int stride);
+    ConvolutionalLayer(NetworkInformation& networkInformation, UpdaterID updaterID, int index, int kernalCount, int kernalSize, int stride);
 
     void initialize();
     void postInitialize();
+
+    void toFile(FILE* file);
+    void fromFile(FILE* file);
 
     Matrix* feedForward();
     Matrix* calculateGradient();

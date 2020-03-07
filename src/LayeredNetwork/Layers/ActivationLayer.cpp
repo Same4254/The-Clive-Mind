@@ -1,7 +1,7 @@
 #include "LayeredNetwork/Layers/ActivationLayer.hpp"
 
 ActivationLayer::ActivationLayer(NetworkInformation& networkInformation, int index, ActivationID activationID) 
-    : Layer(networkInformation, index) { 
+    : Layer(networkInformation, Act, index), activationID(activationID) { 
 
     if(activationID == Sigmoid)
         function = new SigmoidFunction();
@@ -12,6 +12,15 @@ ActivationLayer::ActivationLayer(NetworkInformation& networkInformation, int ind
 ActivationLayer::~ActivationLayer() {
     delete function;
 }
+
+
+void ActivationLayer::writeConstructInfo(FILE* file) {
+    int id = activationID;
+    fwrite(&id, sizeof(int), 1, file);
+}
+
+void ActivationLayer::writeState(FILE* file) { }
+void ActivationLayer::loadState(FILE* file) { }
 
 void ActivationLayer::initialize() {
     outputMatrixCount = inputMatrixCount;
