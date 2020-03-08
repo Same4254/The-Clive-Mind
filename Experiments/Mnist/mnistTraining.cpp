@@ -39,7 +39,15 @@ int main() {
 
     NetworkBuilder builder;
 
-    // builder.inputRows(784);
+    // builder.inputRows(28);
+    // builder.inputCols(28);
+
+    // builder.convolutionLayer(UpdaterID::Momentum, 1, 4, 1);
+    // builder.activationLayer(ActivationID::Sigmoid);
+    // builder.fullyConnectedLayer(UpdaterID::Momentum, 30);
+    // builder.activationLayer(ActivationID::Sigmoid);
+    // builder.fullyConnectedLayer(UpdaterID::Momentum, 10);
+    // builder.activationLayer(ActivationID::Sigmoid);
 
     // builder.fullyConnectedLayer(UpdaterID::Momentum, 32);
     // builder.activationLayer(ActivationID::Sigmoid);
@@ -56,7 +64,7 @@ int main() {
     network->getNetworkInformation().setVelocityCoefficient(0.9);
     network->getNetworkInformation().setBatchSize(20);
 
-    inputMatrix = new Matrix(NULL, 784, 1);
+    inputMatrix = new Matrix(NULL, 28, 28);
     answerMatrix = new Matrix(10, 1, 0);
 
     double percent = evaluate(network) / 100.0;
@@ -67,7 +75,7 @@ int main() {
 
     clock_t start = clock();
     // for(int j = 0; j < 2; j++) {
-        for(int i = 0; i < 1000; i++) {
+        for(int i = 0; i < 60000; i++) {
             if(lastAnswer != -1)
                 answerMatrix->set(lastAnswer, 0, 0);
             

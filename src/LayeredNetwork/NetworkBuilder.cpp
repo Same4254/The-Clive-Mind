@@ -50,6 +50,15 @@ LayeredNetwork* NetworkBuilder::fromFile(char* filename) {
             fread(&func, sizeof(int), 1, file);
 
             activationLayer((ActivationID) func);
+        } else if(layer = Conv) {
+            int up, outputMatrixCount, kernalSize, stride;
+
+            fread(&up, sizeof(int), 1, file);
+            fread(&outputMatrixCount, sizeof(int), 1, file);
+            fread(&kernalSize, sizeof(int), 1, file);
+            fread(&stride, sizeof(int), 1, file);
+
+            convolutionLayer((UpdaterID) up, outputMatrixCount, kernalSize, stride);
         }
     }
 

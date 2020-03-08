@@ -51,22 +51,23 @@ void ConvolutionalLayer::initialize() {
 
     weights = new Matrix*[outputMatrixCount];
     weightGradient = new Matrix*[outputMatrixCount];
-    weightUpdater = new Updater*[outputMatrixCount];
+    weightUpdater = new Updater**[outputMatrixCount];
     for(int i = 0; i < outputMatrixCount; i++) {
         weights[i] = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
         weightGradient[i] = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
-        weightUpdater[i] = (MomentumUpdater*) malloc(sizeof(MomentumUpdater) * inputMatrixCount);
+        weightUpdater[i] = new Updater*[inputMatrixCount]; //malloc(sizeof(MomentumUpdater) * inputMatrixCount);
 
         for(int j = 0; j < inputMatrixCount; j++) {
             new (&(weights[i][j])) Matrix(&(parameters[((i * inputMatrixCount) + j) * kernalSize * kernalSize]), kernalSize, kernalSize, -1.0, 1.0);
             new (&(weightGradient[i][j])) Matrix(&(parameterGradientInfo[((i * inputMatrixCount) + j) * kernalSize * kernalSize]), kernalSize, kernalSize);
-            new (&(weightUpdater[i][j])) MomentumUpdater(networkInformation, kernalSize, kernalSize);
+            weightUpdater[i][j] = createUpdaterFromID(updaterID, networkInformation, kernalSize, kernalSize).release();
+            // new (&(weightUpdater[i][j])) MomentumUpdater(networkInformation, kernalSize, kernalSize);
         }
     }
 
     bias = new Matrix(&(parameters[parameterLength - outputMatrixCount]), 1, outputMatrixCount, -1.0, 1.0);
     biasGradient = new Matrix(&(parameterGradientInfo[parameterLength - outputMatrixCount]), 1, outputMatrixCount);
-    biasUpdater = new MomentumUpdater(networkInformation, 1, outputMatrixCount);
+    biasUpdater = createUpdaterFromID(updaterID, networkInformation, 1, outputMatrixCount).release();//new MomentumUpdater(networkInformation, 1, outputMatrixCount);
 
     double outputRows = ((inputNRows - kernalSize) / ((double) stride)) + 1.0;
     double outputCols = ((inputNCols - kernalSize) / ((double) stride)) + 1.0;
@@ -90,17 +91,15 @@ void ConvolutionalLayer::initialize() {
     if(index != 0) {
         input = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
 
-        for(int i = 0; i < inputMatrixCount; i++) {
+        for(int i = 0; i < inputMatrixCount; i++)
             new (&input[i]) Matrix(&(networkInformation.getLayers()[index - 1]->getOutputInfo()[inputNCols * inputNRows * i]), inputNRows, inputNCols);
-        }
 
         layerGradient = (Matrix*) malloc(sizeof(Matrix) * inputMatrixCount);
         layerGradientInfoLength = networkInformation.getLayers()[index - 1]->getOutputInfoLength();
         layerGradientInfo = (double*) calloc(layerGradientInfoLength, sizeof(double));
 
-        for(int i = 0; i < inputMatrixCount; i++) {
+        for(int i = 0; i < inputMatrixCount; i++)
             new (&layerGradient[i]) Matrix(&layerGradientInfo[inputNRows * inputNCols * i], inputNRows, inputNCols);
-        }
     }
 }
 
@@ -112,12 +111,31 @@ void ConvolutionalLayer::postInitialize() {
     }
 }
 
-void ConvolutionalLayer::toFile(FILE* file) {
+void ConvolutionalLayer::writeConstructInfo(FILE* file) {
+    int updater = (int) updaterID;
+    fwrite(&updater, sizeof(int), 1, file);
 
+    fwrite(&outputMatrixCount, sizeof(int), 1, file);
+    fwrite(&kernalSize, sizeof(int), 1, file);
+    fwrite(&stride, sizeof(int), 1, file);
 }
 
-void ConvolutionalLayer::fromFile(FILE* file) {
-    
+void ConvolutionalLayer::writeState(FILE* file) {
+    for(int i = 0; i < outputMatrixCount; i++) {
+    for(int j = 0; j < inputMatrixCount; j++) {
+        weightUpdater[i][j]->writeState(file);
+    }}
+
+    biasUpdater->writeState(file);
+}
+
+void ConvolutionalLayer::loadState(FILE* file) {
+    for(int i = 0; i < outputMatrixCount; i++) {
+    for(int j = 0; j < inputMatrixCount; j++) {
+        weightUpdater[i][j]->loadState(file);
+    }}
+
+    biasUpdater->loadState(file);
 }
 
 Matrix* ConvolutionalLayer::feedForward() {
@@ -169,7 +187,7 @@ Matrix* ConvolutionalLayer::calculateGradient() {
 void ConvolutionalLayer::update() {
     for(int i = 0; i < outputMatrixCount; i++)
     for(int j = 0; j < inputMatrixCount; j++)
-        (&weightUpdater[i][j])->update(&weights[i][j], &weightGradient[i][j]);
+        weightUpdater[i][j]->update(&weights[i][j], &weightGradient[i][j]);
 
     biasUpdater->update(bias, biasGradient);
 }

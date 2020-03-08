@@ -2,16 +2,23 @@
 #define LAYERED_NETWORK_HPP
 
 #include <stdio.h>
-#include <memory>
 #include <vector>
 
 #include "LayeredNetwork/NetworkInformation.hpp"
 #include "LayeredNetwork/Layers/Layer.hpp"
+#include "Databases/Database.hpp"
+
+enum DatabaseID {
+    mnist
+};
 
 class LayeredNetwork {
 private:
     NetworkInformation networkInformation;
     std::vector<std::unique_ptr<Layer>> layers;
+
+    Matrix* inputMatrix;
+    Matrix* labelMatrix;
 
     int inputMatrixCount;
     int inputNRows;
@@ -21,6 +28,8 @@ private:
     int outputNRows;
     int outputNCols;
 
+    void calculateGradients();
+
 public:
     LayeredNetwork(int inputMatrixCount, int inputNRows, int inputNCols);
     ~LayeredNetwork();
@@ -28,12 +37,15 @@ public:
     void initialize();
     void toFile(char* filename);
 
-    Matrix* feedForward(Matrix* input);
-    void calculateGradients(Matrix* labels);
-    void update();
+    void trainEpoch(Database* database);
+    double evaluate(Database* database);
+
+    Matrix* feedForward(double* input);
+    void calculateGradients(double* labels);
 
     NetworkInformation& getNetworkInformation();
     Matrix* getOutput();
+    void update();
 
     std::vector<std::unique_ptr<Layer>>& getLayers();
 };

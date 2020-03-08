@@ -8,7 +8,7 @@ class ConvolutionalLayer : public Layer {
 private:
     Matrix** weights;
     Matrix** weightGradient;
-    Updater** weightUpdater;
+    Updater*** weightUpdater;
 
     Matrix* bias;
     Matrix* biasGradient;
@@ -31,8 +31,9 @@ public:
     void initialize();
     void postInitialize();
 
-    void toFile(FILE* file);
-    void fromFile(FILE* file);
+    void writeConstructInfo(FILE* file);
+    void writeState(FILE* file);
+    void loadState(FILE* file);
 
     Matrix* feedForward();
     Matrix* calculateGradient();

@@ -79,8 +79,8 @@ void FullyConnectedLayer::writeConstructInfo(FILE* file) {
 }
 
 void FullyConnectedLayer::writeState(FILE* file) {
-    weightUpdater->toFile(file);
-    biasUpdater->toFile(file);
+    weightUpdater->writeState(file);
+    biasUpdater->writeState(file);
 }
 
 void FullyConnectedLayer::loadState(FILE* file) {

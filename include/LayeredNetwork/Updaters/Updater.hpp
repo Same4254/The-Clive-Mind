@@ -17,7 +17,7 @@ public:
     Updater(NetworkInformation& networkInformation, int parameterRows, int parameterCols);
     virtual ~Updater();
 
-    void toFile(FILE* file);
+    void writeState(FILE* file);
     void loadState(FILE* file);
 
     virtual void update(Matrix* parameters, Matrix* gradient) = 0;

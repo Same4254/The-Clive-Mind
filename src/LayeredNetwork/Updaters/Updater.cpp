@@ -16,7 +16,7 @@ void Updater::loadState(FILE* file) {
         fread(learningData, sizeof(double), learningDataLength, file);
 }
 
-void Updater::toFile(FILE* file) {
+void Updater::writeState(FILE* file) {
     if(learningDataLength > 0) 
         fwrite(learningData, sizeof(double), learningDataLength, file);
 }
