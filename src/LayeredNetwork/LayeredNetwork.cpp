@@ -140,7 +140,7 @@ void LayeredNetwork::update() {
 }
 
 double LayeredNetwork::evaluate(Database* database) {
-    double right = 0;
+    double error = 0;
 
     for(int index = 0; index < database->getTestSize(); index++) {
         double* testData = database->getTestData(index);
@@ -161,23 +161,11 @@ double LayeredNetwork::evaluate(Database* database) {
         for(int i = 0; i < layers.size(); i++)
             layers[i]->feedForward();
 
-        int greatestOutputIndex = 0;
-        for(int i = 0; i < layers[layers.size() - 1]->getOutputInfoLength(); i++) {
-            if(layers[layers.size() - 1]->getOutputInfo()[i] > layers[layers.size() - 1]->getOutputInfo()[greatestOutputIndex])
-                greatestOutputIndex = i;
-        }
-
-        int greatestLabelIndex = 0;
-        for(int i = 0; i < layers[layers.size() - 1]->getOutputInfoLength(); i++) {
-            if(testLabel[i] > testLabel[greatestLabelIndex])
-                greatestLabelIndex = i;
-        }
-
-        if(greatestOutputIndex == greatestLabelIndex)
-            right++;
+        for(int i = 0; i < layers[layers.size() - 1]->getOutputInfoLength(); i++) 
+            error += pow(layers[layers.size() - 1]->getOutputInfo()[i] - testLabel[i], 2);
     }
 
-    return right / database->getTestSize();
+    return error / (2.0 * database->getTestSize());
 }
 
 NetworkInformation& LayeredNetwork::getNetworkInformation() { return networkInformation; }

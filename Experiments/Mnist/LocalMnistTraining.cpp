@@ -28,17 +28,17 @@ int main() {
 
     Database* database = new MnistDatabase();
 
-    double percent = network->evaluate(database) * 100.0;
+    double error = network->evaluate(database);
 
-    printf("Initial Score: %f%%\n", percent);
+    printf("Initial Error: %f\n", error);
 
     clock_t start = clock();
     network->trainEpoch(database);
     clock_t end = clock();
 
-    percent = network->evaluate(database) * 100.0;
+    error = network->evaluate(database);
 
-    printf("Final Score: %f%%\n", percent);
+    printf("Final Error: %f\n", error);
 
     double timeSpent = ((double)(end - start)) / CLOCKS_PER_SEC;
     printf("Time: %f seconds\n", timeSpent);

@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <vector>
+#include <math.h>
 
 #include "LayeredNetwork/NetworkInformation.hpp"
 #include "LayeredNetwork/Layers/Layer.hpp"

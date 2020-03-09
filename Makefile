@@ -22,7 +22,7 @@ $(BIN_DIR)%$(OBJECT_FILES): $(SRC_DIR)%$(SOURCE_FILES) $(HEADERS)
 
 .PHONY: mnist
 mnist: $(OBJECTS) $(HEADERS)
-	$(CC) $(CPPFLAGS) Experiments/Mnist/training2.cpp -o mnist-test $(OBJECTS)
+	$(CC) $(CPPFLAGS) Experiments/Mnist/LocalMnistTraining.cpp -o mnist-test $(OBJECTS)
 
 .PHONY: test
 test: $(OBJECTS) $(HEADERS)
