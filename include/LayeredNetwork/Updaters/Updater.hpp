@@ -18,7 +18,7 @@ public:
     virtual ~Updater();
 
     void writeState(FILE* file);
-    void loadState(FILE* file);
+    bool loadState(FILE* file);
 
     virtual void update(Matrix* parameters, Matrix* gradient) = 0;
 

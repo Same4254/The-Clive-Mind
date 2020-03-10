@@ -23,7 +23,7 @@ public:
     ~NetworkBuilder();
 
     LayeredNetwork* build();
-    LayeredNetwork* fromFile(char* filename);
+    LayeredNetwork* fromFile(std::string filename);
 
     NetworkBuilder& fullyConnectedLayer(UpdaterID id, int numNodes);
     NetworkBuilder& convolutionLayer(UpdaterID id, int kernalCount, int kernalSize, int stride);

@@ -20,7 +20,7 @@ void ActivationLayer::writeConstructInfo(FILE* file) {
 }
 
 void ActivationLayer::writeState(FILE* file) { }
-void ActivationLayer::loadState(FILE* file) { }
+bool ActivationLayer::loadState(FILE* file) { return true; }
 
 void ActivationLayer::initialize() {
     outputMatrixCount = inputMatrixCount;

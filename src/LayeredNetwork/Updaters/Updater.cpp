@@ -11,9 +11,16 @@ Updater::~Updater() {
     free(learningData);
 }
 
-void Updater::loadState(FILE* file) {
-    if(learningDataLength > 0) 
-        fread(learningData, sizeof(double), learningDataLength, file);
+bool Updater::loadState(FILE* file) {
+    if(learningDataLength > 0) {
+        if(fread(learningData, sizeof(double), learningDataLength, file) != learningDataLength) {
+            std::cerr << "Learning Data of file is not valid!" << std::endl;
+
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void Updater::writeState(FILE* file) {

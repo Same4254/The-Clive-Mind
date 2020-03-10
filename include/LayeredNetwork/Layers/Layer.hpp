@@ -65,7 +65,7 @@ public:
 
     virtual void writeConstructInfo(FILE* file);
     virtual void writeState(FILE* file);
-    virtual void loadState(FILE* file);
+    virtual bool loadState(FILE* file);
 
     virtual Matrix* feedForward() = 0;
     virtual Matrix* calculateGradient() = 0;

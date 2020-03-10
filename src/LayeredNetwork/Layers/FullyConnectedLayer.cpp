@@ -83,9 +83,13 @@ void FullyConnectedLayer::writeState(FILE* file) {
     biasUpdater->writeState(file);
 }
 
-void FullyConnectedLayer::loadState(FILE* file) {
-    weightUpdater->loadState(file);
-    biasUpdater->loadState(file);
+bool FullyConnectedLayer::loadState(FILE* file) {
+    if(!weightUpdater->loadState(file) || !biasUpdater->loadState(file)) {
+        std::cerr << "Fully Connected Layer could not load state from file" << std::endl;
+        return false;
+    }
+
+    return true;
 }
 
 Matrix* FullyConnectedLayer::feedForward() {

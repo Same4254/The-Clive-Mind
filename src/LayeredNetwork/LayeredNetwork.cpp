@@ -24,12 +24,12 @@ void LayeredNetwork::initialize() {
     layers[0]->setInputNRows(inputNRows);
     layers[0]->setInputNCols(inputNCols);
 
-    for(int i = 0; i < layers.size(); i++) {
+    for(unsigned int i = 0; i < layers.size(); i++) {
         layers[i]->Layer::initialize();
         layers[i]->initialize();
     }
 
-    for(int i = 0; i < layers.size(); i++)
+    for(unsigned int i = 0; i < layers.size(); i++)
         layers[i]->postInitialize();
 
     outputMatrixCount = layers[layers.size() - 1]->getOutputMatrixCount();
@@ -48,8 +48,8 @@ void LayeredNetwork::initialize() {
     layers[0]->setInputMatrix(inputMatrix);
 }
 
-void LayeredNetwork::toFile(char* filename) {
-    FILE* file = fopen(filename, "w");
+void LayeredNetwork::toFile(std::string filename) {
+    FILE* file = fopen(filename.c_str(), "w");
 
     int amountOfLayers = layers.size();
 
@@ -90,7 +90,7 @@ void LayeredNetwork::trainEpoch(Database* database) {
             index += (&labelMatrix[i])->getLength();
         }
 
-        for(int i = 0; i < layers.size(); i++)
+        for(unsigned int i = 0; i < layers.size(); i++)
             layers[i]->feedForward();
 
         calculateGradients();
@@ -107,7 +107,7 @@ Matrix* LayeredNetwork::feedForward(double* input) {
         index += (&inputMatrix[i])->getLength();
     }
 
-    for(int i = 0; i < layers.size(); i++)
+    for(unsigned int i = 0; i < layers.size(); i++)
         layers[i]->feedForward();
 
     return getOutput();
@@ -135,7 +135,7 @@ void LayeredNetwork::calculateGradients(double* labels) {
 }
 
 void LayeredNetwork::update() {
-    for(int i = 0; i < layers.size(); i++)
+    for(unsigned int i = 0; i < layers.size(); i++)
         layers[i]->update();
 }
 
@@ -158,7 +158,7 @@ double LayeredNetwork::evaluate(Database* database) {
             dataIndex += (&labelMatrix[i])->getLength();
         }
 
-        for(int i = 0; i < layers.size(); i++)
+        for(unsigned int i = 0; i < layers.size(); i++)
             layers[i]->feedForward();
 
         for(int i = 0; i < layers[layers.size() - 1]->getOutputInfoLength(); i++) 

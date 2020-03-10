@@ -17,56 +17,77 @@ LayeredNetwork* NetworkBuilder::build() {
     return network.release();
 }
 
-LayeredNetwork* NetworkBuilder::fromFile(char* filename) {
-    FILE* file = fopen(filename, "r");
+LayeredNetwork* NetworkBuilder::fromFile(std::string filename) {
+    FILE* file = fopen(filename.c_str(), "r");
 
-    int amountOfLayers, inputMatrixCount, inputNRows, inputNCols;
+    int info[4];
 
-    fread(&amountOfLayers, sizeof(int), 1, file);
-    fread(&inputMatrixCount, sizeof(int), 1, file);
-    fread(&inputNRows, sizeof(int), 1, file);
-    fread(&inputNCols, sizeof(int), 1, file);
+    if(fread(info, sizeof(int), 4, file) != 4) {
+        return NULL;
+    }
 
-    network = std::make_unique<LayeredNetwork>(inputMatrixCount, inputNRows, inputNCols);
+    int amountOfLayers = info[0];
+
+    network = std::make_unique<LayeredNetwork>(info[1], info[2], info[3]);
 
     for(int i = 0; i < amountOfLayers; i++) {
         int id;
-        fread(&id, sizeof(int), 1, file);
+        if(fread(&id, sizeof(int), 1, file) != 1) {
+            network.reset();
+            return NULL;
+        }
 
         LayerID layer = (LayerID) id;
 
         if(layer == Full) {
             int up;
-            fread(&up, sizeof(int), 1, file);
+
+            if(fread(&up, sizeof(int), 1, file) != 1) {
+                network.reset();
+                return NULL;
+            }
 
             UpdaterID updater = (UpdaterID) up;
 
             int num;
-            fread(&num, sizeof(int), 1, file);
+            if(fread(&num, sizeof(int), 1, file) != 1) {
+                network.reset();
+                return NULL;
+            }
 
             fullyConnectedLayer(updater, num);
         } else if(layer == Act) {
             int func;
-            fread(&func, sizeof(int), 1, file);
+            if(fread(&func, sizeof(int), 1, file) != 1) {
+                network.reset();
+                return NULL;
+            }
 
             activationLayer((ActivationID) func);
-        } else if(layer = Conv) {
-            int up, outputMatrixCount, kernalSize, stride;
+        } else if(layer == Conv) {
+            int data[4];
 
-            fread(&up, sizeof(int), 1, file);
-            fread(&outputMatrixCount, sizeof(int), 1, file);
-            fread(&kernalSize, sizeof(int), 1, file);
-            fread(&stride, sizeof(int), 1, file);
+            if(fread(data, sizeof(int), 4, file) != 4) {
+                network.reset();
+                return NULL;
+            }
 
-            convolutionLayer((UpdaterID) up, outputMatrixCount, kernalSize, stride);
+            convolutionLayer((UpdaterID) data[0], data[1], data[2], data[3]);
         }
     }
 
     network->initialize();
 
     for(int i = 0; i < amountOfLayers; i++) {
-        network->getLayers()[i]->loadState(file);
-        network->getLayers()[i]->Layer::loadState(file);
+        if(!network->getLayers()[i]->loadState(file)) {
+            network.reset();
+            return NULL;
+        }
+
+        if(!network->getLayers()[i]->Layer::loadState(file)) {
+            network.reset();
+            return NULL;
+        }
     }
 
     fclose(file);

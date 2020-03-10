@@ -1,13 +1,12 @@
 #include "LayeredNetwork/Layers/Layer.hpp"
 
 std::unique_ptr<Updater> Layer::createUpdaterFromID(UpdaterID id, NetworkInformation& networkInformation, int parameterRows, int parameterCols) {
-    if(id == Momentum) {
+    if(id == Momentum)
         return std::make_unique<MomentumUpdater>(networkInformation, parameterRows, parameterCols);
-    } else if(id == Adam) {
+    else if(id == Adam)
         return std::make_unique<AdamUpdater>(networkInformation, parameterRows, parameterCols);
-    } else if(id == RMS) {
-        return std::make_unique<RMSUpdater>(networkInformation, parameterRows, parameterCols);
-    }
+    
+    return std::make_unique<RMSUpdater>(networkInformation, parameterRows, parameterCols);
 }
 
 Layer::Layer(NetworkInformation& networkInformation, LayerID layerID, int index) : networkInformation(networkInformation), layerID(layerID), index(index) {
@@ -87,9 +86,15 @@ void Layer::writeState(FILE* file) {
         fwrite(parameters, sizeof(double), parameterLength, file);
 }
 
-void Layer::loadState(FILE* file) {
-    if(parameterLength > 0)
-        fread(parameters, sizeof(double), parameterLength, file);
+bool Layer::loadState(FILE* file) {
+    if(parameterLength > 0) {
+        if(fread(parameters, sizeof(double), parameterLength, file) != parameterLength) {
+            std::cerr << "Layer could not load state!" << std::endl;
+            return false;
+        }
+    }
+
+    return true;
 }
 
 int Layer::getParameterLength() { return parameterLength; }

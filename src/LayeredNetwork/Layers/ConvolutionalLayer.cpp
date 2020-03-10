@@ -129,13 +129,21 @@ void ConvolutionalLayer::writeState(FILE* file) {
     biasUpdater->writeState(file);
 }
 
-void ConvolutionalLayer::loadState(FILE* file) {
+bool ConvolutionalLayer::loadState(FILE* file) {
     for(int i = 0; i < outputMatrixCount; i++) {
     for(int j = 0; j < inputMatrixCount; j++) {
-        weightUpdater[i][j]->loadState(file);
+        if(!weightUpdater[i][j]->loadState(file)) {
+            std::cerr << "Conv state could not be loaded" << std::endl;
+            return false;
+        }
     }}
 
-    biasUpdater->loadState(file);
+    if(!biasUpdater->loadState(file)) {
+        std::cerr << "Conv state could not be loaded" << std::endl;
+        return false;
+    }
+
+    return true;
 }
 
 Matrix* ConvolutionalLayer::feedForward() {

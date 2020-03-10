@@ -22,6 +22,12 @@ int main() {
 
     LayeredNetwork* network = builder.build();
 
+    // LayeredNetwork* network = builder.fromFile("state");
+
+    if(network == NULL) {
+        std::cerr << "Network could not be created" << std::endl;
+    }
+
     network->getNetworkInformation().setLearningRate(0.01);
     network->getNetworkInformation().setVelocityCoefficient(0.9);
     network->getNetworkInformation().setBatchSize(20);
@@ -42,4 +48,6 @@ int main() {
 
     double timeSpent = ((double)(end - start)) / CLOCKS_PER_SEC;
     printf("Time: %f seconds\n", timeSpent);
+
+    // network->toFile("state");
 }

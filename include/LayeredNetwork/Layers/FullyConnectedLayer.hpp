@@ -23,7 +23,7 @@ public:
     
     void writeConstructInfo(FILE* file);
     void writeState(FILE* file);
-    void loadState(FILE* file);
+    bool loadState(FILE* file);
 
     Matrix* feedForward();
     Matrix* calculateGradient();

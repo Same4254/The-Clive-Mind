@@ -36,7 +36,7 @@ public:
     ~LayeredNetwork();
 
     void initialize();
-    void toFile(char* filename);
+    void toFile(std::string filename);
 
     void trainEpoch(Database* database);
     double evaluate(Database* database);
