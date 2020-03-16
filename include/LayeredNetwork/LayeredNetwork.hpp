@@ -9,10 +9,6 @@
 #include "LayeredNetwork/Layers/Layer.hpp"
 #include "Databases/Database.hpp"
 
-enum DatabaseID {
-    mnist
-};
-
 class LayeredNetwork {
 private:
     NetworkInformation networkInformation;

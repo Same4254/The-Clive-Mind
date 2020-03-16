@@ -7,6 +7,7 @@ HEADER_FILES := hpp
 OBJECT_FILES := o
 
 CC       := g++
+MPI      := mpic++
 CPPFLAGS := -std=c++17 -O3 -Wall -I $(HEADER_DIR)
 
 SOURCES := $(shell find $(SRC_DIR) -name "*.$(SOURCE_FILES)")
@@ -22,7 +23,11 @@ $(BIN_DIR)%$(OBJECT_FILES): $(SRC_DIR)%$(SOURCE_FILES) $(HEADERS)
 
 .PHONY: mnist
 mnist: $(OBJECTS) $(HEADERS)
-	$(CC) $(CPPFLAGS) Experiments/Mnist/LocalMnistTraining.cpp -o mnist-test $(OBJECTS)
+	$(CC) $(CPPFLAGS) Experiments/Mnist/LocalMnistTraining.cpp -o mnist $(OBJECTS)
+
+.PHONY: picker
+picker: $(OBJECTS) $(HEADERS)
+	$(MPI) $(CPPFLAGS) Experiments/Mnist/MPIEnsembleMnistTraining.cpp -o picker $(OBJECTS)
 
 .PHONY: test
 test: $(OBJECTS) $(HEADERS)

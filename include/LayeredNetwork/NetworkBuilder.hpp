@@ -2,7 +2,6 @@
 #define NETWORK_BUILDER
 
 #include <vector>
-#include <memory>
 
 #include "LayeredNetwork/LayeredNetwork.hpp"
 #include "LayeredNetwork/Layers/FullyConnectedLayer.hpp"

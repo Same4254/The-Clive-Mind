@@ -7,7 +7,8 @@
 #include "Databases/MnistDatabase.hpp"
 
 int main() {
-    srand(6854);
+    // srand(6854);
+    srand(time(0));
 
     NetworkBuilder builder;
 
@@ -22,7 +23,7 @@ int main() {
 
     LayeredNetwork* network = builder.build();
 
-    // LayeredNetwork* network = builder.fromFile("state");
+    // LayeredNetwork* network = builder.fromFile("state2");
 
     if(network == NULL) {
         std::cerr << "Network could not be created" << std::endl;
@@ -49,5 +50,5 @@ int main() {
     double timeSpent = ((double)(end - start)) / CLOCKS_PER_SEC;
     printf("Time: %f seconds\n", timeSpent);
 
-    // network->toFile("state");
+    network->toFile("state8");
 }

@@ -7,6 +7,8 @@ ActivationLayer::ActivationLayer(NetworkInformation& networkInformation, int ind
         function = new SigmoidFunction();
     else if(activationID == Relu)
         function = new ReluFunction();
+    else if(activationID == Softplus)
+        function = new SoftplusFunction();
 }
 
 ActivationLayer::~ActivationLayer() {
