@@ -21,7 +21,7 @@ enum UpdaterID {
 };
 
 enum ActivationID {
-    Sigmoid, Relu, Softplus
+    Sigmoid, Relu, Softplus, LeakyRelu
 };
 
 class Layer {

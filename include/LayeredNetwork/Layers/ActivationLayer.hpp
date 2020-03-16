@@ -7,6 +7,7 @@
 #include "LayeredNetwork/ActivationFunctions/SigmoidFunction.hpp"
 #include "LayeredNetwork/ActivationFunctions/ReluFunction.hpp"
 #include "LayeredNetwork/ActivationFunctions/SoftplusFunction.hpp"
+#include "LayeredNetwork/ActivationFunctions/LeakyReluFunction.hpp"
 
 class ActivationLayer: public Layer {
 private: 

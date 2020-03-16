@@ -1,5 +1,5 @@
-#ifndef APROX_RELU_FUNCTION_HPP
-#define APROX_RELU_FUNCTION_HPP
+#ifndef SOFTPLUS_FUNCTION_HPP
+#define SOFTPLUS_FUNCTION_HPP
 
 #include "LayeredNetwork/ActivationFunctions/ActivationFunction.hpp"
 

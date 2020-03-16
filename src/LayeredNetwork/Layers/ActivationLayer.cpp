@@ -9,6 +9,8 @@ ActivationLayer::ActivationLayer(NetworkInformation& networkInformation, int ind
         function = new ReluFunction();
     else if(activationID == Softplus)
         function = new SoftplusFunction();
+    else if(activationID == LeakyRelu)
+        function = new LeakyReluFunction();
 }
 
 ActivationLayer::~ActivationLayer() {
