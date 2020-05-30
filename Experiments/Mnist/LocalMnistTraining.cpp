@@ -7,8 +7,8 @@
 #include "Databases/MnistDatabase.hpp"
 
 int main() {
-    // srand(6854);
-    srand(time(0));
+    srand(6854);
+    // srand(time(0));
 
     NetworkBuilder builder;
 

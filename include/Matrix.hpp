@@ -8,15 +8,23 @@
 class Matrix {
 private:
     double* data;
+    double** data2D;
     
     int nRows, nCols;
     int length;
+
+    /**
+     * Updates the 2 dimensonal structure of the data to the 
+     */
+    void updateData2D();
 
 public:
 
     /**
     *   The Matrix constructor will store the given data pointer with the given dimensions.
     *   The total length of the data pointer should be row * col, and the values for this pointer should be initialized.
+    * 
+    *   The dimensions of the matrix are not mutable. They cannot be changed after the creation of the matrix 
     * 
     *   @param data -> The pointer to store the data in
     *   @param nRows -> The amount of rows in the 2-dimensional representation of the matrix
@@ -96,7 +104,7 @@ public:
     *   @param nCols -> The amount of columns in the 2-dimensional representation of the matrix
     *   @return This matrix
     */
-    Matrix* setData(double* data, int nRows, int nCols);
+    // Matrix* setData(double* data, int nRows, int nCols);
 
     /**
     *   This function will make a direct copy of the given matrix "other".

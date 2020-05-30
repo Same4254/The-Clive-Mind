@@ -8,6 +8,10 @@ Matrix::Matrix(double* data, int nRows, int nCols) {
     this->nRows = nRows;
     this->nCols = nCols;
     this->length = nRows * nCols;
+
+    data2D = (double**) calloc(nRows, sizeof(double*));
+
+    updateData2D();
 }
 
 Matrix::Matrix(int nRows, int nCols) : Matrix((double*) calloc(nRows * nCols, sizeof(double)), nRows, nCols) { }
@@ -38,21 +42,30 @@ Matrix::Matrix(Matrix* other) : Matrix(other->nRows, other->nCols) {
 
 Matrix::~Matrix() { 
     free(data);
+    free(data2D);
 }
 
 Matrix* Matrix::setData(double* data) {
     this->data = data;
-    return this;
-}
 
-Matrix* Matrix::setData(double* data, int nRows, int nCols) {
-    this->data = data;
-    this->nRows = nRows;
-    this->nCols = nCols;
-    this->length = nRows * nCols;
+    updateData2D();
 
     return this;
 }
+
+void Matrix::updateData2D() {
+    for(int r = 0; r < nRows; r++)
+        data2D[r] = &data[nCols * r];
+}
+
+// Matrix* Matrix::setData(double* data, int nRows, int nCols) {
+//     this->data = data;
+//     this->nRows = nRows;
+//     this->nCols = nCols;
+//     this->length = nRows * nCols;
+
+//     return this;
+// }
 
 Matrix* Matrix::copyData(Matrix* other) {
     if(this->length != other->length)
@@ -276,10 +289,12 @@ Matrix* Matrix::multiply(Matrix* other, Matrix* result) {
         double sum = 0.0;
 
         for(int k = 0; k < this->nCols; k++) {
-            sum += data[(i * nCols) + k] * other->data[(k * other->nCols) + j];
+            // sum += data[(i * nCols) + k] * other->data[(k * other->nCols) + j];
+            sum += data2D[i][k] * other->data2D[k][j];
         }
 
-        result->data[(i * result->nCols) + j] = sum;
+        // result->data[(i * result->nCols) + j] = sum;
+        result->data2D[i][j] = sum;
     }}
 
     return result;
@@ -300,10 +315,12 @@ Matrix* Matrix::multiplyOtherTransposed(Matrix* other, Matrix* result) {
         double sum = 0.0;
 
         for(int k = 0; k < this->nCols; k++) {
-            sum += data[(i * nCols) + k] * other->data[(j * other->nCols) + k];
+            // sum += data[(i * nCols) + k] * other->data[(j * other->nCols) + k];
+            sum += data2D[i][k] * other->data2D[j][k];
         }
 
-        result->data[(i * result->nCols) + j] = sum;
+        // result->data[(i * result->nCols) + j] = sum;
+        result->data2D[i][j] = sum;
     }}
 
     return result;
@@ -327,10 +344,12 @@ Matrix* Matrix::multiplyOtherTransposedAdded(Matrix* other, Matrix* adder, Matri
         double sum = 0.0;
 
         for(int k = 0; k < this->nCols; k++) {
-            sum += data[(i * nCols) + k] * other->data[(j * other->nCols) + k];
+            // sum += data[(i * nCols) + k] * other->data[(j * other->nCols) + k];
+            sum += data2D[i][k] * other->data2D[j][k];
         }
 
-        result->data[(i * result->nCols) + j] = sum + adder->data[(i * result->nCols) + j];
+        // result->data[(i * result->nCols) + j] = sum + adder->data[(i * result->nCols) + j];
+        result->data2D[i][j] = sum + adder->data2D[i][j];
     }}
 
     return result;
@@ -351,10 +370,12 @@ Matrix* Matrix::multiplyInputTransposed(Matrix* other, Matrix* result) {
         double sum = 0.0;
 
         for(int k = 0; k < this->nRows; k++) {
-            sum += data[(k * nCols) + i] * other->data[(k * other->nCols) + j];
+            // sum += data[(k * nCols) + i] * other->data[(k * other->nCols) + j];
+            sum += data2D[k][i] * other->data2D[k][j];
         }
 
-        result->data[(i * result->nCols) + j] = sum;
+        // result->data[(i * result->nCols) + j] = sum;
+        result->data2D[i][j] = sum;
     }}
 
     return result;
@@ -378,10 +399,12 @@ Matrix* Matrix::multiplyInputTransposedAdded(Matrix* other, Matrix* adder, Matri
         double sum = 0.0;
 
         for(int k = 0; k < this->nRows; k++) {
-            sum += data[(k * nCols) + i] * other->data[(k * other->nCols) + j];
+            // sum += data[(k * nCols) + i] * other->data[(k * other->nCols) + j];
+            sum += data2D[k][i] * other->data2D[k][j];
         }
 
-        result->data[(i * result->nCols) + j] = sum + adder->data[(i * result->nCols) + j];
+        // result->data[(i * result->nCols) + j] = sum + adder->data[(i * result->nCols) + j];
+        result->data2D[i][j] = sum + adder->data2D[i][j];
     }}
 
     return result;
@@ -393,7 +416,8 @@ Matrix* Matrix::transpose(Matrix* result) {
     
     for(int row = 0; row < this->nRows; row++) {
     for(int col = 0; col < this->nCols; col++) {
-        result->set(col, row, this->at(row, col));
+        // result->set(col, row, this->at(row, col));
+        result->data2D[col][row] = data2D[row][col];
     }}
 
     return result;
