@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Chart } from 'chart.js';
 import 'chartjs-plugin-zoom';
-import 'chartjs-chart-graph'
+import 'chartjs-chart-graph';
+import * as SocketIO from 'socket.io-client';
 
 @Component({
     selector: 'app-training-graph',
@@ -13,25 +14,11 @@ export class TrainingGraphComponent implements OnInit {
     private branches = [];
     private names: string[][] = [];
 
+    private socket;
+
     constructor() {}
 
-    ngOnInit(): void {
-        // this.branches.push({
-        //     fill: false,
-        //     borderWidth: 5,
-        //     borderColor: 'rgba(0, 0, 0, 0.5)',
-        //     pointBorderColor: 'rgba(255, 0, 0, 0.6)',
-        //     pointBorderWidth: 8,
-
-        //     data: [
-        //         { x: 1, y: 10 },
-        //         { x: 2, y: 8 },
-        //         { x: 3, y: 5 },
-        //     ],
-
-        // });
-
-        // this.names.push(['Hi', 'By', 'Hi']);
+    ngOnInit(): void {        
         this.chart = new Chart('canvas', {
             type: 'line',
             data: {
@@ -165,6 +152,10 @@ export class TrainingGraphComponent implements OnInit {
         this.addState(3, 1, 1, .75, "002.001", 2, .9, "004.001");
 
         this.chart.update();
+
+        this.socket = SocketIO("http://127.0.0.1:3200");
+
+        this.socket.emit("create", "thing");
     }
 
     random_rgba() : string {
