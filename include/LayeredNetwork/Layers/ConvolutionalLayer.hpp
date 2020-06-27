@@ -1,6 +1,8 @@
 #ifndef CONVOLUTIONAL_LAYER_HPP
 #define CONVOLUTIONAL_LAYER_HPP
 
+#include <rapidjson/document.h>
+
 #include "LayeredNetwork/Layers/Layer.hpp"
 #include "LayeredNetwork/Updaters/MomentumUpdater.hpp"
 
@@ -31,7 +33,7 @@ public:
     void initialize();
     void postInitialize();
 
-    void writeConstructInfo(FILE* file);
+    void writeStructureToFile(rapidjson::Value& layerJSONObject, rapidjson::Document::AllocatorType& allocator);
     void writeState(FILE* file);
     bool loadState(FILE* file);
 

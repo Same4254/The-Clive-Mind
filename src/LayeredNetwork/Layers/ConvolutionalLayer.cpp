@@ -110,14 +110,17 @@ void ConvolutionalLayer::postInitialize() {
             new (&error[i]) Matrix(&(networkInformation.getLayers()[index + 1]->getLayerGradientInfo()[outputNRows * outputNCols * i]), outputNRows, outputNCols);
     }
 }
+void ConvolutionalLayer::writeStructureToFile(rapidjson::Value& layerJSONObject, rapidjson::Document::AllocatorType& allocator) {
+    layerJSONObject.AddMember("Name", "Conv", allocator);
 
-void ConvolutionalLayer::writeConstructInfo(FILE* file) {
-    int updater = (int) updaterID;
-    fwrite(&updater, sizeof(int), 1, file);
+    rapidjson::Value propertiesJSONObject;
+    propertiesJSONObject.SetObject();
 
-    fwrite(&outputMatrixCount, sizeof(int), 1, file);
-    fwrite(&kernalSize, sizeof(int), 1, file);
-    fwrite(&stride, sizeof(int), 1, file);
+    propertiesJSONObject.AddMember("Updater", (int) updaterID, allocator);
+    propertiesJSONObject.AddMember("KernalSize", kernalSize, allocator);
+    propertiesJSONObject.AddMember("Stride", stride, allocator);
+
+    layerJSONObject.AddMember("Properties", propertiesJSONObject, allocator);
 }
 
 void ConvolutionalLayer::writeState(FILE* file) {

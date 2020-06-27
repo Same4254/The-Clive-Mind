@@ -17,10 +17,15 @@ ActivationLayer::~ActivationLayer() {
     delete function;
 }
 
+void ActivationLayer::writeStructureToFile(rapidjson::Value& layerJSONObject, rapidjson::Document::AllocatorType& allocator) {
+    layerJSONObject.AddMember("Name", "Activation", allocator);
 
-void ActivationLayer::writeConstructInfo(FILE* file) {
-    int id = activationID;
-    fwrite(&id, sizeof(int), 1, file);
+    rapidjson::Value propertiesJSONObject;
+    propertiesJSONObject.SetObject();
+
+    propertiesJSONObject.AddMember("ActivationID", (int) activationID, allocator);
+
+    layerJSONObject.AddMember("Properties", propertiesJSONObject, allocator);
 }
 
 void ActivationLayer::writeState(FILE* file) { }

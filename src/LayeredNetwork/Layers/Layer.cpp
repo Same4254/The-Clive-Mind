@@ -79,8 +79,6 @@ void Layer::initialize() {
     }
 }
 
-void Layer::writeConstructInfo(FILE* file) { }
-
 void Layer::writeState(FILE* file) {
     if(parameterLength > 0)
         fwrite(parameters, sizeof(double), parameterLength, file);

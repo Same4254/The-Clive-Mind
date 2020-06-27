@@ -7,7 +7,7 @@ FullyConnectedLayer::FullyConnectedLayer(NetworkInformation& networkInformation,
 }
 
 FullyConnectedLayer::~FullyConnectedLayer() {
-    //Parameter and Gradients pointers are cleared by the Layer class. Just de-refrence the
+    //Parameter and Gradients pointers are cleared by the Layer class. Just de-refrence them
     weights->setData(NULL);
     biases->setData(NULL);
 
@@ -36,17 +36,6 @@ void FullyConnectedLayer::initialize() {
     weightUpdater = createUpdaterFromID(updaterID, networkInformation, outputNRows, inputNRows * inputNCols);
     biasUpdater = createUpdaterFromID(updaterID, networkInformation, outputNRows, 1);
 
-    // if(updaterID == Momentum) {
-    //     weightUpdater = new MomentumUpdater(networkInformation, outputNRows, inputNRows * inputNCols);
-    //     biasUpdater = new MomentumUpdater(networkInformation, outputNRows, 1);
-    // } else if(updaterID == Adam) {
-    //     weightUpdater = new AdamUpdater(networkInformation, outputNRows, inputNRows);
-    //     biasUpdater = new AdamUpdater(networkInformation, outputNRows, 1);
-    // } else if(updaterID == RMS) {
-    //     weightUpdater = new RMSUpdater(networkInformation, outputNRows, inputNRows);
-    //     biasUpdater = new RMSUpdater(networkInformation, outputNRows, 1);
-    // }
-
     biases = new Matrix(&(parameters[lenWeights]), outputNRows, 1, -1.0, 1.0);
     biasGradient = new Matrix(&(parameterGradientInfo[lenWeights]), outputNRows, 1, -1.0, 1.0);
 
@@ -72,10 +61,16 @@ void FullyConnectedLayer::postInitialize() {
         error = new Matrix(outputNRows, 1);
 }
 
-void FullyConnectedLayer::writeConstructInfo(FILE* file) {
-    int updater = (int) updaterID;
-    fwrite(&updater, sizeof(int), 1, file);
-    fwrite(&outputNRows, sizeof(int), 1, file);
+void FullyConnectedLayer::writeStructureToFile(rapidjson::Value& layerJSONObject, rapidjson::Document::AllocatorType& allocator) {
+    layerJSONObject.AddMember("Name", "Full", allocator);
+
+    rapidjson::Value propertiesJSONObject;
+    propertiesJSONObject.SetObject();
+
+    propertiesJSONObject.AddMember("Updater", (int) updaterID, allocator);
+    propertiesJSONObject.AddMember("NumNodes", outputNRows, allocator);
+
+    layerJSONObject.AddMember("Properties", propertiesJSONObject, allocator);
 }
 
 void FullyConnectedLayer::writeState(FILE* file) {

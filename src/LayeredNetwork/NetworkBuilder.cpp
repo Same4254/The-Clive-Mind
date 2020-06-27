@@ -17,83 +17,43 @@ LayeredNetwork* NetworkBuilder::build() {
     return network.release();
 }
 
-LayeredNetwork* NetworkBuilder::fromFile(std::string filename) {
-    FILE* file = fopen(filename.c_str(), "r");
+LayeredNetwork* NetworkBuilder::loadStructurefromJSONDocument(rapidjson::Document& document) {
+    inputMatrixCount = document["NumberInputMatricies"].GetInt();
+    inputNRows = document["NumberInputRows"].GetInt();
+    inputNCols = document["NumberInputCols"].GetInt();
 
-    int info[4];
+    rapidjson::Value::Array layerArray = document["Layers"].GetArray();
 
-    if(fread(info, sizeof(int), 4, file) != 4) {
-        return NULL;
+    for (rapidjson::Value::ConstValueIterator itr = layerArray.Begin(); itr != layerArray.End(); ++itr) {
+        rapidjson::Value::ConstObject layer = itr->GetObject();
+
+        std::string name = layer["Name"].GetString();
+        rapidjson::Value::ConstObject properties = layer["Properties"].GetObject();
+        
+        if(name == "Full")
+            fullyConnectedLayer(properties);
+        else if(name == "Conv")
+            convolutionLayer(properties);
+        else if(name == "Activation")
+            activationLayer(properties);
     }
-
-    int amountOfLayers = info[0];
-
-    network = std::make_unique<LayeredNetwork>(info[1], info[2], info[3]);
-
-    for(int i = 0; i < amountOfLayers; i++) {
-        int id;
-        if(fread(&id, sizeof(int), 1, file) != 1) {
-            network.reset();
-            return NULL;
-        }
-
-        LayerID layer = (LayerID) id;
-
-        if(layer == Full) {
-            int up;
-
-            if(fread(&up, sizeof(int), 1, file) != 1) {
-                network.reset();
-                return NULL;
-            }
-
-            UpdaterID updater = (UpdaterID) up;
-
-            int num;
-            if(fread(&num, sizeof(int), 1, file) != 1) {
-                network.reset();
-                return NULL;
-            }
-
-            fullyConnectedLayer(updater, num);
-        } else if(layer == Act) {
-            int func;
-            if(fread(&func, sizeof(int), 1, file) != 1) {
-                network.reset();
-                return NULL;
-            }
-
-            activationLayer((ActivationID) func);
-        } else if(layer == Conv) {
-            int data[4];
-
-            if(fread(data, sizeof(int), 4, file) != 4) {
-                network.reset();
-                return NULL;
-            }
-
-            convolutionLayer((UpdaterID) data[0], data[1], data[2], data[3]);
-        }
-    }
-
-    network->initialize();
-
-    for(int i = 0; i < amountOfLayers; i++) {
-        if(!network->getLayers()[i]->loadState(file)) {
-            network.reset();
-            return NULL;
-        }
-
-        if(!network->getLayers()[i]->Layer::loadState(file)) {
-            network.reset();
-            return NULL;
-        }
-    }
-
-    fclose(file);
-    return network.release();
+    
+    return build();
 }
 
+LayeredNetwork* NetworkBuilder::loadStructurefromFile(std::string filename) {
+    std::ifstream inputFileStream(filename);
+    rapidjson::IStreamWrapper inputFileStreamWrapper(inputFileStream);
+
+    rapidjson::Document document;
+    document.ParseStream(inputFileStreamWrapper);
+
+    inputFileStream.close();
+
+    return loadStructurefromJSONDocument(document);
+}
+
+/***************** Fully Connected Layer Parser *****************/
 NetworkBuilder& NetworkBuilder::fullyConnectedLayer(UpdaterID id, int numNodes) {
     if(network == nullptr)
         createNetwork();
@@ -102,6 +62,14 @@ NetworkBuilder& NetworkBuilder::fullyConnectedLayer(UpdaterID id, int numNodes) 
     return *this;
 }
 
+void NetworkBuilder::fullyConnectedLayer(rapidjson::Value::ConstObject &documentObject) {
+    int updaterID = documentObject["Updater"].GetInt();
+    int numNodes = documentObject["NumNodes"].GetInt();
+
+    fullyConnectedLayer((UpdaterID) updaterID, numNodes);
+}
+
+/***************** Convolutional Layer Parser *****************/
 NetworkBuilder& NetworkBuilder::convolutionLayer(UpdaterID id, int kernalCount, int kernalSize, int stride) {
     if(network == nullptr)
         createNetwork();
@@ -110,10 +78,26 @@ NetworkBuilder& NetworkBuilder::convolutionLayer(UpdaterID id, int kernalCount, 
     return *this;
 }
 
+void NetworkBuilder::convolutionLayer(rapidjson::Value::ConstObject &documentObject) {
+    int updaterID = documentObject["Updater"].GetInt();
+    int numKernals = documentObject["NumKernals"].GetInt();
+    int kernalSize = documentObject["KernalSize"].GetInt();
+    int stride = documentObject["Stride"].GetInt();
+
+    convolutionLayer((UpdaterID) updaterID, numKernals, kernalSize, stride);
+}
+
+/***************** Activation Layer Parser *****************/
 NetworkBuilder& NetworkBuilder::activationLayer(ActivationID id) {
     if(network == nullptr)
         createNetwork();
 
     network->getLayers().push_back(std::make_unique<ActivationLayer>(network->getNetworkInformation(), network->getLayers().size(), id));
     return *this;
+}
+
+void NetworkBuilder::activationLayer(rapidjson::Value::ConstObject &documentObject) {
+    int activationID = documentObject["ActivationID"].GetInt();
+
+    activationLayer((ActivationID) activationID);
 }

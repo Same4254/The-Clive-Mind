@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <memory>
 
+#include <rapidjson/document.h>
+
 #include "Matrix.hpp"
 #include "LayeredNetwork/NetworkInformation.hpp"
 
@@ -63,7 +65,7 @@ public:
     virtual void initialize();
     virtual void postInitialize() = 0;
 
-    virtual void writeConstructInfo(FILE* file);
+    virtual void writeStructureToFile(rapidjson::Value& layerJSONObject, rapidjson::Document::AllocatorType& allocator) = 0;
     virtual void writeState(FILE* file);
     virtual bool loadState(FILE* file);
 

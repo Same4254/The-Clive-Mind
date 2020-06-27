@@ -5,6 +5,11 @@
 #include <vector>
 #include <math.h>
 
+#include <rapidjson/document.h>
+#include <rapidjson/ostreamwrapper.h>
+#include <rapidjson/prettywriter.h>
+#include <fstream>
+
 #include "LayeredNetwork/NetworkInformation.hpp"
 #include "LayeredNetwork/Layers/Layer.hpp"
 #include "Databases/Database.hpp"
@@ -32,6 +37,7 @@ public:
     ~LayeredNetwork();
 
     void initialize();
+    void writeStructureToFile(std::string filename);
     void toFile(std::string filename);
 
     void trainEpoch(Database* database);
@@ -45,5 +51,13 @@ public:
     void update();
 
     std::vector<std::unique_ptr<Layer>>& getLayers();
+
+    int getInputMatrixCount();
+    int getInputNRows();
+    int getInputNCols();
+
+    int getOutputMatrixCount();
+    int getOutputNRows();
+    int getOutputNCols();
 };
 #endif

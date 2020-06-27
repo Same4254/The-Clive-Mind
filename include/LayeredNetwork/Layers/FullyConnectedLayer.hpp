@@ -1,6 +1,8 @@
 #ifndef FULLY_CONNECTED_LAYER_HPP
 #define FULLY_CONNECTED_LAYER_HPP
 
+#include <rapidjson/document.h>
+
 #include "LayeredNetwork/Layers/Layer.hpp"
 
 class FullyConnectedLayer : public Layer {
@@ -21,7 +23,7 @@ public:
     void initialize();
     void postInitialize();
     
-    void writeConstructInfo(FILE* file);
+    void writeStructureToFile(rapidjson::Value& layerJSONObject, rapidjson::Document::AllocatorType& allocator);
     void writeState(FILE* file);
     bool loadState(FILE* file);
 

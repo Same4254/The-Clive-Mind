@@ -2,6 +2,10 @@
 
 #include "Web/SocketIO/sio_client.h"
 
+void create(sio::message::list &data) {
+
+}
+
 /*
  * C++
  *  - Assign tasks to different PCs in the cluster
@@ -41,7 +45,9 @@ int main() {
         socket->on("create", [&](sio::event& event) {
             std::cout << "Got a create messege" << std::endl;
 
-            std::cout << event.get_message()->get_map()["learningRate"]->get_double() << std::endl;
+            // auto dataMap = event.get_message()->get
+
+            
         });
 
         socket->on("connection", [&](sio::event& event) {

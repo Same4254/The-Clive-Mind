@@ -2,23 +2,80 @@ import { Component, OnInit } from '@angular/core';
 import { Chart } from 'chart.js';
 import 'chartjs-plugin-zoom';
 import 'chartjs-chart-graph';
-import * as SocketIO from 'socket.io-client';
 
 @Component({
     selector: 'app-training-graph',
     templateUrl: './training-graph.component.html',
     styleUrls: ['./training-graph.component.css']
 })
+
 export class TrainingGraphComponent implements OnInit {
     private chart: Chart;
     private branches = [];
     private names: string[][] = [];
 
-    private socket;
-
     constructor() {}
 
     ngOnInit(): void {        
+        this.createChart();
+
+        // this.addBaseState(0, .5, "001.001");
+        // this.addState(0, 0, 0, .5, "001.001", 1, .25, "001.002");
+        // this.addState(1, 0, 0, .5, "001.001", 1, .75, "002.001");
+        // this.addState(1, 1, 1, .75, "002.001", 2, .4, "002.002");
+
+        // this.addBaseState(2, .3, "003.001");
+        // this.addState(2, 2, 0, .3, "003.001", 1, .1, "003.002");
+
+        // this.addState(3, 1, 1, .75, "002.001", 2, .9, "004.001");
+
+        // this.chart.update();
+    }
+
+    private random_rgba() : string {
+        return 'rgba(' + Math.round(Math.random() * 255) + ',' + Math.round(Math.random() * 255) + ',' + Math.round(Math.random() * 255) + ',' + 0.8 + ')';
+    }
+
+    private createBranch(newBranchIndex: number, fromBranchIndex: number, fromIteration: number, fromError: number, fromName: string) : void {
+        this.branches[newBranchIndex] = {
+            offset: fromIteration,
+            fromDataBranch: fromBranchIndex,
+
+            fill: false,
+            borderWidth: 5,
+            borderColor: this.random_rgba(),
+            pointBorderColor: 'rgba(255, 0, 0, 0.6)',
+            pointBorderWidth: 8,
+
+            data: [{x: fromIteration, y: fromError}],
+
+        };
+
+        this.names[newBranchIndex] = [fromName];
+    }
+
+    public addState(branchIndex: number, fromBranchIndex: number, fromIteration: number, fromError: number, fromName: string, iteration: number, error: number, name: string) : void {
+        if(branchIndex >= this.branches.length)
+            this.createBranch(branchIndex, fromBranchIndex, fromIteration, fromError, fromName);
+
+        this.names[branchIndex][iteration - this.branches[branchIndex]["offset"]] = name;
+        this.branches[branchIndex]['data'].push({x: iteration, y: error});
+    }
+
+    private addBaseState(branchIndex: number, error: number, name: string) : void {
+        if(branchIndex < this.branches.length) {
+            console.error("Cannot add base state to a branch that exists!");
+            return;
+        }
+
+        this.createBranch(branchIndex, 0, 0, error, name);
+    }
+
+    public updateChart() : void {
+        this.chart.update();
+    }
+
+    private createChart() : void {
         this.chart = new Chart('canvas', {
             type: 'line',
             data: {
@@ -32,6 +89,7 @@ export class TrainingGraphComponent implements OnInit {
                 },
                 
                 responsive: true,
+                maintainAspectRatio: false,
 
                 plugins: {
                     zoom: {
@@ -123,77 +181,22 @@ export class TrainingGraphComponent implements OnInit {
                 },
 
                 onClick: (event) => {
-                    var activePoints = this.chart.getElementAtEvent(event);
+                    // var activePoints = this.chart.getElementAtEvent(event);
 
-                    console.log(this.chart.getDatasetAtEvent(event));
+                    // console.log(this.chart.getDatasetAtEvent(event));
 
-                    if(!activePoints.length) return;
+                    // if(!activePoints.length) return;
 
-                    let point = activePoints[0];
+                    // let point = activePoints[0];
 
-                    var index = point['_index'];
-                    var datasetIndex = point['_datasetIndex'];
+                    // var index = point['_index'];
+                    // var datasetIndex = point['_datasetIndex'];
 
-                    console.log(point);
-                    console.log(index);
-                    console.log(datasetIndex);
+                    // console.log(point);
+                    // console.log(index);
+                    // console.log(datasetIndex);
                 }
             }
         });
-
-        this.addBaseState(0, .5, "001.001");
-        this.addState(0, 0, 0, .5, "001.001", 1, .25, "001.002");
-        this.addState(1, 0, 0, .5, "001.001", 1, .75, "002.001");
-        this.addState(1, 1, 1, .75, "002.001", 2, .4, "002.002");
-
-        this.addBaseState(2, .3, "003.001");
-        this.addState(2, 2, 0, .3, "003.001", 1, .1, "003.002");
-
-        this.addState(3, 1, 1, .75, "002.001", 2, .9, "004.001");
-
-        this.chart.update();
-
-        this.socket = SocketIO("http://127.0.0.1:3200");
-
-        this.socket.emit("create", "thing");
-    }
-
-    random_rgba() : string {
-        return 'rgba(' + Math.round(Math.random() * 255) + ',' + Math.round(Math.random() * 255) + ',' + Math.round(Math.random() * 255) + ',' + 0.8 + ')';
-    }
-
-    createBranch(newBranchIndex: number, fromBranchIndex: number, fromIteration: number, fromError: number, fromName: string) : void {
-        this.branches[newBranchIndex] = {
-            offset: fromIteration,
-            fromDataBranch: fromBranchIndex,
-
-            fill: false,
-            borderWidth: 5,
-            borderColor: this.random_rgba(),
-            pointBorderColor: 'rgba(255, 0, 0, 0.6)',
-            pointBorderWidth: 8,
-
-            data: [{x: fromIteration, y: fromError}],
-
-        };
-
-        this.names[newBranchIndex] = [fromName];
-    }
-
-    addState(branchIndex: number, fromBranchIndex: number, fromIteration: number, fromError: number, fromName: string, iteration: number, error: number, name: string) : void {
-        if(branchIndex >= this.branches.length)
-            this.createBranch(branchIndex, fromBranchIndex, fromIteration, fromError, fromName);
-
-        this.names[branchIndex][iteration - this.branches[branchIndex]["offset"]] = name;
-        this.branches[branchIndex]['data'].push({x: iteration, y: error});
-    }
-
-    addBaseState(branchIndex: number, error: number, name: string) {
-        if(branchIndex < this.branches.length) {
-            console.error("Cannot add base state to a branch that exists!");
-            return;
-        }
-
-        this.createBranch(branchIndex, 0, 0, error, name);
     }
 }

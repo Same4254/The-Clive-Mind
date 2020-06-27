@@ -48,29 +48,35 @@ void LayeredNetwork::initialize() {
     layers[0]->setInputMatrix(inputMatrix);
 }
 
-void LayeredNetwork::toFile(std::string filename) {
-    FILE* file = fopen(filename.c_str(), "w");
+void LayeredNetwork::writeStructureToFile(std::string filename) {
+    //Build the JSON
+    rapidjson::Document document;
+    document.SetObject();
 
-    int amountOfLayers = layers.size();
+    document.AddMember("NumberInputMatricies", inputMatrixCount, document.GetAllocator());
+    document.AddMember("NumberInputRows", inputNRows, document.GetAllocator());
+    document.AddMember("NumberInputCols", inputNCols, document.GetAllocator());
 
-    fwrite(&amountOfLayers, sizeof(int), 1, file);
-    fwrite(&inputMatrixCount, sizeof(int), 1, file);
-    fwrite(&inputNRows, sizeof(int), 1, file);
-    fwrite(&inputNCols, sizeof(int), 1, file);
+    rapidjson::Document::AllocatorType& allocator = document.GetAllocator();
+    rapidjson::Value layerArray(rapidjson::kArrayType);
 
-    for(int i = 0; i < amountOfLayers; i++) {
-        int id = (int) layers[i]->getLayerID();
+    for(int i = 0; i < networkInformation.getAmountOfLayers(); i++) {
+        rapidjson::Value layerObject;
+        layerObject.SetObject();
 
-        fwrite(&id, sizeof(int), 1, file);
-        layers[i]->writeConstructInfo(file);
+        layers[i]->writeStructureToFile(layerObject, allocator);
+        
+        layerArray.PushBack(layerObject, allocator);
     }
 
-    for(int i = 0; i < amountOfLayers; i++) {
-        layers[i]->writeState(file);
-        layers[i]->Layer::writeState(file);
-    }
+    document.AddMember("Layers", layerArray, allocator);
 
-    fclose(file);
+    //Output to File
+    std::ofstream outputFileStream(filename);
+    rapidjson::OStreamWrapper outputFileStreamWrapper(outputFileStream);
+
+    rapidjson::PrettyWriter<rapidjson::OStreamWrapper> writer(outputFileStreamWrapper);
+    document.Accept(writer);
 }
 
 void LayeredNetwork::trainEpoch(Database* database) {
@@ -172,3 +178,11 @@ NetworkInformation& LayeredNetwork::getNetworkInformation() { return networkInfo
 Matrix* LayeredNetwork::getOutput() { return layers[layers.size() - 1]->getOutput(); }
 
 std::vector<std::unique_ptr<Layer>>& LayeredNetwork::getLayers() { return layers; }
+
+int LayeredNetwork::getInputMatrixCount() { return inputMatrixCount; }
+int LayeredNetwork::getInputNRows() { return inputNRows; }
+int LayeredNetwork::getInputNCols() { return inputNCols; }
+
+int LayeredNetwork::getOutputMatrixCount() { return outputMatrixCount; }
+int LayeredNetwork::getOutputNRows() { return outputNRows; }
+int LayeredNetwork::getOutputNCols() { return outputNCols; }

@@ -25,6 +25,17 @@ void PoolingLayer::initialize() {
     outputNCols = inputNCols / size;
 }
 
+void PoolingLayer::writeStructureToFile(rapidjson::Value& layerJSONObject, rapidjson::Document::AllocatorType& allocator) {
+    layerJSONObject.AddMember("Name", "Pooling", allocator);
+
+    rapidjson::Value propertiesJSONObject;
+    propertiesJSONObject.SetObject();
+
+    propertiesJSONObject.AddMember("Size", (int) size, allocator);
+
+    layerJSONObject.AddMember("Properties", propertiesJSONObject, allocator);
+}
+
 void PoolingLayer::toFile(FILE* file) {
     
 }
