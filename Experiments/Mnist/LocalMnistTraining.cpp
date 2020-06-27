@@ -22,7 +22,8 @@ int main() {
     // builder.activationLayer(ActivationID::Sigmoid);
 
     LayeredNetwork* network = builder.loadStructurefromFile("test.json");
-    network->writeStructureToFile("test2.json");
+    // network->writeStructureToFile("test2.json");
+    // network->loadStateFromFile("state8");
 
     // LayeredNetwork* network = builder.fromFile("state2");
 
@@ -30,26 +31,26 @@ int main() {
     //     std::cerr << "Network could not be created" << std::endl;
     // }
 
-    // network->getNetworkInformation().setLearningRate(0.01);
-    // network->getNetworkInformation().setVelocityCoefficient(0.9);
-    // network->getNetworkInformation().setBatchSize(20);
+    network->getNetworkInformation().setLearningRate(0.01);
+    network->getNetworkInformation().setVelocityCoefficient(0.9);
+    network->getNetworkInformation().setBatchSize(20);
 
-    // Database* database = new MnistDatabase();
+    Database* database = new MnistDatabase();
 
-    // double error = network->evaluate(database);
+    double error = network->evaluate(database);
 
-    // printf("Initial Error: %f\n", error);
+    printf("Initial Error: %f\n", error);
 
-    // clock_t start = clock();
-    // network->trainEpoch(database);
-    // clock_t end = clock();
+    clock_t start = clock();
+    network->trainEpoch(database);
+    clock_t end = clock();
 
-    // error = network->evaluate(database);
+    error = network->evaluate(database);
 
-    // printf("Final Error: %f\n", error);
+    printf("Final Error: %f\n", error);
 
-    // double timeSpent = ((double)(end - start)) / CLOCKS_PER_SEC;
-    // printf("Time: %f seconds\n", timeSpent);
+    double timeSpent = ((double)(end - start)) / CLOCKS_PER_SEC;
+    printf("Time: %f seconds\n", timeSpent);
 
-    // network->toFile("state8");
+    network->writeStateToFile("state8");
 }

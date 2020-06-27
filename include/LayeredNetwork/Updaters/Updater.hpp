@@ -17,8 +17,8 @@ public:
     Updater(NetworkInformation& networkInformation, int parameterRows, int parameterCols);
     virtual ~Updater();
 
-    void writeState(FILE* file);
-    bool loadState(FILE* file);
+    void writeStateToFile(FILE* file);
+    bool loadStateFromFile(FILE* file);
 
     virtual void update(Matrix* parameters, Matrix* gradient) = 0;
 

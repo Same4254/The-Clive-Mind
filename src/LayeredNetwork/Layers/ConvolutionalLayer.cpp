@@ -123,25 +123,25 @@ void ConvolutionalLayer::writeStructureToFile(rapidjson::Value& layerJSONObject,
     layerJSONObject.AddMember("Properties", propertiesJSONObject, allocator);
 }
 
-void ConvolutionalLayer::writeState(FILE* file) {
+void ConvolutionalLayer::writeStateToFile(FILE* file) {
     for(int i = 0; i < outputMatrixCount; i++) {
     for(int j = 0; j < inputMatrixCount; j++) {
-        weightUpdater[i][j]->writeState(file);
+        weightUpdater[i][j]->writeStateToFile(file);
     }}
 
-    biasUpdater->writeState(file);
+    biasUpdater->writeStateToFile(file);
 }
 
-bool ConvolutionalLayer::loadState(FILE* file) {
+bool ConvolutionalLayer::loadStateFromFile(FILE* file) {
     for(int i = 0; i < outputMatrixCount; i++) {
     for(int j = 0; j < inputMatrixCount; j++) {
-        if(!weightUpdater[i][j]->loadState(file)) {
+        if(!weightUpdater[i][j]->loadStateFromFile(file)) {
             std::cerr << "Conv state could not be loaded" << std::endl;
             return false;
         }
     }}
 
-    if(!biasUpdater->loadState(file)) {
+    if(!biasUpdater->loadStateFromFile(file)) {
         std::cerr << "Conv state could not be loaded" << std::endl;
         return false;
     }

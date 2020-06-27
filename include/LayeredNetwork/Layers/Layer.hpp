@@ -66,8 +66,8 @@ public:
     virtual void postInitialize() = 0;
 
     virtual void writeStructureToFile(rapidjson::Value& layerJSONObject, rapidjson::Document::AllocatorType& allocator) = 0;
-    virtual void writeState(FILE* file);
-    virtual bool loadState(FILE* file);
+    virtual void writeStateToFile(FILE* file) = 0;
+    virtual bool loadStateFromFile(FILE* file) = 0;
 
     virtual Matrix* feedForward() = 0;
     virtual Matrix* calculateGradient() = 0;

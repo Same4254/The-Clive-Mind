@@ -28,8 +28,8 @@ void ActivationLayer::writeStructureToFile(rapidjson::Value& layerJSONObject, ra
     layerJSONObject.AddMember("Properties", propertiesJSONObject, allocator);
 }
 
-void ActivationLayer::writeState(FILE* file) { }
-bool ActivationLayer::loadState(FILE* file) { return true; }
+void ActivationLayer::writeStateToFile(FILE* file) { }
+bool ActivationLayer::loadStateFromFile(FILE* file) { return true; }
 
 void ActivationLayer::initialize() {
     outputMatrixCount = inputMatrixCount;

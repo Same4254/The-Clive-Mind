@@ -73,13 +73,13 @@ void FullyConnectedLayer::writeStructureToFile(rapidjson::Value& layerJSONObject
     layerJSONObject.AddMember("Properties", propertiesJSONObject, allocator);
 }
 
-void FullyConnectedLayer::writeState(FILE* file) {
-    weightUpdater->writeState(file);
-    biasUpdater->writeState(file);
+void FullyConnectedLayer::writeStateToFile(FILE* file) {
+    weightUpdater->writeStateToFile(file);
+    biasUpdater->writeStateToFile(file);
 }
 
-bool FullyConnectedLayer::loadState(FILE* file) {
-    if(!weightUpdater->loadState(file) || !biasUpdater->loadState(file)) {
+bool FullyConnectedLayer::loadStateFromFile(FILE* file) {
+    if(!weightUpdater->loadStateFromFile(file) || !biasUpdater->loadStateFromFile(file)) {
         std::cerr << "Fully Connected Layer could not load state from file" << std::endl;
         return false;
     }

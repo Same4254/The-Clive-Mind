@@ -79,6 +79,26 @@ void LayeredNetwork::writeStructureToFile(std::string filename) {
     document.Accept(writer);
 }
 
+void LayeredNetwork::writeStateToFile(std::string filename) {
+    FILE* stateFile = fopen(filename.c_str(), "w");
+    for(int i = 0; i < networkInformation.getAmountOfLayers(); i++) {
+        layers[i]->Layer::writeStateToFile(stateFile);
+        layers[i]->writeStateToFile(stateFile);
+    }
+
+    fclose(stateFile);
+}
+
+void LayeredNetwork::loadStateFromFile(std::string filename) {
+    FILE* stateFile = fopen(filename.c_str(), "r");
+    for(int i = 0; i < networkInformation.getAmountOfLayers(); i++) {
+        layers[i]->Layer::loadStateFromFile(stateFile);
+        layers[i]->loadStateFromFile(stateFile);
+    }
+
+    fclose(stateFile);
+}
+
 void LayeredNetwork::trainEpoch(Database* database) {
     for(int i = 0; i < database->getEpochSize(); i++) {
         double* trainingData = database->getTrainingData(i);

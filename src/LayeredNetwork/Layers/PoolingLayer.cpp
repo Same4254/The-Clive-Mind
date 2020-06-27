@@ -36,13 +36,8 @@ void PoolingLayer::writeStructureToFile(rapidjson::Value& layerJSONObject, rapid
     layerJSONObject.AddMember("Properties", propertiesJSONObject, allocator);
 }
 
-void PoolingLayer::toFile(FILE* file) {
-    
-}
-
-void PoolingLayer::fromFile(FILE* file) {
-    
-}
+void PoolingLayer::writeStateToFile(FILE* file) { }
+bool PoolingLayer::loadStateFromFile(FILE* file) { return true; }
 
 Matrix* PoolingLayer::feedForward(Matrix* input) {
     for(int i = 0; i < inputMatrixCount; i++) {

@@ -1,14 +1,5 @@
 #include "LayeredNetwork/Layers/Layer.hpp"
 
-std::unique_ptr<Updater> Layer::createUpdaterFromID(UpdaterID id, NetworkInformation& networkInformation, int parameterRows, int parameterCols) {
-    if(id == Momentum)
-        return std::make_unique<MomentumUpdater>(networkInformation, parameterRows, parameterCols);
-    else if(id == Adam)
-        return std::make_unique<AdamUpdater>(networkInformation, parameterRows, parameterCols);
-    
-    return std::make_unique<RMSUpdater>(networkInformation, parameterRows, parameterCols);
-}
-
 Layer::Layer(NetworkInformation& networkInformation, LayerID layerID, int index) : networkInformation(networkInformation), layerID(layerID), index(index) {
     parameterLength = 0;
     parameters = NULL;
@@ -79,12 +70,12 @@ void Layer::initialize() {
     }
 }
 
-void Layer::writeState(FILE* file) {
+void Layer::writeStateToFile(FILE* file) {
     if(parameterLength > 0)
         fwrite(parameters, sizeof(double), parameterLength, file);
 }
 
-bool Layer::loadState(FILE* file) {
+bool Layer::loadStateFromFile(FILE* file) {
     if(parameterLength > 0) {
         if(fread(parameters, sizeof(double), parameterLength, file) != parameterLength) {
             std::cerr << "Layer could not load state!" << std::endl;
@@ -93,6 +84,15 @@ bool Layer::loadState(FILE* file) {
     }
 
     return true;
+}
+
+std::unique_ptr<Updater> Layer::createUpdaterFromID(UpdaterID id, NetworkInformation& networkInformation, int parameterRows, int parameterCols) {
+    if(id == Momentum)
+        return std::make_unique<MomentumUpdater>(networkInformation, parameterRows, parameterCols);
+    else if(id == Adam)
+        return std::make_unique<AdamUpdater>(networkInformation, parameterRows, parameterCols);
+    
+    return std::make_unique<RMSUpdater>(networkInformation, parameterRows, parameterCols);
 }
 
 int Layer::getParameterLength() { return parameterLength; }

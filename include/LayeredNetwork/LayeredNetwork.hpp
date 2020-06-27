@@ -38,7 +38,8 @@ public:
 
     void initialize();
     void writeStructureToFile(std::string filename);
-    void toFile(std::string filename);
+    void writeStateToFile(std::string filename);
+    void loadStateFromFile(std::string filename);
 
     void trainEpoch(Database* database);
     double evaluate(Database* database);

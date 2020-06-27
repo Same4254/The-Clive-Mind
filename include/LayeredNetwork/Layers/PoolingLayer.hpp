@@ -18,11 +18,10 @@ public:
 
     void initialize();
 
-    void toFile(FILE* file);
-    void fromFile(FILE* file);
-
     void writeStructureToFile(rapidjson::Value& layerJSONObject, rapidjson::Document::AllocatorType& allocator);
-
+    void writeStateToFile(FILE* file);
+    bool loadStateFromFile(FILE* file);
+    
     Matrix* feedForward(Matrix* input);
     Matrix* backpropogate(Matrix* error);
 };

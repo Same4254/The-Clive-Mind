@@ -5,7 +5,7 @@
 
 class MomentumUpdater : public Updater {
 private:
-    Matrix velocity;
+    Matrix* velocity;
 
 public:
     MomentumUpdater(NetworkInformation& networkInformation, int parameterRows, int parameterCols);

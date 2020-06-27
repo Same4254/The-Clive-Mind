@@ -24,8 +24,8 @@ public:
     void postInitialize();
 
     void writeStructureToFile(rapidjson::Value& layerJSONObject, rapidjson::Document::AllocatorType& allocator);
-    void writeState(FILE* file);
-    bool loadState(FILE* file);
+    void writeStateToFile(FILE* file);
+    bool loadStateFromFile(FILE* file);
 
     Matrix* feedForward();
     Matrix* calculateGradient();
