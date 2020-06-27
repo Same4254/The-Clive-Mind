@@ -7,7 +7,7 @@
         {
             "Name": "Full",
             "Properties": {
-                "Updater": 0,
+                "Updater": 2,
                 "NumNodes": 32
             }
         },
@@ -22,7 +22,7 @@
         {
             "Name": "Full",
             "Properties": {
-                "Updater": 0,
+                "Updater": 2,
                 "NumNodes": 32
             }
         },
@@ -37,7 +37,7 @@
         {
             "Name": "Full",
             "Properties": {
-                "Updater": 0,
+                "Updater": 2,
                 "NumNodes": 10
             }
         },

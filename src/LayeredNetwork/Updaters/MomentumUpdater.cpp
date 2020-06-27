@@ -3,9 +3,10 @@
 MomentumUpdater::MomentumUpdater(NetworkInformation& networkInformation, int parameterRows, int parameterCols) 
     : Updater(networkInformation, parameterRows, parameterCols) {
 
-    learningData = (double*) calloc(parameterRows * parameterCols, sizeof(double));
+    learningDataLength = parameterRows * parameterCols;
+    learningData = (double*) calloc(learningDataLength, sizeof(double));
     velocity = new Matrix(learningData, parameterRows, parameterCols);
-    learningDataLength = velocity->getLength();
+    
 }
 
 MomentumUpdater::~MomentumUpdater() {

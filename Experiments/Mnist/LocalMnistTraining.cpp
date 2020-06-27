@@ -21,9 +21,9 @@ int main() {
     // builder.fullyConnectedLayer(UpdaterID::Momentum, 10);
     // builder.activationLayer(ActivationID::Sigmoid);
 
-    LayeredNetwork* network = builder.loadStructurefromFile("test.json");
+    LayeredNetwork* network = builder.loadStructurefromFile("Models/BasicMNIST.json");
     // network->writeStructureToFile("test2.json");
-    // network->loadStateFromFile("state8");
+    network->loadStateFromFile("Models/BasicMNIST.state");
 
     // LayeredNetwork* network = builder.fromFile("state2");
 
@@ -52,5 +52,5 @@ int main() {
     double timeSpent = ((double)(end - start)) / CLOCKS_PER_SEC;
     printf("Time: %f seconds\n", timeSpent);
 
-    network->writeStateToFile("state8");
+    network->writeStateToFile("Models/BasicMNIST.state");
 }

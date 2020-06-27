@@ -1,16 +1,26 @@
 #include "LayeredNetwork/Updaters/AdamUpdater.hpp"
 
 AdamUpdater::AdamUpdater(NetworkInformation& networkInformation, int parameterRows, int parameterCols) : Updater(networkInformation, parameterRows, parameterCols) {
-    average = new Matrix(parameterRows, parameterCols);
-    average2 = new Matrix(parameterRows, parameterCols);
+    learningDataLength = parameterRows * parameterCols * 6;
+    learningData = (double*) calloc(learningDataLength, sizeof(double));
+    
+    average = new Matrix(learningData, parameterRows, parameterCols);
+    average2 = new Matrix(&learningData[parameterRows * parameterCols], parameterRows, parameterCols);
 
-    squared = new Matrix(parameterRows, parameterCols);
-    scaled = new Matrix(parameterRows, parameterCols);
-    root = new Matrix(parameterRows, parameterCols);
-    delta = new Matrix(parameterRows, parameterCols);
+    squared = new Matrix(&learningData[parameterRows * parameterCols * 2], parameterRows, parameterCols);
+    scaled = new Matrix(&learningData[parameterRows * parameterCols * 3], parameterRows, parameterCols);
+    root = new Matrix(&learningData[parameterRows * parameterCols * 4], parameterRows, parameterCols);
+    delta = new Matrix(&learningData[parameterRows * parameterCols * 5], parameterRows, parameterCols);
 }
 
 AdamUpdater::~AdamUpdater() {
+    average->setData(NULL);
+    average2->setData(NULL);
+    scaled->setData(NULL);
+    squared->setData(NULL);
+    root->setData(NULL);
+    delta->setData(NULL);
+
     delete average;
     delete average2;
 
