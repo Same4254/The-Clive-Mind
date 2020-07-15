@@ -33,8 +33,8 @@ void FullyConnectedLayer::initialize() {
     weights = new Matrix(parameters, outputNRows, inputNRows * inputNCols, -1.0, 1.0);
     weightGradient = new Matrix(parameterGradientInfo, outputNRows, inputNRows * inputNCols);
 
-    weightUpdater = createUpdaterFromID(updaterID, networkInformation, outputNRows, inputNRows * inputNCols);
-    biasUpdater = createUpdaterFromID(updaterID, networkInformation, outputNRows, 1);
+    weightUpdater = createUpdaterFromID(updaterID, outputNRows, inputNRows * inputNCols);
+    biasUpdater = createUpdaterFromID(updaterID, outputNRows, 1);
 
     biases = new Matrix(&(parameters[lenWeights]), outputNRows, 1, -1.0, 1.0);
     biasGradient = new Matrix(&(parameterGradientInfo[lenWeights]), outputNRows, 1, -1.0, 1.0);

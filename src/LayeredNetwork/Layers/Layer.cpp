@@ -70,6 +70,34 @@ void Layer::initialize() {
     }
 }
 
+bool Layer::isEqualLayerArchitecture(std::unique_ptr<Layer>& otherLayer) {
+    if(otherLayer->layerID != layerID) 
+        return false;
+
+    if(inputMatrixCount != otherLayer->inputMatrixCount || inputNRows != otherLayer->inputNRows || inputNCols != otherLayer->inputNCols
+        || outputMatrixCount != otherLayer->outputMatrixCount || outputNRows != otherLayer->outputNRows || outputNCols != otherLayer->outputNCols)
+        return false;
+
+    if(parameterLength != otherLayer->parameterLength || parameterGradientInfoLength != otherLayer->parameterGradientInfoLength || layerGradientInfoLength != otherLayer->layerGradientInfoLength || outputInfoLength != otherLayer->outputInfoLength)
+        return false;
+
+    return true;
+}
+
+bool Layer::copyState(std::unique_ptr<Layer>& otherLayer) {
+    if(!isEqualLayerArchitecture(otherLayer)) {
+        std::cout << "This layer (id = " << layerID << ", index = " << index << ") cannot copy incompatible layer (id = " << otherLayer->layerID << ", index = " << otherLayer->index << ")" << std::endl;
+        return false;
+    }
+
+    memcpy(parameters, otherLayer->parameters, sizeof(*parameters) * parameterLength);
+    memcpy(parameterGradientInfo, otherLayer->parameterGradientInfo, sizeof(*parameterGradientInfo) * parameterGradientInfoLength);
+    memcpy(layerGradientInfo, otherLayer->layerGradientInfo, sizeof(*layerGradientInfo) * layerGradientInfoLength);
+    memcpy(outputInfo, otherLayer->outputInfo, sizeof(*outputInfo) * outputInfoLength);
+
+    return true;
+}
+
 void Layer::writeStateToFile(FILE* file) {
     if(parameterLength > 0)
         fwrite(parameters, sizeof(double), parameterLength, file);
@@ -86,7 +114,7 @@ bool Layer::loadStateFromFile(FILE* file) {
     return true;
 }
 
-std::unique_ptr<Updater> Layer::createUpdaterFromID(UpdaterID id, NetworkInformation& networkInformation, int parameterRows, int parameterCols) {
+std::unique_ptr<Updater> Layer::createUpdaterFromID(UpdaterID id, int parameterRows, int parameterCols) {
     if(id == Momentum)
         return std::make_unique<MomentumUpdater>(networkInformation, parameterRows, parameterCols);
     else if(id == Adam)
@@ -113,14 +141,14 @@ int Layer::getOutputMatrixCount() { return outputMatrixCount; }
 int Layer::getOutputNRows() { return outputNRows; }
 int Layer::getOutputNCols() { return outputNCols; }
 
-void Layer::setInputMatrix(Matrix* input) { this->input = input; }
-void Layer::setInputMatrixCount(int inputMatrixCount) { this->inputMatrixCount = inputMatrixCount; }
-void Layer::setInputNRows(int inputNRows) { this->inputNRows = inputNRows; }
-void Layer::setInputNCols(int inputNCols) { this->inputNCols = inputNCols; }
+// void Layer::setInputMatrix(Matrix* input) { this->input = input; }
+// void Layer::setInputMatrixCount(int inputMatrixCount) { this->inputMatrixCount = inputMatrixCount; }
+// void Layer::setInputNRows(int inputNRows) { this->inputNRows = inputNRows; }
+// void Layer::setInputNCols(int inputNCols) { this->inputNCols = inputNCols; }
 
-void Layer::setOutputMatrixCount(int outputMatrixCount) { this->outputMatrixCount = outputMatrixCount; }
-void Layer::setOutputNRows(int outputNRows) { this->outputNRows = outputNRows; }
-void Layer::setOutputNCols(int outputNCols) { this->outputNCols = outputNCols; }
+// void Layer::setOutputMatrixCount(int outputMatrixCount) { this->outputMatrixCount = outputMatrixCount; }
+// void Layer::setOutputNRows(int outputNRows) { this->outputNRows = outputNRows; }
+// void Layer::setOutputNCols(int outputNCols) { this->outputNCols = outputNCols; }
 
 LayerID Layer::getLayerID() { return layerID; }
 

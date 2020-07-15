@@ -99,27 +99,38 @@ void LayeredNetwork::loadStateFromFile(std::string filename) {
     fclose(stateFile);
 }
 
+bool LayeredNetwork::isEqualArchitecture(LayeredNetwork* otherNetwork) {
+    if(inputMatrixCount != otherNetwork->inputMatrixCount || inputNRows != otherNetwork->inputNRows || inputNCols != otherNetwork->inputNCols
+            || outputMatrixCount != otherNetwork->outputMatrixCount || outputNRows != otherNetwork->outputNRows || outputNCols != otherNetwork->outputNCols)
+        return false;
+
+    if(otherNetwork->networkInformation.getAmountOfLayers() != networkInformation.getAmountOfLayers())
+        return false;
+
+    for(unsigned int i = 0; i < networkInformation.getAmountOfLayers(); i++)
+        if(!layers[i]->isEqualLayerArchitecture(otherNetwork->layers[i]))
+            return false;
+
+    return true;
+}
+
+void LayeredNetwork::copyState(LayeredNetwork* otherNetwork) {
+    if(!isEqualArchitecture(otherNetwork)) {
+        std::cout << "Cannot copy the state of a model with a different architecture!" << std::endl;
+        return;
+    }
+
+    for(unsigned int i = 0; i < networkInformation.getAmountOfLayers(); i++)
+        layers[i]->copyState(otherNetwork->layers[i]);
+}
+
 void LayeredNetwork::trainEpoch(Database* database) {
     for(int i = 0; i < database->getEpochSize(); i++) {
         double* trainingData = database->getTrainingData(i);
         double* trainingLabel = database->getTrainingLabel(i);
 
-        int index = 0;
-        for(int i = 0; i < inputMatrixCount; i++) {
-            (&inputMatrix[i])->setData(&trainingData[index]);
-            index += (&inputMatrix[i])->getLength();
-        }
-
-        index = 0;
-        for(int i = 0; i < outputMatrixCount; i++) {
-            (&labelMatrix[i])->setData(&trainingLabel[index]);
-            index += (&labelMatrix[i])->getLength();
-        }
-
-        for(unsigned int i = 0; i < layers.size(); i++)
-            layers[i]->feedForward();
-
-        calculateGradients();
+        feedForward(trainingData);
+        calculateSuprivisedGradients(trainingLabel);
 
         if(networkInformation.incrementBatchIndex())
             update();
@@ -139,7 +150,13 @@ Matrix* LayeredNetwork::feedForward(double* input) {
     return getOutput();
 }
 
-void LayeredNetwork::calculateGradients() {
+void LayeredNetwork::calculateSuprivisedGradients(double* labels) {
+    int index = 0;
+    for(int i = 0; i < inputMatrixCount; i++) {
+        (&labelMatrix[i])->setData(&labels[index]);
+        index += (&labelMatrix[i])->getLength();
+    }
+
     Matrix* output = getOutput();
     Matrix* error = layers[layers.size() - 1]->getError();
 
@@ -148,16 +165,6 @@ void LayeredNetwork::calculateGradients() {
 
     for(int i = layers.size() - 1; i >= 0; i--)
         layers[i]->calculateGradient();
-}
-
-void LayeredNetwork::calculateGradients(double* labels) {
-    int index = 0;
-    for(int i = 0; i < inputMatrixCount; i++) {
-        (&labelMatrix[i])->setData(&labels[index]);
-        index += (&labelMatrix[i])->getLength();
-    }
-
-    calculateGradients();
 }
 
 void LayeredNetwork::update() {
@@ -173,19 +180,12 @@ double LayeredNetwork::evaluate(Database* database) {
         double* testLabel = database->getTestLabel(index);
 
         int dataIndex = 0;
-        for(int i = 0; i < inputMatrixCount; i++) {
-            (&inputMatrix[i])->setData(&testData[dataIndex]);
-            dataIndex += (&inputMatrix[i])->getLength();
-        }
-
-        dataIndex = 0;
         for(int i = 0; i < outputMatrixCount; i++) {
             (&labelMatrix[i])->setData(&testLabel[dataIndex]);
             dataIndex += (&labelMatrix[i])->getLength();
         }
 
-        for(unsigned int i = 0; i < layers.size(); i++)
-            layers[i]->feedForward();
+        feedForward(testData);
 
         for(int i = 0; i < layers[layers.size() - 1]->getOutputInfoLength(); i++) 
             error += pow(layers[layers.size() - 1]->getOutputInfo()[i] - testLabel[i], 2);

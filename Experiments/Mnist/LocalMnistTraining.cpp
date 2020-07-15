@@ -22,14 +22,8 @@ int main() {
     // builder.activationLayer(ActivationID::Sigmoid);
 
     LayeredNetwork* network = builder.loadStructurefromFile("Models/BasicMNIST.json");
-    // network->writeStructureToFile("test2.json");
-    network->loadStateFromFile("Models/BasicMNIST.state");
-
-    // LayeredNetwork* network = builder.fromFile("state2");
-
-    // if(network == NULL) {
-    //     std::cerr << "Network could not be created" << std::endl;
-    // }
+    LayeredNetwork* network2 = builder.loadStructurefromFile("Models/BasicMNIST.json");
+    // network->loadStateFromFile("Models/BasicMNIST.state");
 
     network->getNetworkInformation().setLearningRate(0.01);
     network->getNetworkInformation().setVelocityCoefficient(0.9);
@@ -52,5 +46,11 @@ int main() {
     double timeSpent = ((double)(end - start)) / CLOCKS_PER_SEC;
     printf("Time: %f seconds\n", timeSpent);
 
-    network->writeStateToFile("Models/BasicMNIST.state");
+    network2->copyState(network);
+
+    error = network2->evaluate(database);
+
+    printf("Final Error 2: %f\n", error);
+
+    // network->writeStateToFile("Models/BasicMNIST.state");
 }

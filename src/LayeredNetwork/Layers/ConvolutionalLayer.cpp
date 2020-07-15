@@ -60,14 +60,14 @@ void ConvolutionalLayer::initialize() {
         for(int j = 0; j < inputMatrixCount; j++) {
             new (&(weights[i][j])) Matrix(&(parameters[((i * inputMatrixCount) + j) * kernalSize * kernalSize]), kernalSize, kernalSize, -1.0, 1.0);
             new (&(weightGradient[i][j])) Matrix(&(parameterGradientInfo[((i * inputMatrixCount) + j) * kernalSize * kernalSize]), kernalSize, kernalSize);
-            weightUpdater[i][j] = createUpdaterFromID(updaterID, networkInformation, kernalSize, kernalSize).release();
+            weightUpdater[i][j] = createUpdaterFromID(updaterID, kernalSize, kernalSize).release();
             // new (&(weightUpdater[i][j])) MomentumUpdater(networkInformation, kernalSize, kernalSize);
         }
     }
 
     bias = new Matrix(&(parameters[parameterLength - outputMatrixCount]), 1, outputMatrixCount, -1.0, 1.0);
     biasGradient = new Matrix(&(parameterGradientInfo[parameterLength - outputMatrixCount]), 1, outputMatrixCount);
-    biasUpdater = createUpdaterFromID(updaterID, networkInformation, 1, outputMatrixCount).release();//new MomentumUpdater(networkInformation, 1, outputMatrixCount);
+    biasUpdater = createUpdaterFromID(updaterID, 1, outputMatrixCount).release();//new MomentumUpdater(networkInformation, 1, outputMatrixCount);
 
     double outputRows = ((inputNRows - kernalSize) / ((double) stride)) + 1.0;
     double outputCols = ((inputNCols - kernalSize) / ((double) stride)) + 1.0;

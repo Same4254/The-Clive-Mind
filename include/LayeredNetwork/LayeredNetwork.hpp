@@ -30,8 +30,6 @@ private:
     int outputNRows;
     int outputNCols;
 
-    void calculateGradients();
-
 public:
     LayeredNetwork(int inputMatrixCount, int inputNRows, int inputNCols);
     ~LayeredNetwork();
@@ -41,11 +39,21 @@ public:
     void writeStateToFile(std::string filename);
     void loadStateFromFile(std::string filename);
 
+    bool isEqualArchitecture(LayeredNetwork* otherNetwork);
+    void copyState(LayeredNetwork* otherNetwork);
+
     void trainEpoch(Database* database);
     double evaluate(Database* database);
 
     Matrix* feedForward(double* input);
-    void calculateGradients(double* labels);
+
+    /**
+     *  Given some labels of correct answers, the network will calculate the lost term (output - label) and then 
+     *      will go to each layer (starting from the last going to beginning) and have it calculate the error with respect to its weights.
+     *  This will not preform any updates to the weights themselves, rather it will simply calculate the gradient with respect to the parameters
+     *      and add it to a running sum (for batch gradient).
+     */
+    void calculateSuprivisedGradients(double* labels);
 
     NetworkInformation& getNetworkInformation();
     Matrix* getOutput();
