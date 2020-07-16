@@ -7,6 +7,13 @@ NetworkInformation::NetworkInformation(std::vector<std::unique_ptr<Layer>>& laye
     batchIndex = 0;
 }
 
+NetworkInformation::NetworkInformation(std::vector<std::unique_ptr<Layer>>& layers, NetworkInformation& informationToCopy) : layers(layers) {
+    this->learningRate = informationToCopy.learningRate;
+    this->velocityCoefficient = informationToCopy.velocityCoefficient;
+    this->batchSize = informationToCopy.batchSize;
+    this->batchIndex = informationToCopy.batchIndex;
+}
+
 NetworkInformation::~NetworkInformation() { }
 
 int NetworkInformation::getAmountOfLayers() { return layers.size(); }

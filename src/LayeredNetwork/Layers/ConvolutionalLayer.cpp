@@ -110,6 +110,11 @@ void ConvolutionalLayer::postInitialize() {
             new (&error[i]) Matrix(&(networkInformation.getLayers()[index + 1]->getLayerGradientInfo()[outputNRows * outputNCols * i]), outputNRows, outputNCols);
     }
 }
+
+void ConvolutionalLayer::appendCopy(NetworkInformation& networkInformation) {
+    networkInformation.getLayers().push_back(std::make_unique<ConvolutionalLayer>(networkInformation, updaterID, networkInformation.getAmountOfLayers(), outputMatrixCount, kernalSize, stride));
+}
+
 void ConvolutionalLayer::writeStructureToFile(rapidjson::Value& layerJSONObject, rapidjson::Document::AllocatorType& allocator) {
     layerJSONObject.AddMember("Name", "Conv", allocator);
 

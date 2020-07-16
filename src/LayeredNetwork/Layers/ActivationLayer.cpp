@@ -1,6 +1,6 @@
 #include "LayeredNetwork/Layers/ActivationLayer.hpp"
 
-ActivationLayer::ActivationLayer(NetworkInformation& networkInformation, int index, ActivationID activationID) 
+ActivationLayer::ActivationLayer(NetworkInformation& networkInformation, ActivationID activationID, int index) 
     : Layer(networkInformation, Act, index), activationID(activationID) { 
 
     if(activationID == Sigmoid)
@@ -16,20 +16,6 @@ ActivationLayer::ActivationLayer(NetworkInformation& networkInformation, int ind
 ActivationLayer::~ActivationLayer() {
     delete function;
 }
-
-void ActivationLayer::writeStructureToFile(rapidjson::Value& layerJSONObject, rapidjson::Document::AllocatorType& allocator) {
-    layerJSONObject.AddMember("Name", "Activation", allocator);
-
-    rapidjson::Value propertiesJSONObject;
-    propertiesJSONObject.SetObject();
-
-    propertiesJSONObject.AddMember("ActivationID", (int) activationID, allocator);
-
-    layerJSONObject.AddMember("Properties", propertiesJSONObject, allocator);
-}
-
-void ActivationLayer::writeStateToFile(FILE* file) { }
-bool ActivationLayer::loadStateFromFile(FILE* file) { return true; }
 
 void ActivationLayer::initialize() {
     outputMatrixCount = inputMatrixCount;
@@ -70,6 +56,24 @@ void ActivationLayer::postInitialize() {
             new (&error[i]) Matrix(outputNRows, outputNCols);
     }
 }
+
+void ActivationLayer::appendCopy(NetworkInformation& networkInformation) {
+    networkInformation.getLayers().push_back(std::make_unique<ActivationLayer>(networkInformation, activationID, networkInformation.getAmountOfLayers()));
+}
+
+void ActivationLayer::writeStructureToFile(rapidjson::Value& layerJSONObject, rapidjson::Document::AllocatorType& allocator) {
+    layerJSONObject.AddMember("Name", "Activation", allocator);
+
+    rapidjson::Value propertiesJSONObject;
+    propertiesJSONObject.SetObject();
+
+    propertiesJSONObject.AddMember("ActivationID", (int) activationID, allocator);
+
+    layerJSONObject.AddMember("Properties", propertiesJSONObject, allocator);
+}
+
+void ActivationLayer::writeStateToFile(FILE* file) { }
+bool ActivationLayer::loadStateFromFile(FILE* file) { return true; }
 
 Matrix* ActivationLayer::feedForward() { 
     for(int i = 0; i < inputMatrixCount; i++) {

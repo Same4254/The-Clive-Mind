@@ -92,7 +92,7 @@ NetworkBuilder& NetworkBuilder::activationLayer(ActivationID id) {
     if(network == nullptr)
         createNetwork();
 
-    network->getLayers().push_back(std::make_unique<ActivationLayer>(network->getNetworkInformation(), network->getLayers().size(), id));
+    network->getLayers().push_back(std::make_unique<ActivationLayer>(network->getNetworkInformation(), id, network->getLayers().size()));
     return *this;
 }
 

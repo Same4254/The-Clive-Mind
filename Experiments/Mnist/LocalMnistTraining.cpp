@@ -22,12 +22,13 @@ int main() {
     // builder.activationLayer(ActivationID::Sigmoid);
 
     LayeredNetwork* network = builder.loadStructurefromFile("Models/BasicMNIST.json");
-    LayeredNetwork* network2 = builder.loadStructurefromFile("Models/BasicMNIST.json");
-    // network->loadStateFromFile("Models/BasicMNIST.state");
-
+    
     network->getNetworkInformation().setLearningRate(0.01);
     network->getNetworkInformation().setVelocityCoefficient(0.9);
     network->getNetworkInformation().setBatchSize(20);
+
+    LayeredNetwork* network2 = new LayeredNetwork(network);//builder.loadStructurefromFile("Models/BasicMNIST.json");
+    network2->copyState(network);
 
     Database* database = new MnistDatabase();
 
@@ -37,6 +38,7 @@ int main() {
 
     clock_t start = clock();
     network->trainEpoch(database);
+    network2->trainEpoch(database);
     clock_t end = clock();
 
     error = network->evaluate(database);
@@ -46,7 +48,7 @@ int main() {
     double timeSpent = ((double)(end - start)) / CLOCKS_PER_SEC;
     printf("Time: %f seconds\n", timeSpent);
 
-    network2->copyState(network);
+    // network2->copyState(network);
 
     error = network2->evaluate(database);
 

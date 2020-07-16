@@ -17,6 +17,7 @@ public:
     PoolingLayer(NetworkInformation& networkInformation, int index, int size);
 
     void initialize();
+    void postInitialize();
 
     void writeStructureToFile(rapidjson::Value& layerJSONObject, rapidjson::Document::AllocatorType& allocator);
     void writeStateToFile(FILE* file);

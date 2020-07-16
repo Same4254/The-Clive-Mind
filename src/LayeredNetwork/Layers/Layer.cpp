@@ -141,14 +141,14 @@ int Layer::getOutputMatrixCount() { return outputMatrixCount; }
 int Layer::getOutputNRows() { return outputNRows; }
 int Layer::getOutputNCols() { return outputNCols; }
 
-// void Layer::setInputMatrix(Matrix* input) { this->input = input; }
-// void Layer::setInputMatrixCount(int inputMatrixCount) { this->inputMatrixCount = inputMatrixCount; }
-// void Layer::setInputNRows(int inputNRows) { this->inputNRows = inputNRows; }
-// void Layer::setInputNCols(int inputNCols) { this->inputNCols = inputNCols; }
+void Layer::setInputMatrix(Matrix* input) { this->input = input; }
+void Layer::setInputMatrixCount(int inputMatrixCount) { this->inputMatrixCount = inputMatrixCount; }
+void Layer::setInputNRows(int inputNRows) { this->inputNRows = inputNRows; }
+void Layer::setInputNCols(int inputNCols) { this->inputNCols = inputNCols; }
 
-// void Layer::setOutputMatrixCount(int outputMatrixCount) { this->outputMatrixCount = outputMatrixCount; }
-// void Layer::setOutputNRows(int outputNRows) { this->outputNRows = outputNRows; }
-// void Layer::setOutputNCols(int outputNCols) { this->outputNCols = outputNCols; }
+void Layer::setOutputMatrixCount(int outputMatrixCount) { this->outputMatrixCount = outputMatrixCount; }
+void Layer::setOutputNRows(int outputNRows) { this->outputNRows = outputNRows; }
+void Layer::setOutputNCols(int outputNCols) { this->outputNCols = outputNCols; }
 
 LayerID Layer::getLayerID() { return layerID; }
 

@@ -15,6 +15,7 @@ private:
 
 public:
     NetworkInformation(std::vector<std::unique_ptr<Layer>>& layers);
+    NetworkInformation(std::vector<std::unique_ptr<Layer>>& layers, NetworkInformation& informationToCopy);
     ~NetworkInformation();
 
     int getAmountOfLayers();

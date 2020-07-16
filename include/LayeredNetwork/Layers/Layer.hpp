@@ -114,6 +114,8 @@ public:
      */
     virtual bool isEqualLayerArchitecture(std::unique_ptr<Layer>& otherLayer);
 
+    virtual void appendCopy(NetworkInformation& networkInformation) = 0;
+
     /**
      *  Copy the state parameters of another layer.
      *  This must satisfy @see{Layer::isEqualLayerArchitecture}, for the copy to be made.
@@ -152,14 +154,14 @@ public:
     int getOutputNRows();
     int getOutputNCols();
 
-    // void setInputMatrix(Matrix* input);
-    // void setInputMatrixCount(int inputMatrixCount);
-    // void setInputNRows(int inputNRows);
-    // void setInputNCols(int inputNCols);
+    void setInputMatrix(Matrix* input);
+    void setInputMatrixCount(int inputMatrixCount);
+    void setInputNRows(int inputNRows);
+    void setInputNCols(int inputNCols);
 
-    // void setOutputMatrixCount(int outputMatrixCount);
-    // void setOutputNRows(int outputNRows);
-    // void setOutputNCols(int outputNCols);
+    void setOutputMatrixCount(int outputMatrixCount);
+    void setOutputNRows(int outputNRows);
+    void setOutputNCols(int outputNCols);
 
     LayerID getLayerID();
 

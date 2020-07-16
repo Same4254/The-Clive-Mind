@@ -22,7 +22,9 @@ FullyConnectedLayer::~FullyConnectedLayer() {
 }
 
 void FullyConnectedLayer::initialize() {
-    int lenWeights = (outputNRows * inputNRows * inputNCols);
+    int lenWeights = (outputNRows * inputNRows);
+
+    //Amount of weights + bias
     parameterLength = lenWeights + outputNRows;
     parameterGradientInfoLength = lenWeights + outputNRows;
 
@@ -30,10 +32,10 @@ void FullyConnectedLayer::initialize() {
     parameters = (double*) calloc(parameterLength, sizeof(double));
     parameterGradientInfo = (double*) calloc(parameterGradientInfoLength, sizeof(double));
 
-    weights = new Matrix(parameters, outputNRows, inputNRows * inputNCols, -1.0, 1.0);
-    weightGradient = new Matrix(parameterGradientInfo, outputNRows, inputNRows * inputNCols);
+    weights = new Matrix(parameters, outputNRows, inputNRows, -1.0, 1.0);
+    weightGradient = new Matrix(parameterGradientInfo, outputNRows, inputNRows);
 
-    weightUpdater = createUpdaterFromID(updaterID, outputNRows, inputNRows * inputNCols);
+    weightUpdater = createUpdaterFromID(updaterID, outputNRows, inputNRows);
     biasUpdater = createUpdaterFromID(updaterID, outputNRows, 1);
 
     biases = new Matrix(&(parameters[lenWeights]), outputNRows, 1, -1.0, 1.0);
@@ -59,6 +61,10 @@ void FullyConnectedLayer::postInitialize() {
         error = new Matrix(networkInformation.getLayers()[index + 1]->getLayerGradientInfo(), outputNRows, 1);
     else
         error = new Matrix(outputNRows, 1);
+}
+
+void FullyConnectedLayer::appendCopy(NetworkInformation& networkInformation) {
+    networkInformation.getLayers().push_back(std::make_unique<FullyConnectedLayer>(networkInformation, updaterID, networkInformation.getAmountOfLayers(), outputNRows));
 }
 
 void FullyConnectedLayer::writeStructureToFile(rapidjson::Value& layerJSONObject, rapidjson::Document::AllocatorType& allocator) {

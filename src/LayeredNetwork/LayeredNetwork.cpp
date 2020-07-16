@@ -4,6 +4,16 @@ LayeredNetwork::LayeredNetwork(int inputMatrixCount, int inputNRows, int inputNC
     
 }
 
+LayeredNetwork::LayeredNetwork(LayeredNetwork* structureNetwork) : networkInformation(layers, structureNetwork->networkInformation), 
+        inputMatrixCount(structureNetwork->inputMatrixCount), inputNRows(structureNetwork->inputNRows), inputNCols(structureNetwork->inputNCols),
+        outputMatrixCount(structureNetwork->outputMatrixCount), outputNRows(structureNetwork->outputNRows), outputNCols(structureNetwork->outputNCols) {
+    
+    for(unsigned int i = 0; i < structureNetwork->networkInformation.getLayers().size(); i++)
+        structureNetwork->networkInformation.getLayers()[i]->appendCopy(networkInformation);
+
+    initialize();
+}
+
 LayeredNetwork::~LayeredNetwork() {
     if(layers.size() > 0)
         layers[0]->setInputMatrix(NULL);
@@ -101,11 +111,20 @@ void LayeredNetwork::loadStateFromFile(std::string filename) {
 
 bool LayeredNetwork::isEqualArchitecture(LayeredNetwork* otherNetwork) {
     if(inputMatrixCount != otherNetwork->inputMatrixCount || inputNRows != otherNetwork->inputNRows || inputNCols != otherNetwork->inputNCols
-            || outputMatrixCount != otherNetwork->outputMatrixCount || outputNRows != otherNetwork->outputNRows || outputNCols != otherNetwork->outputNCols)
-        return false;
+            || outputMatrixCount != otherNetwork->outputMatrixCount || outputNRows != otherNetwork->outputNRows || outputNCols != otherNetwork->outputNCols) {
+        std::cout << "Models have different dimensions!" << std::endl;
+        std::cout << inputNRows << ", " << inputNCols << ", " << inputMatrixCount << std::endl;
+        std::cout << outputNRows << ", " << outputNCols << ", " << outputMatrixCount << std::endl;
+        std::cout << otherNetwork->inputNRows << ", " << otherNetwork->inputNCols << ", " << otherNetwork->inputMatrixCount << std::endl;
+        std::cout << otherNetwork->outputNRows << ", " << otherNetwork->outputNCols << ", " << otherNetwork->outputMatrixCount << std::endl;
 
-    if(otherNetwork->networkInformation.getAmountOfLayers() != networkInformation.getAmountOfLayers())
         return false;
+    }
+
+    if(otherNetwork->networkInformation.getAmountOfLayers() != networkInformation.getAmountOfLayers()) {
+        std::cout << "Models have different amount of layers!" << std::endl;
+        return false;
+    }
 
     for(unsigned int i = 0; i < networkInformation.getAmountOfLayers(); i++)
         if(!layers[i]->isEqualLayerArchitecture(otherNetwork->layers[i]))
@@ -163,6 +182,17 @@ void LayeredNetwork::calculateSuprivisedGradients(double* labels) {
     for(int i = 0; i < outputMatrixCount; i++)
         (&output[i])->subtract(&labelMatrix[i], &error[i]);
 
+    for(int i = layers.size() - 1; i >= 0; i--)
+        layers[i]->calculateGradient();
+}
+
+void LayeredNetwork::addGradient(double loss, unsigned int index) {
+    Matrix* error = layers[layers.size() - 1]->getError();
+
+    error->clear();
+    error->getData()[index] = loss;
+
+    //TODO make this better... very inefficient
     for(int i = layers.size() - 1; i >= 0; i--)
         layers[i]->calculateGradient();
 }

@@ -22,6 +22,8 @@ public:
 
     void initialize();
     void postInitialize();
+
+    void appendCopy(NetworkInformation& networkInformation);
     
     void writeStructureToFile(rapidjson::Value& layerJSONObject, rapidjson::Document::AllocatorType& allocator);
     void writeStateToFile(FILE* file);

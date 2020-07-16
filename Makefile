@@ -32,6 +32,10 @@ webservice: $(OBJECTS) $(HEADERS)
 mnist: $(OBJECTS) $(HEADERS)
 	$(CC) $(CPPFLAGS) Experiments/Mnist/LocalMnistTraining.cpp -o mnist $(OBJECTS)
 
+.PHONY: tetris
+tetris: $(OBJECTS) $(HEADERS)
+	$(CC) $(CPPFLAGS) Experiments/Tetris/LocalTetrisTraining.cpp -o tetris $(OBJECTS)
+
 .PHONY: picker
 picker: $(OBJECTS) $(HEADERS)
 	$(MPI) $(CPPFLAGS) Experiments/Mnist/MPIEnsembleMnistTraining.cpp -o picker $(OBJECTS)
