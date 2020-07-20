@@ -126,7 +126,7 @@ bool LayeredNetwork::isEqualArchitecture(LayeredNetwork* otherNetwork) {
         return false;
     }
 
-    for(unsigned int i = 0; i < networkInformation.getAmountOfLayers(); i++)
+    for(int i = 0; i < networkInformation.getAmountOfLayers(); i++)
         if(!layers[i]->isEqualLayerArchitecture(otherNetwork->layers[i]))
             return false;
 
@@ -139,7 +139,7 @@ void LayeredNetwork::copyState(LayeredNetwork* otherNetwork) {
         return;
     }
 
-    for(unsigned int i = 0; i < networkInformation.getAmountOfLayers(); i++)
+    for(int i = 0; i < networkInformation.getAmountOfLayers(); i++)
         layers[i]->copyState(otherNetwork->layers[i]);
 }
 

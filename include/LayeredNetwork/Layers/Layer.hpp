@@ -15,7 +15,7 @@
 #include "LayeredNetwork/Updaters/RMSUpdater.hpp"
 
 enum LayerID {
-    Full, Conv, Act, Pool
+    Full, Conv, Act
 };
 
 enum UpdaterID {

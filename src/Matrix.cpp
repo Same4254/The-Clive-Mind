@@ -482,7 +482,7 @@ double Matrix::greatest() {
     return g;
 }
 
-double Matrix::greatestIndex() {
+int Matrix::greatestIndex() {
     int i = 0;
     for(int j = 1; j < length; j++) 
         if(data[j] > data[i])

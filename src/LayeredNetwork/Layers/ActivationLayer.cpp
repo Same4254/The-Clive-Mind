@@ -89,3 +89,5 @@ Matrix* ActivationLayer::calculateGradient() {
         (&layerGradient[i])->elementProduct(&error[i], &layerGradient[i]);
     return layerGradient;
 }
+
+void ActivationLayer::update() { }

@@ -33,6 +33,6 @@ public:
     Matrix* feedForward();
     Matrix* calculateGradient();
 
-    void update() {}
+    void update();
 };
 #endif

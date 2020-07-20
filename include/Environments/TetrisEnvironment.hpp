@@ -6,13 +6,13 @@
 class TetrisEnvironment {
 private:
     Matrix* boardMatrix;
-    unsigned int stateLength;
 
 public:
-    TetrisEnvironment(unsigned int stateLength);
-    virtual ~TetrisEnvironment();
+    TetrisEnvironment();
+    ~TetrisEnvironment();
 
-    virtual bool isLegalAction(double* state, unsigned int actionIndex);
-    virtual double preformAction(double* originalState, double* nextState, unsigned int actionIndex);
+    void initialState(double* stateToFill);
+    bool isLegalAction(double* state, unsigned int actionIndex);
+    double preformAction(double* originalState, double* nextState, unsigned int actionIndex);
 };
 #endif

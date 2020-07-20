@@ -448,7 +448,7 @@ public:
     /**
     *   Returns the 1-dimensional index of the greatest value in this matrix
     */
-    double greatestIndex();
+    int greatestIndex();
 
     double* getData();
     int getNRows();

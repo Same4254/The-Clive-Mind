@@ -5,10 +5,20 @@
 #include <memory>
 
 class Experience {
+private:
     double* state;
+    double* resultingState;
     double reward;
     unsigned int action;
-    double* resState;    
+
+public:
+    Experience(double* state, double* resultingState, unsigned int stateLength, double reward, unsigned int action);
+    ~Experience();
+
+    double* getState();
+    double* getResultingState();
+    double getReward();
+    unsigned int getAction();
 };
 
 class ExperienceTable {
@@ -18,6 +28,7 @@ public:
     ExperienceTable();
     virtual ~ExperienceTable();
 
-    Experience* addExperience();
+    Experience* addExperience(double* state, double* resultingState, unsigned int stateLength, double reward, unsigned int action);
+    Experience* getRandomExperience();
 };
 #endif
