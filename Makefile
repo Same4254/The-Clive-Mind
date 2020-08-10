@@ -36,6 +36,10 @@ mnist: $(OBJECTS) $(HEADERS)
 tetris: $(OBJECTS) $(HEADERS)
 	$(CC) $(CPPFLAGS) Experiments/Tetris/LocalTetrisTraining.cpp -o tetris $(OBJECTS)
 
+.PHONY: grid
+grid: $(OBJECTS) $(HEADERS)
+	$(CC) $(CPPFLAGS) Experiments/QLearningGrid/QLearningGrid.cpp -o grid $(OBJECTS)
+
 .PHONY: picker
 picker: $(OBJECTS) $(HEADERS)
 	$(MPI) $(CPPFLAGS) Experiments/Mnist/MPIEnsembleMnistTraining.cpp -o picker $(OBJECTS)

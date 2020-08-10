@@ -11,6 +11,9 @@ public:
     int epochSize;
     int testSize;
 
+    Database();
+    virtual ~Database();
+
     virtual double* getTrainingData(int index) = 0;
     virtual double* getTrainingLabel(int index) = 0;
 

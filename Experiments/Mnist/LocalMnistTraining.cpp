@@ -7,8 +7,8 @@
 #include "Databases/MnistDatabase.hpp"
 
 int main() {
-    srand(6854);
-    // srand(time(0));
+    // srand(6854);
+    srand(123);
 
     NetworkBuilder builder;
 
@@ -38,7 +38,7 @@ int main() {
 
     clock_t start = clock();
     network->trainEpoch(database);
-    network2->trainEpoch(database);
+    // network2->trainEpoch(database);
     clock_t end = clock();
 
     error = network->evaluate(database);
@@ -50,9 +50,14 @@ int main() {
 
     // network2->copyState(network);
 
-    error = network2->evaluate(database);
+    // error = network2->evaluate(database);
 
-    printf("Final Error 2: %f\n", error);
+    // printf("Final Error 2: %f\n", error);
 
     // network->writeStateToFile("Models/BasicMNIST.state");
+
+    delete network;
+    delete network2;
+
+    delete database;
 }

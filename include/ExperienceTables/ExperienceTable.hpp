@@ -1,6 +1,7 @@
-#ifndef EXPERIENCE_TABLE_H
-#define EXPERIENCE_TABLE_H
+#ifndef EXPERIENCE_TABLE_HPP
+#define EXPERIENCE_TABLE_HPP
 
+#include <string.h> 
 #include <vector>
 #include <memory>
 
@@ -9,26 +10,28 @@ private:
     double* state;
     double* resultingState;
     double reward;
-    unsigned int action;
+    int action;
 
 public:
-    Experience(double* state, double* resultingState, unsigned int stateLength, double reward, unsigned int action);
+    Experience(double* state, double* resultingState, int stateLength, double reward, int action);
     ~Experience();
 
     double* getState();
     double* getResultingState();
     double getReward();
-    unsigned int getAction();
+    int getAction();
 };
 
 class ExperienceTable {
-public:
-    std::vector<std::unique_ptr<Experience>> experiences;
+private:
+    std::vector<Experience*> experiences;
 
+public:
     ExperienceTable();
     virtual ~ExperienceTable();
 
-    Experience* addExperience(double* state, double* resultingState, unsigned int stateLength, double reward, unsigned int action);
+    Experience* addExperience(double* state, double* resultingState, int stateLength, double reward, int action);
     Experience* getRandomExperience();
+    std::vector<Experience*>& getExperiences();
 };
 #endif
