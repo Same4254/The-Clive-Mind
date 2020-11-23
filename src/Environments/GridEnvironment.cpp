@@ -92,7 +92,7 @@ double GridEnvironment::move(int rowDir, int colDir) {
     if(!canMove(rowDir, colDir)) return 0;
 
     // if(originalBoard->at(playerRow, playerCol) > 0)
-        board->set(playerRow, playerCol, WALK_SQUARE);
+        board->set(playerRow, playerCol, PRIOR_SQUARE);
     // else
     //     board->set(playerRow, playerCol, originalBoard->at(playerRow, playerCol));
 
@@ -105,6 +105,8 @@ double GridEnvironment::move(int rowDir, int colDir) {
     else if(board->at(playerRow, playerCol) == WALK_SQUARE)
         reward = WALK_PUNISHMENT;
         // reward = 1.0 / sqrt(pow(playerRow - goalRow, 2) + pow(playerCol - goalCol, 2));
+    else if(board->at(playerRow, playerCol) == PRIOR_SQUARE)
+        reward = PRIOR_PUNISHMENT;
     else //if(board->at(playerRow, playerCol) == GOAL_SQUARE)
         reward = GOAL_REWARD;
 

@@ -9,21 +9,21 @@
 #include "Environments/GridEnvironment.hpp"
 #include "ExperienceTables/ExperienceTable.hpp"
 
-#define GRID_ROWS 2
+#define GRID_ROWS 4
 #define GRID_COLS 4
 
-#define MAX_MOVES 20
-#define REPLAY_MEMORY_SIZE 600
+#define MAX_MOVES 40
+#define REPLAY_MEMORY_SIZE 100
 
-#define NUM_TIMES 50
-#define NUM_COLLECTION_FOR_TARGET_COPY 1
+#define NUM_TIMES 1000
+#define NUM_COLLECTION_FOR_TARGET_COPY 100
 #define NUM_DATA_COLLECT 200
-#define NUM_BATCHES_TRAIN 2
+#define NUM_BATCHES_TRAIN 1
 
-#define EPSILON_DECAY 0.7
+#define EPSILON_DECAY 0.08
 #define EPSILON_CAP 0.1
 
-#define DISCOUNT_FACTOR 0.7
+#define DISCOUNT_FACTOR 0.9
 
 void collectData(LayeredNetwork* outputNetwork, GridEnvironment& environment, ExperienceTable& experienceTable, std::vector<int>& legalActions, double* currentState, double epsilon) {
     for(int i = 0; i < NUM_DATA_COLLECT; i++) {
@@ -128,6 +128,7 @@ double evaluation(GridEnvironment& environment, LayeredNetwork* outputNetwork) {
     double totalRewards = 0;
 
     environment.reset();
+    // environment.getBoard()->print();
 
     for(int move = 0; move < MAX_MOVES; move++) {
         Matrix* output = outputNetwork->feedForward(environment.getBoard()->getData());
@@ -181,9 +182,9 @@ int main() {
     NetworkBuilder builder;
     builder.inputRows(GRID_ROWS * GRID_COLS);
 
-    builder.fullyConnectedLayer(Momentum, 32);
+    builder.fullyConnectedLayer(Momentum, 16);
     builder.activationLayer(Sigmoid);
-    builder.fullyConnectedLayer(Momentum, 32);
+    builder.fullyConnectedLayer(Momentum, 16);
     builder.activationLayer(Sigmoid);
     builder.fullyConnectedLayer(Momentum, 4);
     builder.activationLayer(Sigmoid);
@@ -201,10 +202,10 @@ int main() {
 
     double epsilon = 1.0;
 
-    for(int i = 0; i < 10; i++) {
-        double eval = evaluation(environment, outputNetwork);
-        std::cout << "Starting Total Rewards #" << i << ": " << eval << std::endl;
-    }
+    // for(int i = 0; i < 10; i++) {
+    //     double eval = evaluation(environment, outputNetwork);
+    //     std::cout << "Starting Total Rewards #" << i << ": " << eval << std::endl;
+    // }
 
     std::cout << "------" << std::endl;
 
@@ -213,7 +214,14 @@ int main() {
     //List of legal actions for choosing a random legal action
     std::vector<int> legalActions;
     for(int i = 0; i < NUM_TIMES; i++) {
-        targetNetwork->copyState(outputNetwork);
+        if(i % NUM_COLLECTION_FOR_TARGET_COPY == 0)
+            targetNetwork->copyState(outputNetwork);
+
+        double evalScore = 0;
+        for(int i = 0; i < 10; i++)
+            evalScore += evaluation(testEnvironment, outputNetwork);
+
+        std::cout << "Training Score" << ": " << evalScore << std::endl;
 
         collectData(outputNetwork, environment, experienceTable, legalActions, currentState, epsilon);
         trainBatch(testEnvironment, experienceTable, outputNetwork, targetNetwork);
@@ -225,7 +233,7 @@ int main() {
     }
 
     for(int i = 0; i < 10; i++) {
-        double eval = evaluation(environment, outputNetwork);
+        double eval = evaluation(testEnvironment, outputNetwork);
         std::cout << "Ending Total Rewards #" << i << ": " << eval << std::endl;
     }
 
