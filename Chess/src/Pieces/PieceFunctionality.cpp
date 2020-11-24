@@ -40,9 +40,9 @@ PieceFunctionality::PieceFunctionality() {
     pieces[Piece::TYPE::WHITE_KING] = new King(Piece::TEAM::WHITE, 'k');
     pieces[Piece::TYPE::WHITE_KING_CASTLE_ABLE] = new KingCastleAble(Piece::TEAM::WHITE, 'k');
 
-    pieces[Piece::TYPE::WHITE_PAWN] = new Pawn(Piece::TEAM::WHITE, 'p');
-    pieces[Piece::TYPE::WHITE_PAWN_DOUBLE] = new PawnDouble(Piece::TEAM::WHITE, 'p');
-    pieces[Piece::TYPE::WHITE_PAWN_EN_PASSANT_ABLE] = new PawnEnPassantAble(Piece::TEAM::WHITE, 'p');
+    pieces[Piece::TYPE::WHITE_PAWN] = new Pawn(Piece::TEAM::WHITE, 'w');
+    pieces[Piece::TYPE::WHITE_PAWN_DOUBLE] = new PawnDouble(Piece::TEAM::WHITE, 'w');
+    pieces[Piece::TYPE::WHITE_PAWN_EN_PASSANT_ABLE] = new PawnEnPassantAble(Piece::TEAM::WHITE, 'w');
 
     pieces[Piece::TYPE::WHITE_ROOK] = new Rook(Piece::TEAM::WHITE, 'r');
     pieces[Piece::TYPE::WHITE_ROOK_CASTLE_ABLE] = new RookCastleAble(Piece::TEAM::WHITE, 'r');
@@ -99,6 +99,17 @@ bool PieceFunctionality::canAnyWhitePieceMoveTo(PieceIndexType **pieces2D, int r
 
 bool PieceFunctionality::canAnyBlackPieceMoveTo(PieceIndexType **pieces2D, int row, int column) {
     return canAnyPieceMoveTo(pieces2D, row, column, Piece::TEAM::BLACK);
+}
+
+bool PieceFunctionality::move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn) {
+    if(startRow < 0 || startRow > 7 || startColumn < 0 || startColumn > 7 ||
+        endRow < 0 || endRow > 7 || endColumn < 0 || endColumn > 7) {
+        
+        std::cout << "Out of bounds on canMove, PieceFunctionality" << std::endl;
+        return false;
+    }
+
+    return pieces[pieces2D[startRow][startColumn]]->move(pieces2D, startRow, startColumn, endRow, endColumn);
 }
 
 char PieceFunctionality::getDisplayCharacter(PieceIndexType pieceIndex) {

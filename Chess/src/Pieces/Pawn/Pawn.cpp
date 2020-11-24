@@ -30,3 +30,19 @@ bool Pawn::canMove(PieceIndexType **pieces2D, int startRow, int startColumn, int
 
     return false;
 }
+
+bool Pawn::move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn) {
+    if(canMove(pieces2D, startRow, startColumn, endRow, endColumn)) {
+        PieceIndexType temp = pieces2D[startRow][startColumn];
+        pieces2D[startRow][startColumn] = Piece::TYPE::EMPTY;
+        pieces2D[endRow][endColumn] = temp;
+
+        if(endColumn != startColumn) {
+            pieces2D[startRow][endColumn] = Piece::TYPE::EMPTY;
+        }
+
+        return true;
+    }
+    
+    return false;
+}

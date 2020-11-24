@@ -18,3 +18,15 @@ bool Knight::canMove(PieceIndexType **pieces2D, int startRow, int startColumn, i
 
     return false;
 }
+
+bool Knight::move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn) {
+    if(canMove(pieces2D, startRow, startColumn, endRow, endColumn)) {
+        PieceIndexType temp = pieces2D[startRow][startColumn];
+        pieces2D[startRow][startColumn] = Piece::TYPE::EMPTY;
+        pieces2D[endRow][endColumn] = temp;
+
+        return true;
+    }
+    
+    return false;
+}

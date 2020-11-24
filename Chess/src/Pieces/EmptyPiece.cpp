@@ -12,3 +12,7 @@ EmptyPiece::~EmptyPiece() {
 bool EmptyPiece::canMove(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn) {
     return false;
 }
+
+bool EmptyPiece::move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn) {
+    return false;
+}

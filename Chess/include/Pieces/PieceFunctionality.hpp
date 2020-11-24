@@ -32,6 +32,18 @@ public:
     bool canAnyWhitePieceMoveTo(PieceIndexType **pieces2D, int row, int column);
     bool canAnyBlackPieceMoveTo(PieceIndexType **pieces2D, int row, int column);
 
+    /**
+     * Given a piece on the board, move that piece to the target coordinate
+     * 
+     * @param startRow -> start row coordinate of the piece
+     * @param startCol -> start col coordinate of the piece
+     * @param endRow -> end row coordinate of the piece
+     * @param endCol -> end col coordinate of the piece
+     * 
+     * @return -> whether the piece was moved
+     */
+    bool move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn);
+
     char getDisplayCharacter(PieceIndexType pieceIndex);
 };
 
