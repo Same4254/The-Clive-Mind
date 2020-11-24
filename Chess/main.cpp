@@ -3,20 +3,71 @@
 int main() {
     Board b;
     b.setBoard();
+    
+    long long count = 0;
 
     std::vector<Board> boards;
 
     for(int i = 0; i <= 7; i++) {
         for(int j = 0; j <= 7; j++) {
-            if(b.pieces2D[i][j] % 2 == 0)
+            if(b.pieces2D[i][j] % 2 == 0) 
                 PieceFunctionality::getInstance().generateBoards(b, boards, i, j);
         }
     }
 
+    count += boards.size();
+
     for(Board &board : boards) {
-        std::cout << "----------------------------------" << std::endl;
-        board.print();
+        std::vector<Board> layer2;
+
+        for(int i = 0; i <= 7; i++) {
+        for(int j = 0; j <= 7; j++) {
+            if(board.pieces2D[i][j] % 2 == 0) 
+                PieceFunctionality::getInstance().generateBoards(board, layer2, i, j);
+        }}
+
+        count += layer2.size();
+
+        for(Board &temp : layer2) {
+            std::vector<Board> layer3;
+
+            for(int i = 0; i <= 7; i++) {
+            for(int j = 0; j <= 7; j++) {
+                if(temp.pieces2D[i][j] % 2 == 0) 
+                    PieceFunctionality::getInstance().generateBoards(temp, layer3, i, j);
+            }}
+
+            count += layer3.size();
+
+            for(Board &temp2 : layer3) {
+                std::vector<Board> layer4;
+
+                for(int i = 0; i <= 7; i++) {
+                for(int j = 0; j <= 7; j++) {
+                    if(temp2.pieces2D[i][j] % 2 == 0) 
+                        PieceFunctionality::getInstance().generateBoards(temp2, layer4, i, j);
+                }}
+
+                count += layer4.size();
+
+                for(Board &temp3 : layer4) {
+                    std::vector<Board> layer5;
+
+                    for(int i = 0; i <= 7; i++) {
+                    for(int j = 0; j <= 7; j++) {
+                        if(temp3.pieces2D[i][j] % 2 == 0) 
+                            PieceFunctionality::getInstance().generateBoards(temp3, layer5, i, j);
+                    }}
+
+                    count += layer5.size();
+                }
+            }
+        }
+
     }
+
+    std::cout << count << std::endl;
+
 
     //Castle
     // b.pieces2D[0][0] = Piece::TYPE::EMPTY;

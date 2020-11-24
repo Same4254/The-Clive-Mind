@@ -15,7 +15,8 @@ Board::Board(const Board &other) : Board() {
 }
 
 Board::~Board() {
-    
+    free(pieces);
+    free(pieces2D);
 }
 
 void Board::setBoard() {

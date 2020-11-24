@@ -124,6 +124,9 @@ void PieceFunctionality::generateBoards(Board &board, std::vector<Board> &boards
             Board b(board);
             move(b.pieces2D, pieceRow, pieceColumn, i, j);
             boards.push_back(b);
+
+            // boards.push_back(Board(board));
+            // move(boards.at(boards.size() - 1).pieces2D, pieceRow, pieceColumn, i, j);
         }
     }}
 }
