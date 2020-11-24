@@ -3,7 +3,14 @@
 
 #include "Pieces/Piece.hpp"
 
+#include "Pieces/Rook/Rook.hpp"
+#include "Pieces/Bishop/Bishop.hpp"
+
 class Queen : public Piece {
+private:
+    Rook rookInstance;
+    Bishop bishopInstance;
+
 public:
     Queen(TEAM team, char displayCharacter);
     virtual ~Queen();
@@ -16,6 +23,6 @@ public:
      * @param endRow -> end row coordinate of the piece
      * @param endCol -> end col coordinate of the piece
      */
-    virtual bool canMove(PieceIndexType **pieces2D, uint startRow, uint startColumn, uint endRow, uint endColumn);
+    virtual bool canMove(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn);
 };
 #endif

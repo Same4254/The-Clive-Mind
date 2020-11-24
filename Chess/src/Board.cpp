@@ -6,7 +6,7 @@ Board::Board() {
     pieces2D = (PieceIndexType**) malloc((sizeof(PieceIndexType*) * 8));
 
     //Set the row pointer to the pointer at the location in the 1D allocation
-    for(uint i = 0; i < 8; i++)
+    for(int i = 0; i < 8; i++)
         pieces2D[i] = &pieces[i * 8];
 }
 
@@ -24,16 +24,16 @@ void Board::setBoard() {
     pieces2D[0][6] = Piece::TYPE::BLACK_KNIGHT;
     pieces2D[0][7] = Piece::TYPE::BLACK_ROOK_CASTLE_ABLE;
 
-    for(uint i = 0; i <= 7; i++)
+    for(int i = 0; i <= 7; i++)
         pieces2D[1][i] = Piece::TYPE::BLACK_PAWN_DOUBLE;
 
-    for(uint i = 2; i <= 5; i++) {
-        for(uint j = 0; j <= 7; j++) {
+    for(int i = 2; i <= 5; i++) {
+        for(int j = 0; j <= 7; j++) {
             pieces2D[i][j] = Piece::TYPE::EMPTY;
         }
     }
 
-    for(uint i = 0; i <= 7; i++)
+    for(int i = 0; i <= 7; i++)
         pieces2D[6][i] = Piece::TYPE::WHITE_PAWN_DOUBLE;
 
     pieces2D[7][0] = Piece::TYPE::WHITE_ROOK_CASTLE_ABLE;
@@ -46,13 +46,21 @@ void Board::setBoard() {
     pieces2D[7][7] = Piece::TYPE::WHITE_ROOK_CASTLE_ABLE;
 }
 
-bool Board::canMove(uint startRow, uint startColumn, uint endRow, uint endColumn) {
-    return false;
+void Board::clearBoard() {
+    for(int i = 0; i <= 7; i++) {
+        for(int j = 0; j <= 7; j++) {
+            pieces2D[i][j] = Piece::TYPE::EMPTY;
+        }
+    }
 }
 
-bool Board::canBeMovedOnto(uint row, uint col) {
-    for(uint tempRow = 0; tempRow < 8; tempRow++) {
-        for(uint tempCol = 0; tempCol < 8; tempCol++) {
+bool Board::canMove(int startRow, int startColumn, int endRow, int endColumn) {
+    return PieceFunctionality::getInstance().canMove(pieces2D, startRow, startColumn, endRow, endColumn);
+}
+
+bool Board::canBeMovedOnto(int row, int col) {
+    for(int tempRow = 0; tempRow < 8; tempRow++) {
+        for(int tempCol = 0; tempCol < 8; tempCol++) {
             if(tempRow == row && tempCol == col) 
                 continue;
 

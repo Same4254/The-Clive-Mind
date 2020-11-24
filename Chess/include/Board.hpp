@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include "Pieces/PieceFunctionality.hpp"
+#include "Pieces/Piece.hpp"
 
 class Board {
 public:
@@ -24,6 +25,8 @@ public:
      */
     void setBoard();
 
+    void clearBoard();
+
     /**
      * Given a piece on the board, check if that piece can be moved to the end location
      * 
@@ -32,12 +35,12 @@ public:
      * @param endRow -> end row coordinate of the piece
      * @param endCol -> end col coordinate of the piece
      */
-    bool canMove(uint startRow, uint startColumn, uint endRow, uint endColumn);
+    bool canMove(int startRow, int startColumn, int endRow, int endColumn);
 
     /**
      * Given a location on the board, check if any piece can be moved onto that location
      */
-    bool canBeMovedOnto(uint row, uint column);
+    bool canBeMovedOnto(int row, int column);
 
     /**
      * Print the ID of each piece on the board

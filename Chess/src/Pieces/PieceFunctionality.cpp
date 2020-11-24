@@ -1,5 +1,20 @@
 #include "Pieces/PieceFunctionality.hpp"
 
+#include "Pieces/Piece.hpp"
+
+#include "Pieces/EmptyPiece.hpp"
+
+#include "Pieces/Bishop/Bishop.hpp"
+#include "Pieces/King/King.hpp"
+#include "Pieces/King/KingCastleAble.hpp"
+#include "Pieces/Knight/Knight.hpp"
+#include "Pieces/Pawn/Pawn.hpp"
+#include "Pieces/Pawn/PawnDouble.hpp"
+#include "Pieces/Pawn/PawnEnPassantAble.hpp"
+#include "Pieces/Queen/Queen.hpp"
+#include "Pieces/Rook/Rook.hpp"
+#include "Pieces/Rook/RookCastleAble.hpp"
+
 PieceFunctionality::PieceFunctionality() {
     //Can't get the length of an enum in C++ ...
     pieces = (Piece**) malloc(sizeof(Piece*) * 21);
@@ -38,7 +53,7 @@ PieceFunctionality::PieceFunctionality() {
 }
 
 PieceFunctionality::~PieceFunctionality() {
-    for(uint i = 0; i < 21; i++)
+    for(int i = 0; i < 21; i++)
         delete pieces[i];
 
     free(pieces);
@@ -52,8 +67,38 @@ PieceFunctionality::~PieceFunctionality() {
  * @param endRow -> end row coordinate of the piece
  * @param endCol -> end col coordinate of the piece
  */
-bool PieceFunctionality::canMove(PieceIndexType **pieces2D, uint startRow, uint startColumn, uint endRow, uint endColumn) {
+bool PieceFunctionality::canMove(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn) {
+    if(startRow < 0 || startRow > 7 || startColumn < 0 || startColumn > 7 ||
+        endRow < 0 || endRow > 7 || endColumn < 0 || endColumn > 7) {
+        
+        std::cout << "Out of bounds on canMove, PieceFunctionality" << std::endl;
+        return false;
+    }
+
     return pieces[pieces2D[startRow][startColumn]]->canMove(pieces2D, startRow, startColumn, endRow, endColumn);
+}
+
+bool PieceFunctionality::canAnyPieceMoveTo(PieceIndexType **pieces2D, int row, int column, Piece::TEAM team) {
+    for(int tempRow = 0; tempRow < 8; tempRow++) {
+        for(int tempCol = 0; tempCol < 8; tempCol++) {
+            if(tempRow == row && tempCol == column) 
+                continue;
+
+            PieceIndexType piece = pieces2D[tempRow][tempCol];
+            if(piece != Piece::EMPTY && piece % 2 == team && canMove(pieces2D, tempRow, tempCol, row, column))
+                return true;
+        }
+    }
+
+    return false;
+}
+
+bool PieceFunctionality::canAnyWhitePieceMoveTo(PieceIndexType **pieces2D, int row, int column) {
+    return canAnyPieceMoveTo(pieces2D, row, column, Piece::TEAM::WHITE);
+}
+
+bool PieceFunctionality::canAnyBlackPieceMoveTo(PieceIndexType **pieces2D, int row, int column) {
+    return canAnyPieceMoveTo(pieces2D, row, column, Piece::TEAM::BLACK);
 }
 
 char PieceFunctionality::getDisplayCharacter(PieceIndexType pieceIndex) {

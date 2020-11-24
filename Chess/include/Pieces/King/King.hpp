@@ -16,6 +16,6 @@ public:
      * @param endRow -> end row coordinate of the piece
      * @param endCol -> end col coordinate of the piece
      */
-    virtual bool canMove(PieceIndexType **pieces2D, uint startRow, uint startColumn, uint endRow, uint endColumn);
+    virtual bool canMove(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn);
 };
 #endif
