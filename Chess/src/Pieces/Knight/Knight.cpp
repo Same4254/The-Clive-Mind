@@ -13,7 +13,8 @@ bool Knight::canMove(PieceIndexType **pieces2D, int startRow, int startColumn, i
     int rowDifference = abs(startRow - endRow);
     int colDifference = abs(startColumn - endColumn);
 
-    if(rowDifference != colDifference && (rowDifference == 1 || rowDifference == 2) && (colDifference == 1 || colDifference == 2))
+    if(rowDifference != colDifference && (rowDifference == 1 || rowDifference == 2) && (colDifference == 1 || colDifference == 2) && 
+            (pieces2D[endRow][endColumn] == Piece::TYPE::EMPTY || pieces2D[endRow][endColumn] % 2 != pieces2D[startRow][startColumn] % 2) )
         return true;
 
     return false;

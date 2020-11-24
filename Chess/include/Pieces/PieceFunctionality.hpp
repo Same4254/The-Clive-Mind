@@ -2,8 +2,11 @@
 #define PIECE_FUNCTIONALITY_HPP
 
 #include <iostream>
+#include <vector>
 
 #include "Pieces/Piece.hpp"
+
+class Board;
 
 class PieceFunctionality {
 private:
@@ -43,6 +46,8 @@ public:
      * @return -> whether the piece was moved
      */
     bool move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn);
+
+    void generateBoards(Board &board, std::vector<Board> &boards, int pieceRow, int pieceColumn);
 
     char getDisplayCharacter(PieceIndexType pieceIndex);
 };

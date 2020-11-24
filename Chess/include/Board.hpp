@@ -2,6 +2,7 @@
 #define BOARD_HPP
 
 #include <stdlib.h>
+#include <string.h>
 
 #include <iomanip>
 #include <iostream>
@@ -18,6 +19,7 @@ public:
     PieceIndexType **pieces2D;
 
     Board();
+    Board(const Board &other);
     ~Board();
 
     /**

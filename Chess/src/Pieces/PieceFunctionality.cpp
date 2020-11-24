@@ -1,6 +1,7 @@
 #include "Pieces/PieceFunctionality.hpp"
 
 #include "Pieces/Piece.hpp"
+#include "Board.hpp"
 
 #include "Pieces/EmptyPiece.hpp"
 
@@ -110,6 +111,21 @@ bool PieceFunctionality::move(PieceIndexType **pieces2D, int startRow, int start
     }
 
     return pieces[pieces2D[startRow][startColumn]]->move(pieces2D, startRow, startColumn, endRow, endColumn);
+}
+
+//TODO: This is not great, but works for now
+void PieceFunctionality::generateBoards(Board &board, std::vector<Board> &boards, int pieceRow, int pieceColumn) {
+    if(board.pieces2D[pieceRow][pieceColumn] == Piece::TYPE::EMPTY)
+        return;
+
+    for(int i = 0; i <= 7; i++) {
+    for(int j = 0; j <= 7; j++) {
+        if(canMove(board.pieces2D, pieceRow, pieceColumn, i, j)) {
+            Board b(board);
+            move(b.pieces2D, pieceRow, pieceColumn, i, j);
+            boards.push_back(b);
+        }
+    }}
 }
 
 char PieceFunctionality::getDisplayCharacter(PieceIndexType pieceIndex) {

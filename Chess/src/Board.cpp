@@ -10,6 +10,10 @@ Board::Board() {
         pieces2D[i] = &pieces[i * 8];
 }
 
+Board::Board(const Board &other) : Board() {
+    memcpy(pieces, other.pieces, sizeof(PieceIndexType) * 64);
+}
+
 Board::~Board() {
     
 }

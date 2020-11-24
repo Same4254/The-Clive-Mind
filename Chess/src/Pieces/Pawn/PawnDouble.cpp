@@ -16,7 +16,7 @@ bool PawnDouble::canMove(PieceIndexType **pieces2D, int startRow, int startColum
     int nextRow = (team == Piece::TEAM::WHITE ? startRow - 1 : startRow + 1);
     int doubleRow = (team == Piece::TEAM::WHITE ? startRow - 2 : startRow + 2);
 
-    if(endRow != doubleRow || pieces2D[nextRow][startColumn] != Piece::TYPE::EMPTY || pieces2D[endRow][startColumn] != Piece::TYPE::EMPTY)
+    if(endRow != doubleRow || startColumn != endColumn || pieces2D[nextRow][startColumn] != Piece::TYPE::EMPTY || pieces2D[endRow][startColumn] != Piece::TYPE::EMPTY)
         return false;
 
     return true;
