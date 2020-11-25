@@ -6,11 +6,9 @@
 
 #include "Pieces/Piece.hpp"
 
-class Board;
-
 class PieceFunctionality {
 private:
-    Piece **pieces;
+    Piece **pieceFunctions;
 
     PieceFunctionality();
     ~PieceFunctionality();
@@ -20,6 +18,8 @@ public:
         static PieceFunctionality instance;
         return instance;
     }
+
+    bool isKingInCheck(PieceIndexType **pieces2D, Piece::TEAM team);
 
     /**
      * Given a piece on the board, check if that piece can be moved to the end location
@@ -42,10 +42,8 @@ public:
      * @param startCol -> start col coordinate of the piece
      * @param endRow -> end row coordinate of the piece
      * @param endCol -> end col coordinate of the piece
-     * 
-     * @return -> whether the piece was moved
      */
-    bool move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn);
+    void move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn);
 
     void generateBoards(Board &board, std::vector<Board> &boards, int pieceRow, int pieceColumn);
 

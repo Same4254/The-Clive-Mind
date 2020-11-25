@@ -1,8 +1,34 @@
 #include "Pieces/Knight/Knight.hpp"
 #include "Pieces/PieceFunctionality.hpp"
 
-Knight::Knight(TEAM team, char displayCharacter) : Piece(team, displayCharacter) {
+#include "Board.hpp"
 
+Knight::Knight(TEAM team, char displayCharacter) : Piece(team, displayCharacter) {
+    rowMovementOffsets.push_back(2);
+    rowMovementOffsets.push_back(1);
+
+    rowMovementOffsets.push_back(2);
+    rowMovementOffsets.push_back(1);
+
+    rowMovementOffsets.push_back(-2);
+    rowMovementOffsets.push_back(-1);
+
+    rowMovementOffsets.push_back(-2);
+    rowMovementOffsets.push_back(-1);
+
+    //****
+
+    columnMovementOffsets.push_back(1);
+    columnMovementOffsets.push_back(2);
+    
+    columnMovementOffsets.push_back(-1);
+    columnMovementOffsets.push_back(-2);
+
+    columnMovementOffsets.push_back(1);
+    columnMovementOffsets.push_back(2);
+    
+    columnMovementOffsets.push_back(-1);
+    columnMovementOffsets.push_back(-2);
 }
 
 Knight::~Knight() {
@@ -17,17 +43,5 @@ bool Knight::canMove(PieceIndexType **pieces2D, int startRow, int startColumn, i
             (pieces2D[endRow][endColumn] == Piece::TYPE::EMPTY || pieces2D[endRow][endColumn] % 2 != pieces2D[startRow][startColumn] % 2) )
         return true;
 
-    return false;
-}
-
-bool Knight::move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn) {
-    if(canMove(pieces2D, startRow, startColumn, endRow, endColumn)) {
-        PieceIndexType temp = pieces2D[startRow][startColumn];
-        pieces2D[startRow][startColumn] = Piece::TYPE::EMPTY;
-        pieces2D[endRow][endColumn] = temp;
-
-        return true;
-    }
-    
     return false;
 }

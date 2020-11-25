@@ -3,7 +3,43 @@
 int main() {
     Board b;
     b.setBoard();
+
+    // b.clearBoard();
+
+    // b.pieces2D[3][3] = Piece::TYPE::WHITE_KING;
+    // b.pieces2D[3][4] = Piece::TYPE::WHITE_PAWN;
+
+    // b.pieces2D[2][7] = Piece::TYPE::BLACK_KING;
+
+    // // b.pieces2D[3][7] = Piece::TYPE::BLACK_ROOK;
+    // // b.pieces2D[4][7] = Piece::TYPE::BLACK_ROOK;
+
+    // b.pieces2D[0][6] = Piece::TYPE::BLACK_BISHOP;
+    // b.pieces2D[2][1] = Piece::TYPE::BLACK_KNIGHT;
     
+    // std::cout << "The situation:" << std::endl;
+
+    // b.print();
+
+    // std::cout << "------------------------------" << std::endl;
+
+    // std::vector<Board> boards;
+
+    // for(int i = 0; i <= 7; i++) {
+    //     for(int j = 0; j <= 7; j++) {
+    //         if(b.pieces2D[i][j] % 2 == 0) 
+    //             PieceFunctionality::getInstance().generateBoards(b, boards, i, j);
+    //     }
+    // }
+
+    // for(Board &board : boards) {
+    //     board.print();
+    //     std::cout << "------------------------------" << std::endl;
+    // }
+
+
+
+
     long long count = 0;
 
     std::vector<Board> boards;
@@ -14,6 +50,11 @@ int main() {
                 PieceFunctionality::getInstance().generateBoards(b, boards, i, j);
         }
     }
+
+    // for(Board &board : boards) {
+    //     board.print();
+    //     std::cout << "------------------------------" << std::endl;
+    // }
 
     count += boards.size();
 

@@ -2,7 +2,21 @@
 #include "Pieces/PieceFunctionality.hpp"
 
 Pawn::Pawn(TEAM team, char displayCharacter) : Piece(team, displayCharacter) {
+    if(team == Piece::TEAM::BLACK) {
+        rowMovementOffsets.push_back(1);
+        rowMovementOffsets.push_back(1);
+        rowMovementOffsets.push_back(1);
+    }
 
+    if(team == Piece::TEAM::WHITE) {
+        rowMovementOffsets.push_back(-1);
+        rowMovementOffsets.push_back(-1);
+        rowMovementOffsets.push_back(-1);
+    }
+
+    columnMovementOffsets.push_back(-1);
+    columnMovementOffsets.push_back(0);
+    columnMovementOffsets.push_back(1);
 }
 
 Pawn::~Pawn() {
@@ -31,8 +45,8 @@ bool Pawn::canMove(PieceIndexType **pieces2D, int startRow, int startColumn, int
     return false;
 }
 
-bool Pawn::move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn) {
-    if(canMove(pieces2D, startRow, startColumn, endRow, endColumn)) {
+void Pawn::move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn) {
+    // if(canMove(pieces2D, startRow, startColumn, endRow, endColumn)) {
         PieceIndexType temp = pieces2D[startRow][startColumn];
         pieces2D[startRow][startColumn] = Piece::TYPE::EMPTY;
         pieces2D[endRow][endColumn] = temp;
@@ -41,8 +55,8 @@ bool Pawn::move(PieceIndexType **pieces2D, int startRow, int startColumn, int en
             pieces2D[startRow][endColumn] = Piece::TYPE::EMPTY;
         }
 
-        return true;
-    }
+    //     return true;
+    // }
     
-    return false;
+    // return false;
 }

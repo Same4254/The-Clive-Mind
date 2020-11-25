@@ -25,16 +25,6 @@ public:
      */
     virtual bool canMove(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn);
 
-    /**
-     * Given a piece on the board, move the piece to the end location
-     * 
-     * @param startRow -> start row coordinate of the piece
-     * @param startCol -> start col coordinate of the piece
-     * @param endRow -> end row coordinate of the piece
-     * @param endCol -> end col coordinate of the piece
-     * 
-     * @return -> Whether or not the piece was moved
-     */
-    virtual bool move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn);
+    virtual void generateBoards(Board &board, std::vector<Board> &boards, int pieceRow, int pieceColumn);
 };
 #endif

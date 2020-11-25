@@ -28,6 +28,6 @@ public:
      * 
      * @return -> Whether or not the piece was moved
      */
-    virtual bool move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn);
+    virtual void move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn);
 };
 #endif

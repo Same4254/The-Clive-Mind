@@ -1,8 +1,77 @@
 #include "Pieces/Bishop/Bishop.hpp"
 #include "Pieces/PieceFunctionality.hpp"
+#include "Board.hpp"
 
 Bishop::Bishop(TEAM team, char displayCharacter) : Piece(team, displayCharacter) {
+    rowMovementOffsets.push_back(1);
+    rowMovementOffsets.push_back(2);
+    rowMovementOffsets.push_back(3);
+    rowMovementOffsets.push_back(4);
+    rowMovementOffsets.push_back(5);
+    rowMovementOffsets.push_back(6);
+    rowMovementOffsets.push_back(7);
 
+    columnMovementOffsets.push_back(1);
+    columnMovementOffsets.push_back(2);
+    columnMovementOffsets.push_back(3);
+    columnMovementOffsets.push_back(4);
+    columnMovementOffsets.push_back(5);
+    columnMovementOffsets.push_back(6);
+    columnMovementOffsets.push_back(7);
+
+    //*****
+
+    rowMovementOffsets.push_back(-1);
+    rowMovementOffsets.push_back(-2);
+    rowMovementOffsets.push_back(-3);
+    rowMovementOffsets.push_back(-4);
+    rowMovementOffsets.push_back(-5);
+    rowMovementOffsets.push_back(-6);
+    rowMovementOffsets.push_back(-7);
+
+    columnMovementOffsets.push_back(1);
+    columnMovementOffsets.push_back(2);
+    columnMovementOffsets.push_back(3);
+    columnMovementOffsets.push_back(4);
+    columnMovementOffsets.push_back(5);
+    columnMovementOffsets.push_back(6);
+    columnMovementOffsets.push_back(7);
+
+    //*****
+
+    rowMovementOffsets.push_back(1);
+    rowMovementOffsets.push_back(2);
+    rowMovementOffsets.push_back(3);
+    rowMovementOffsets.push_back(4);
+    rowMovementOffsets.push_back(5);
+    rowMovementOffsets.push_back(6);
+    rowMovementOffsets.push_back(7);
+
+    columnMovementOffsets.push_back(-1);
+    columnMovementOffsets.push_back(-2);
+    columnMovementOffsets.push_back(-3);
+    columnMovementOffsets.push_back(-4);
+    columnMovementOffsets.push_back(-5);
+    columnMovementOffsets.push_back(-6);
+    columnMovementOffsets.push_back(-7);
+
+    //*****
+
+    rowMovementOffsets.push_back(-1);
+    rowMovementOffsets.push_back(-2);
+    rowMovementOffsets.push_back(-3);
+    rowMovementOffsets.push_back(-4);
+    rowMovementOffsets.push_back(-5);
+    rowMovementOffsets.push_back(-6);
+    rowMovementOffsets.push_back(-7);
+
+    columnMovementOffsets.push_back(-1);
+    columnMovementOffsets.push_back(-2);
+    columnMovementOffsets.push_back(-3);
+    columnMovementOffsets.push_back(-4);
+    columnMovementOffsets.push_back(-5);
+    columnMovementOffsets.push_back(-6);
+    columnMovementOffsets.push_back(-7);
 }
 
 Bishop::~Bishop() {
@@ -35,17 +104,5 @@ bool Bishop::canMove(PieceIndexType **pieces2D, int startRow, int startColumn, i
         tempCol += columnFactor;
     }
 
-    return false;
-}
-
-bool Bishop::move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn) {
-    if(canMove(pieces2D, startRow, startColumn, endRow, endColumn)) {
-        PieceIndexType temp = pieces2D[startRow][startColumn];
-        pieces2D[startRow][startColumn] = Piece::TYPE::EMPTY;
-        pieces2D[endRow][endColumn] = temp;
-
-        return true;
-    }
-    
     return false;
 }

@@ -2,7 +2,13 @@
 #include "Pieces/PieceFunctionality.hpp"
 
 PawnDouble::PawnDouble(TEAM team, char displayCharacter) : Pawn(team, displayCharacter) {
+    if(team == Piece::TEAM::BLACK) 
+        rowMovementOffsets.push_back(2);
 
+    if(team == Piece::TEAM::WHITE)
+        rowMovementOffsets.push_back(-2);
+
+    columnMovementOffsets.push_back(0);
 }
 
 PawnDouble::~PawnDouble() {
@@ -22,8 +28,8 @@ bool PawnDouble::canMove(PieceIndexType **pieces2D, int startRow, int startColum
     return true;
 }
 
-bool PawnDouble::move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn) {
-    if(canMove(pieces2D, startRow, startColumn, endRow, endColumn)) {
+void PawnDouble::move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn) {
+    // if(canMove(pieces2D, startRow, startColumn, endRow, endColumn)) {
         pieces2D[startRow][startColumn] = Piece::TYPE::EMPTY;
 
         bool enPassant = abs(endRow - startRow) == 2;
@@ -31,8 +37,8 @@ bool PawnDouble::move(PieceIndexType **pieces2D, int startRow, int startColumn, 
         pieces2D[endRow][endColumn] = (enPassant ? (team == Piece::TEAM::BLACK ? Piece::TYPE::BLACK_PAWN_EN_PASSANT_ABLE : Piece::TYPE::WHITE_PAWN_EN_PASSANT_ABLE) :
                                                     (team == Piece::TEAM::BLACK ? Piece::TYPE::BLACK_PAWN : Piece::TYPE::WHITE_PAWN));
 
-        return true;
-    }
+    //     return true;
+    // }
     
-    return false;
+    // return false;
 }

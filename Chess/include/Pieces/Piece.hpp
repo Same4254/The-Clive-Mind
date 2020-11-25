@@ -2,8 +2,11 @@
 #define PIECE_HPP
 
 #include <cmath>
+#include <vector>
 
 typedef unsigned char PieceIndexType;
+
+class Board;
 
 class Piece {
 public:
@@ -52,6 +55,8 @@ public:
     TEAM team;
     char displayCharacter;
 
+    std::vector<int> rowMovementOffsets, columnMovementOffsets;
+
     Piece(TEAM team, char displayCharacter);
     virtual ~Piece();
 
@@ -75,7 +80,9 @@ public:
      * 
      * @return -> Whether or not the piece was moved
      */
-    virtual bool move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn) = 0;
+    virtual void move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn);
+
+    virtual void generateBoards(Board &board, std::vector<Board> &boards, int pieceRow, int pieceColumn);
 };
 
 #endif
