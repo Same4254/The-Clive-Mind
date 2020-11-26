@@ -30,6 +30,8 @@ bool PawnDouble::canMove(PieceIndexType **pieces2D, int startRow, int startColum
 
 void PawnDouble::move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn) {
     // if(canMove(pieces2D, startRow, startColumn, endRow, endColumn)) {
+        pieces2D[7][8] -= PieceFunctionality::getInstance().pieceValues[pieces2D[endRow][endColumn]];
+
         pieces2D[startRow][startColumn] = Piece::TYPE::EMPTY;
 
         bool enPassant = abs(endRow - startRow) == 2;

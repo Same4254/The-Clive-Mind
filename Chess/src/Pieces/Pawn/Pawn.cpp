@@ -47,13 +47,22 @@ bool Pawn::canMove(PieceIndexType **pieces2D, int startRow, int startColumn, int
 
 void Pawn::move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn) {
     // if(canMove(pieces2D, startRow, startColumn, endRow, endColumn)) {
-        PieceIndexType temp = pieces2D[startRow][startColumn];
-        pieces2D[startRow][startColumn] = Piece::TYPE::EMPTY;
-        pieces2D[endRow][endColumn] = temp;
+        if(pieces2D[startRow][endColumn] == Piece::TYPE::BLACK_PAWN_EN_PASSANT_ABLE || pieces2D[startRow][endColumn] == Piece::TYPE::WHITE_PAWN_EN_PASSANT_ABLE) {
+            PieceIndexType temp = pieces2D[startRow][startColumn];
 
-        if(endColumn != startColumn) {
-            pieces2D[startRow][endColumn] = Piece::TYPE::EMPTY;
+            pieces2D[7][8] -= PieceFunctionality::getInstance().pieceValues[temp];
+
+            pieces2D[startRow][startColumn] = Piece::TYPE::EMPTY;
+            pieces2D[endRow][endColumn] = temp;
+
+            if(endColumn != startColumn) {
+                pieces2D[startRow][endColumn] = Piece::TYPE::EMPTY;
+            }
+        } else {
+            Piece::move(pieces2D, startRow, startColumn, endRow, endColumn);
         }
+
+        
 
     //     return true;
     // }

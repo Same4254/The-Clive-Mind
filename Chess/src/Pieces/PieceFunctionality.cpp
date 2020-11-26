@@ -51,6 +51,40 @@ PieceFunctionality::PieceFunctionality() {
     pieceFunctions[Piece::TYPE::WHITE_QUEEN] = new Queen(Piece::TEAM::WHITE, 'q');
     pieceFunctions[Piece::TYPE::WHITE_BISHOP] = new Bishop(Piece::TEAM::WHITE, 'b');
     pieceFunctions[Piece::TYPE::WHITE_KNIGHT] = new Knight(Piece::TEAM::WHITE, 'n');
+
+    //**** VALUES
+
+    pieceValues[Piece::TYPE::EMPTY] = 0;
+
+    //****** BLACK
+    pieceValues[Piece::TYPE::BLACK_KING] = 0;
+    pieceValues[Piece::TYPE::BLACK_KING_CASTLE_ABLE] = 0;
+
+    pieceValues[Piece::TYPE::BLACK_PAWN] = -1;
+    pieceValues[Piece::TYPE::BLACK_PAWN_DOUBLE] = -1;
+    pieceValues[Piece::TYPE::BLACK_PAWN_EN_PASSANT_ABLE] = -1;
+
+    pieceValues[Piece::TYPE::BLACK_ROOK] = -5;
+    pieceValues[Piece::TYPE::BLACK_ROOK_CASTLE_ABLE] = -5;
+    
+    pieceValues[Piece::TYPE::BLACK_QUEEN] = -9;
+    pieceValues[Piece::TYPE::BLACK_BISHOP] = -3;
+    pieceValues[Piece::TYPE::BLACK_KNIGHT] = -3;
+
+    //****** WHITE
+    pieceValues[Piece::TYPE::WHITE_KING] = 0;
+    pieceValues[Piece::TYPE::WHITE_KING_CASTLE_ABLE] = 0;
+
+    pieceValues[Piece::TYPE::WHITE_PAWN] = 1;
+    pieceValues[Piece::TYPE::WHITE_PAWN_DOUBLE] = 1;
+    pieceValues[Piece::TYPE::WHITE_PAWN_EN_PASSANT_ABLE] = 1;
+
+    pieceValues[Piece::TYPE::WHITE_ROOK] = 5;
+    pieceValues[Piece::TYPE::WHITE_ROOK_CASTLE_ABLE] = 5;
+    
+    pieceValues[Piece::TYPE::WHITE_QUEEN] = 9;
+    pieceValues[Piece::TYPE::WHITE_BISHOP] = 3;
+    pieceValues[Piece::TYPE::WHITE_KNIGHT] = 3;
 }
 
 PieceFunctionality::~PieceFunctionality() {
@@ -331,7 +365,16 @@ void PieceFunctionality::move(PieceIndexType **pieces2D, int startRow, int start
         return;
     }
 
+    PieceIndexType enPassantToRemove = (pieces2D[startRow][endRow] % 2 == 0 ? Piece::TYPE::BLACK_PAWN_EN_PASSANT_ABLE : Piece::TYPE::WHITE_PAWN_EN_PASSANT_ABLE);
+    PieceIndexType pawnToPlace = (pieces2D[startRow][endRow] % 2 == 0 ? Piece::TYPE::BLACK_PAWN : Piece::TYPE::WHITE_PAWN);
+
     pieceFunctions[pieces2D[startRow][startColumn]]->move(pieces2D, startRow, startColumn, endRow, endColumn);
+
+    for(int i = 0; i <= 7; i++) {
+    for(int j = 0; j <= 7; j++) {
+        if(pieces2D[i][j] == enPassantToRemove)
+            pieces2D[i][j] = pawnToPlace;
+    }}
 }
 
 //TODO: This is not great, but works for now

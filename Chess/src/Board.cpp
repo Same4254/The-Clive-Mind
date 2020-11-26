@@ -1,8 +1,8 @@
 #include "Board.hpp"
 
 Board::Board() {
-    //Chess board is 8x8 board. Thus, 64 indecies long
-    pieces = (PieceIndexType*) malloc((sizeof(PieceIndexType) * 64));
+    //Chess board is 8x8 board. Thus, 64 indecies long for the board. In addition, one more for the score
+    pieces = (PieceIndexType*) malloc((sizeof(PieceIndexType) * 65));
     pieces2D = (PieceIndexType**) malloc((sizeof(PieceIndexType*) * 8));
 
     //Set the row pointer to the pointer at the location in the 1D allocation
@@ -11,7 +11,7 @@ Board::Board() {
 }
 
 Board::Board(const Board &other) : Board() {
-    memcpy(pieces, other.pieces, sizeof(PieceIndexType) * 64);
+    memcpy(pieces, other.pieces, sizeof(PieceIndexType) * 65);
 }
 
 Board::~Board() {
@@ -20,6 +20,8 @@ Board::~Board() {
 }
 
 void Board::setBoard() {
+    pieces[64] = 0;
+
     pieces2D[0][0] = Piece::TYPE::BLACK_ROOK_CASTLE_ABLE;
     pieces2D[0][1] = Piece::TYPE::BLACK_KNIGHT;
     pieces2D[0][2] = Piece::TYPE::BLACK_BISHOP;
@@ -86,7 +88,7 @@ void Board::print() {
         std::cout << std::endl;
     }
 
-    std::cout << "   ----------------" << std::endl;
+    std::cout << "   ---------------- Score: " << (int) pieces[64] << std::endl;
     std::cout << "    a b c d e f g h" << std::endl;
 }
 

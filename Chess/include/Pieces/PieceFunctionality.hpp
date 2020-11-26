@@ -14,6 +14,8 @@ private:
     ~PieceFunctionality();
 
 public:
+    PieceIndexType pieceValues[21];
+
     static PieceFunctionality& getInstance() {
         static PieceFunctionality instance;
         return instance;

@@ -70,6 +70,8 @@ void KingCastleAble::move(PieceIndexType **pieces2D, int startRow, int startColu
             pieces2D[startRow][startColumn + 2] = (team == Piece::TEAM::BLACK ? Piece::TYPE::BLACK_KING : Piece::TYPE::WHITE_KING);
             pieces2D[startRow][startColumn + 1] = (team == Piece::TEAM::BLACK ? Piece::TYPE::BLACK_ROOK : Piece::TYPE::WHITE_ROOK);
         } else {
+            pieces2D[7][8] -= PieceFunctionality::getInstance().pieceValues[pieces2D[endRow][endColumn]];
+
             pieces2D[startRow][startColumn] = Piece::TYPE::EMPTY;
             pieces2D[endRow][endColumn] = (team == Piece::TEAM::BLACK ? Piece::TYPE::BLACK_KING : Piece::TYPE::WHITE_KING);
         }
