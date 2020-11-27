@@ -2,11 +2,16 @@
 
 Board findBlackMove(Board board) {
     std::vector<Board> possibleMoves;
-    for(int i = 0; i <= 7; i++) {
-    for(int j = 0; j <= 7; j++) {
-        if(board.pieces2D[i][j] % 2 == 1) 
-            PieceFunctionality::getInstance().generateBoards(board, possibleMoves, i, j);
-    }}
+    board.generateAllMoves(possibleMoves, Piece::TEAM::BLACK);
+
+    if(possibleMoves.size() == 0) {
+        Board b;
+        b.clearBoard();
+
+        b.pieces[64] = 50;
+
+        return b;
+    }
 
     size_t smallestBoardIndex = 0;
     for(size_t i = 1; i < possibleMoves.size(); i++) {
@@ -17,84 +22,123 @@ Board findBlackMove(Board board) {
     return possibleMoves.at(smallestBoardIndex);
 } 
 
-Board findWhiteMove(Board board) {
-    std::vector<Board> possibleMoves;
-    for(int i = 0; i <= 7; i++) {
-    for(int j = 0; j <= 7; j++) {
-        if(board.pieces2D[i][j] % 2 == 0) 
-            PieceFunctionality::getInstance().generateBoards(board, possibleMoves, i, j);
-    }}
-
-    size_t largestBoardIndex = 0;
-    for(size_t i = 1; i < possibleMoves.size(); i++) {
-        if(possibleMoves.at(i).pieces[64] > possibleMoves.at(largestBoardIndex).pieces[64])
-            largestBoardIndex = i;
+std::vector<Board> minimaxWhiteHelper(Board board, int depth) {
+    if(depth == 1) {
+        std::vector<Board> v;
+        v.push_back(findBlackMove(board));
+        return v;
     }
-
-    return possibleMoves.at(largestBoardIndex);
-} 
-
-Board minimaxWhite(Board board, int depth) {
-    if(depth == 1)
-        return findBlackMove(board);
     
-    if(depth % 2 == 0) {
-        std::vector<Board> possibleMoves;
+    std::vector<Board> possibleMoves;
+    board.generateAllMoves(possibleMoves, depth % 2 == 0 ? Piece::TEAM::WHITE : Piece::TEAM::BLACK);
 
-        for(int i = 0; i <= 7; i++) {
-        for(int j = 0; j <= 7; j++) {
-            if(board.pieces2D[i][j] % 2 == 0) 
-                PieceFunctionality::getInstance().generateBoards(board, possibleMoves, i, j);
-        }}
+    //There are no moves to make. Return a board with a score for mate or draw
+    if(possibleMoves.size() == 0) {
+        Board b;
+        b.clearBoard();
 
-        std::vector<Board> opponentMoves;
-
-        for(Board &b : possibleMoves) {
-            opponentMoves.push_back(minimaxWhite(b, depth - 1));
+        //Black has no moves
+        if(depth % 2 == 1) {
+            //Mate
+            if(PieceFunctionality::getInstance().isKingInCheck(board.pieces2D, Piece::TEAM::BLACK)) {
+                b.pieces[64] = 50;
+            } else {//Draw
+                b.pieces[64] = 0;
+            }
+        } else {
+            //Mate
+            if(PieceFunctionality::getInstance().isKingInCheck(board.pieces2D, Piece::TEAM::WHITE)) {
+                b.pieces[64] = -50;
+            } else {//Draw
+                b.pieces[64] = 0;
+            }
         }
 
-        size_t largestBoardIndex = 0;
-        for(size_t i = 0; i < opponentMoves.size(); i++) {
-            if(opponentMoves.at(i).pieces[64] > opponentMoves.at(largestBoardIndex).pieces[64])
-                largestBoardIndex = i;
-        }
-
-        return opponentMoves.at(largestBoardIndex); // out of range
-    } else {
-        std::vector<Board> possibleMoves;
-
-        for(int i = 0; i <= 7; i++) {
-        for(int j = 0; j <= 7; j++) {
-            if(board.pieces2D[i][j] % 2 == 1) 
-                PieceFunctionality::getInstance().generateBoards(board, possibleMoves, i, j);
-        }}
-
-        std::vector<Board> opponentMoves;
-
-        for(Board &b : possibleMoves) {
-            opponentMoves.push_back(minimaxWhite(b, depth - 1));
-        }
-
-        size_t smallestBoardIndex = 0;
-        for(size_t i = 0; i < opponentMoves.size(); i++) {
-            if(opponentMoves.at(i).pieces[64] < opponentMoves.at(smallestBoardIndex).pieces[64])
-                smallestBoardIndex = i;
-        }
-
-        return opponentMoves.at(smallestBoardIndex);
+        std::vector<Board> v;
+        v.push_back(b);
+        return v;
     }
+
+    std::vector<std::vector<Board>> opponentLines;
+    for(Board &b : possibleMoves)
+        opponentLines.push_back(minimaxWhiteHelper(b, depth - 1));
+
+    size_t bestLineIndex = 0;
+    if(depth % 2 == 0) {
+        for(size_t i = 0; i < opponentLines.size(); i++) {
+            if(opponentLines.at(i).at(0).pieces[64] > opponentLines.at(bestLineIndex).at(0).pieces[64] &&
+                opponentLines.at(i).size() < opponentLines.at(bestLineIndex).size()) {
+
+                bestLineIndex = i;
+            }
+        }
+    } else {
+        for(size_t i = 0; i < opponentLines.size(); i++) {
+            if(opponentLines.at(i).at(0).pieces[64] < opponentLines.at(bestLineIndex).at(0).pieces[64] &&
+                opponentLines.at(i).size() < opponentLines.at(bestLineIndex).size()) {
+
+                bestLineIndex = i;
+            }
+        }
+    }
+
+    std::vector<Board> v = opponentLines.at(bestLineIndex);
+    v.push_back(possibleMoves.at(bestLineIndex));
+
+    return v;
+}
+
+std::vector<Board> minimaxWhite(Board board, int moves) {
+    std::vector<Board> boards;
+    board.generateAllMoves(boards, Piece::TEAM::WHITE);
+
+    std::vector<std::vector<Board>> lines;
+    for(Board temp : boards) {
+        lines.push_back(minimaxWhiteHelper(temp, (2 * moves) - 1));
+    }
+
+    size_t bestLineIndex = 0;
+    for(size_t i = 0; i < lines.size(); i++) {
+        if(lines.at(i).at(0).pieces[64] > lines.at(bestLineIndex).at(0).pieces[64] &&
+            lines.at(i).size() < lines.at(bestLineIndex).size()) {
+
+            bestLineIndex = i;
+        }
+    }
+
+    std::vector<Board> v = lines.at(bestLineIndex);
+    v.push_back(boards.at(bestLineIndex));
+
+    return v;
 }
 
 int main() {
     Board b;
-    b.clearBoard();
-    // b.setBoard();
+    // b.clearBoard();
+    b.setBoard();
 
-    b.pieces2D[0][3] = Piece::TYPE::BLACK_KING;
-    b.pieces2D[3][1] = Piece::TYPE::BLACK_BISHOP;
+    // b.pieces2D[0][4] = Piece::TYPE::BLACK_KING;
+    // b.pieces2D[1][4] = Piece::TYPE::BLACK_PAWN;
+    // b.pieces2D[1][5] = Piece::TYPE::BLACK_PAWN;
+    
+    // b.pieces2D[3][0] = Piece::TYPE::WHITE_BISHOP;
+    // b.pieces2D[7][3] = Piece::TYPE::WHITE_ROOK;
 
-    b.pieces2D[7][4] = Piece::TYPE::WHITE_QUEEN;
-    b.pieces2D[7][7] = Piece::TYPE::WHITE_KING;
+    // b.pieces2D[6][5] = Piece::TYPE::WHITE_PAWN;
+    // b.pieces2D[6][6] = Piece::TYPE::WHITE_PAWN;
+    // b.pieces2D[6][7] = Piece::TYPE::WHITE_PAWN;
+
+    // b.pieces2D[7][6] = Piece::TYPE::WHITE_KING;
+
+
+    // b.pieces2D[2][0] = Piece::TYPE::BLACK_KING;
+    // b.pieces2D[2][2] = Piece::TYPE::WHITE_KING;
+
+    // b.pieces2D[2][7] = Piece::TYPE::WHITE_QUEEN;
+
+    for(Board board : minimaxWhite(b, 3)) {
+        board.print();
+    }
 
     b.print();
 
@@ -111,26 +155,19 @@ int main() {
 
     // b.pieces2D[6][3] = Piece::TYPE::EMPTY;
 
-    std::vector<Board> boards;
-    for(int i = 0; i <= 7; i++) {
-        for(int j = 0; j <= 7; j++) {
-            if(b.pieces2D[i][j] % 2 == 0) 
-                PieceFunctionality::getInstance().generateBoards(b, boards, i, j);
-        }
-    }
+    // minimaxWhite(b, 2).print();
 
-    std::vector<Board> results;
-    for(Board temp : boards) {
-        results.push_back(minimaxWhite(temp, 3));
-    }
+    // Board blackMoved;
+    // blackMoved.clearBoard();
 
-    size_t largestBoardIndex = 0;
-    for(size_t i = 0; i < results.size(); i++) {
-        if(results.at(i).pieces[64] > results.at(largestBoardIndex).pieces[64])
-            largestBoardIndex = i;
-    }
+    // blackMoved.pieces2D[3][0] = Piece::TYPE::BLACK_KING;
+    // blackMoved.pieces2D[2][2] = Piece::TYPE::WHITE_KING;
 
-    boards.at(largestBoardIndex).print();
+    // blackMoved.pieces2D[5][4] = Piece::TYPE::WHITE_QUEEN;
+
+    // blackMoved.print();
+
+    // minimaxWhite(blackMoved, 2).print();
 
     // for(Board &board : boards)
     //     board.print();

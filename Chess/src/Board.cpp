@@ -61,23 +61,15 @@ void Board::clearBoard() {
     }
 }
 
-bool Board::canMove(int startRow, int startColumn, int endRow, int endColumn) {
-    return PieceFunctionality::getInstance().canMove(pieces2D, startRow, startColumn, endRow, endColumn);
+void Board::generateAllMoves(std::vector<Board> &possibleMoves, Piece::TEAM team) {
+    int modClass = (team == Piece::TEAM::WHITE ? 0 : 1);
+
+    for(int i = 0; i <= 7; i++) {
+    for(int j = 0; j <= 7; j++) {
+        if(pieces2D[i][j] % 2 == modClass) 
+            PieceFunctionality::getInstance().generateBoards(*this, possibleMoves, i, j);
+    }}
 }
-
-bool Board::canBeMovedOnto(int row, int col) {
-    for(int tempRow = 0; tempRow < 8; tempRow++) {
-        for(int tempCol = 0; tempCol < 8; tempCol++) {
-            if(tempRow == row && tempCol == col) 
-                continue;
-
-            if(canMove(tempRow, tempCol, row, col))
-                return true;
-        }
-    }
-
-    return false;
-} 
 
 void Board::print() {
     for(int row = 0; row < 8; row++) {

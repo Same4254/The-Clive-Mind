@@ -10,7 +10,7 @@ SOCKET_OBJECTS := ./SocketIOcpp/
 
 CC       := g++
 MPI      := mpic++
-CPPFLAGS := -std=c++17 -g -Wall -I $(HEADER_DIR)
+CPPFLAGS := -std=c++17 -O3 -Wall -I $(HEADER_DIR)
 LDFLAGS  := -lpthread
 
 SOURCES := $(shell find $(SRC_DIR) -name "*.$(SOURCE_FILES)")

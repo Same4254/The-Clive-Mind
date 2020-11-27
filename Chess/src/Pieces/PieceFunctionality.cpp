@@ -136,6 +136,9 @@ bool PieceFunctionality::isKingInCheck(PieceIndexType **pieces2D, Piece::TEAM te
             PieceIndexType enemyBishop = (team == Piece::TEAM::BLACK ? Piece::TYPE::WHITE_BISHOP : Piece::TYPE::BLACK_BISHOP);
             PieceIndexType enemyKnight = (team == Piece::TEAM::BLACK ? Piece::TYPE::WHITE_KNIGHT : Piece::TYPE::BLACK_KNIGHT);
 
+            PieceIndexType enemyKing = (team == Piece::TEAM::BLACK ? Piece::TYPE::WHITE_KING : Piece::TYPE::BLACK_KING);
+            PieceIndexType enemyKingCastle = (team == Piece::TEAM::BLACK ? Piece::TYPE::WHITE_KING_CASTLE_ABLE : Piece::TYPE::BLACK_KING_CASTLE_ABLE);
+
             for(int tempRow = i + 1; tempRow < 8; tempRow++) {
                 if(pieces2D[tempRow][j] == Piece::TYPE::EMPTY)
                     continue;
@@ -280,6 +283,31 @@ bool PieceFunctionality::isKingInCheck(PieceIndexType **pieces2D, Piece::TEAM te
                 return true;
             
             if(i + 1 <= 7 && j + 2 <= 7 && pieces2D[i + 1][j + 2] == enemyKnight)
+                return true;
+
+            //Check for enemy king
+            if(i - 1 >= 0 && j - 1 >= 0 && (pieces2D[i - 1][j - 1] == enemyKing || pieces2D[i - 1][j - 1] == enemyKingCastle))
+                return true;
+
+            if(i - 1 >= 0 && (pieces2D[i - 1][j] == enemyKing || pieces2D[i - 1][j] == enemyKingCastle))
+                return true;
+
+            if(i - 1 >= 0 && j + 1 <= 7 && (pieces2D[i - 1][j + 1] == enemyKing || pieces2D[i - 1][j + 1] == enemyKingCastle))
+                return true;
+
+            if(j - 1 >= 0 && (pieces2D[i][j - 1] == enemyKing || pieces2D[i][j - 1] == enemyKingCastle))
+                return true;
+
+            if(j + 1 <= 7 && (pieces2D[i][j + 1] == enemyKing || pieces2D[i][j + 1] == enemyKingCastle))
+                return true;
+
+            if(i + 1 <= 7 && j - 1 >= 0 && (pieces2D[i + 1][j - 1] == enemyKing || pieces2D[i + 1][j - 1] == enemyKingCastle))
+                return true;
+
+            if(i + 1 <= 7 && (pieces2D[i + 1][j] == enemyKing || pieces2D[i + 1][j] == enemyKingCastle))
+                return true;
+
+            if(i + 1 <= 7 && j + 1 <= 7 && (pieces2D[i + 1][j + 1] == enemyKing || pieces2D[i + 1][j + 1] == enemyKingCastle))
                 return true;
 
             return false;

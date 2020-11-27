@@ -29,20 +29,7 @@ public:
 
     void clearBoard();
 
-    /**
-     * Given a piece on the board, check if that piece can be moved to the end location
-     * 
-     * @param startRow -> start row coordinate of the piece
-     * @param startCol -> start col coordinate of the piece
-     * @param endRow -> end row coordinate of the piece
-     * @param endCol -> end col coordinate of the piece
-     */
-    bool canMove(int startRow, int startColumn, int endRow, int endColumn);
-
-    /**
-     * Given a location on the board, check if any piece can be moved onto that location
-     */
-    bool canBeMovedOnto(int row, int column);
+    void generateAllMoves(std::vector<Board> &possibleMoves, Piece::TEAM team);
 
     /**
      * Print the ID of each piece on the board
