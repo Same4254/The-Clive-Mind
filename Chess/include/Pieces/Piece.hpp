@@ -4,7 +4,7 @@
 #include <cmath>
 #include <vector>
 
-typedef unsigned char PieceIndexType;
+typedef int PieceIndexType;
 
 class Board;
 

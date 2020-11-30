@@ -18,6 +18,8 @@ public:
     //2D access to the board, same memory as the pieces pointer, just 2 dimensional
     PieceIndexType **pieces2D;
 
+    int minimaxDepth;
+
     Board();
     Board(const Board &other);
     ~Board();

@@ -2,8 +2,8 @@
 
 Board::Board() {
     //Chess board is 8x8 board. Thus, 64 indecies long for the board. In addition, one more for the score
-    pieces = (PieceIndexType*) malloc((sizeof(PieceIndexType) * 65));
-    pieces2D = (PieceIndexType**) malloc((sizeof(PieceIndexType*) * 8));
+    pieces = (PieceIndexType*) calloc(65, sizeof(PieceIndexType));
+    pieces2D = (PieceIndexType**) malloc(sizeof(PieceIndexType*) * 8);
 
     //Set the row pointer to the pointer at the location in the 1D allocation
     for(int i = 0; i < 8; i++)
@@ -12,6 +12,8 @@ Board::Board() {
 
 Board::Board(const Board &other) : Board() {
     memcpy(pieces, other.pieces, sizeof(PieceIndexType) * 65);
+
+    minimaxDepth = 0;
 }
 
 Board::~Board() {

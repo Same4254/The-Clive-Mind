@@ -28,6 +28,10 @@ $(BIN_DIR)%$(OBJECT_FILES): $(SRC_DIR)%$(SOURCE_FILES) $(HEADERS)
 chess: $(OBJECTS) $(HEADERS)
 	$(CC) $(CPPFLAGS) main.cpp -o chess $(OBJECTS) $(wildcard $(SOCKET_OBJECTS)*) $(LDFLAGS)
 
+.PHONY: MiniMaxMPIChess
+MiniMaxMPIChess: $(OBJECTS) $(HEADERS)
+	$(MPI) $(CPPFLAGS) MPIMiniMax.cpp -o chess $(OBJECTS) $(wildcard $(SOCKET_OBJECTS)*) $(LDFLAGS)
+
 .PHONY: clean
 clean:
 	rm -r -f $(BIN_DIR)*
