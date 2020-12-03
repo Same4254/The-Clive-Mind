@@ -25,3 +25,6 @@ void Piece::generateBoards(Board &board, std::vector<Board> &boards, int pieceRo
         }
     }
 }
+
+Piece::TEAM Piece::getTeam() { return team; }
+char Piece::getDisplayCharacter() { return displayCharacter; }

@@ -2,7 +2,7 @@
 
 int main() {
     Board b;
-    b.clearBoard();
+    b.clear();
     // b.setBoard();
 
     b.pieces2D[0][4] = Piece::TYPE::BLACK_KING;

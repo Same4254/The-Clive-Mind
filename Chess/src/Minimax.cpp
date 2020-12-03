@@ -6,16 +6,16 @@ Board MiniMax::findBlackMove(Board &board) {
 
     if(possibleMoves.size() == 0) {
         Board b;
-        b.clearBoard();
+        b.clear();
 
-        b.pieces[64] = 50;
+        b.state[64] = 50;
 
         return b;
     }
 
     size_t smallestBoardIndex = 0;
     for(size_t i = 1; i < possibleMoves.size(); i++) {
-        if(possibleMoves.at(i).pieces[64] < possibleMoves.at(smallestBoardIndex).pieces[64])
+        if(possibleMoves.at(i).state[64] < possibleMoves.at(smallestBoardIndex).state[64])
             smallestBoardIndex = i;
     }
 
@@ -35,22 +35,22 @@ Board MiniMax::evaluateWhiteMove(Board &board, int depth) {
     //There are no moves to make. Return a board with a score for mate or draw
     if(possibleMoves.size() == 0) {
         Board b;
-        b.clearBoard();
+        b.clear();
 
         //Black has no moves
         if(depth % 2 == 1) {
             //Mate
             if(PieceFunctionality::getInstance().isKingInCheck(board.pieces2D, Piece::TEAM::BLACK)) {
-                b.pieces[64] = 50;
+                b.state[64] = 50;
             } else {//Draw
-                b.pieces[64] = 0;
+                b.state[64] = 0;
             }
         } else {
             //Mate
             if(PieceFunctionality::getInstance().isKingInCheck(board.pieces2D, Piece::TEAM::WHITE)) {
-                b.pieces[64] = -50;
+                b.state[64] = -50;
             } else {//Draw
-                b.pieces[64] = 0;
+                b.state[64] = 0;
             }
         }
 
@@ -65,14 +65,14 @@ Board MiniMax::evaluateWhiteMove(Board &board, int depth) {
     size_t bestLineIndex = 0;
     if(depth % 2 == 0) {
         for(size_t i = 0; i < opponentMoves.size(); i++) {
-            if(opponentMoves.at(i).pieces[64] > opponentMoves.at(bestLineIndex).pieces[64] || (opponentMoves.at(i).pieces[64] == opponentMoves.at(bestLineIndex).pieces[64] && opponentMoves.at(i).minimaxDepth < opponentMoves.at(bestLineIndex).minimaxDepth)) {
+            if(opponentMoves.at(i).state[64] > opponentMoves.at(bestLineIndex).state[64] || (opponentMoves.at(i).state[64] == opponentMoves.at(bestLineIndex).state[64] && opponentMoves.at(i).minimaxDepth < opponentMoves.at(bestLineIndex).minimaxDepth)) {
 
                 bestLineIndex = i;
             }
         }
     } else {
         for(size_t i = 0; i < opponentMoves.size(); i++) {
-            if(opponentMoves.at(i).pieces[64] < opponentMoves.at(bestLineIndex).pieces[64] || (opponentMoves.at(i).pieces[64] == opponentMoves.at(bestLineIndex).pieces[64] && opponentMoves.at(i).minimaxDepth < opponentMoves.at(bestLineIndex).minimaxDepth)) {
+            if(opponentMoves.at(i).state[64] < opponentMoves.at(bestLineIndex).state[64] || (opponentMoves.at(i).state[64] == opponentMoves.at(bestLineIndex).state[64] && opponentMoves.at(i).minimaxDepth < opponentMoves.at(bestLineIndex).minimaxDepth)) {
                 bestLineIndex = i;
             }
         }
@@ -95,7 +95,7 @@ Board MiniMax::bestWhiteMove(Board &board, int moves) {
 
     size_t bestLineIndex = 0;
     for(size_t i = 0; i < lines.size(); i++) {
-        if(lines.at(i).pieces[64] > lines.at(bestLineIndex).pieces[64] || (lines.at(i).pieces[64] == lines.at(bestLineIndex).pieces[64] && lines.at(i).minimaxDepth < lines.at(bestLineIndex).minimaxDepth)) {
+        if(lines.at(i).state[64] > lines.at(bestLineIndex).state[64] || (lines.at(i).state[64] == lines.at(bestLineIndex).state[64] && lines.at(i).minimaxDepth < lines.at(bestLineIndex).minimaxDepth)) {
 
             bestLineIndex = i;
         }

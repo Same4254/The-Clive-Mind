@@ -6,14 +6,35 @@
 
 #include "Pieces/Piece.hpp"
 
+/**
+ * The idea of this class is to separate the behavior of the pieces on the board from the board itself.
+ * The goal was to not generate functional objects, each object representing a peice on the board, *for every board*
+ * This is because boards are going to be constructed FREQUENTLY. Limited overhead is preffered.
+ * 
+ * The singleton design was neccessary to initialize the pointers to the functional objects that represent the piece behaviors
+ * Notice that in this design the behavior is separate from the board itself. The desire was to avoid a massive file of functions, and allow peices to inherit from one another
+ * This is useful for the different Pawn and King states
+ * 
+ * The use for this class is to access the static instance of the class, and then provide the board and position for a piece to do something.
+ * The number in the board, at that position, corresponds to the index in the pieceFunctions pointer. 
+ * So if we want to move a piece on the board, we give the instance of pieceFunctionality the boardState, and the position. 
+ *      It will look up the number in that position and get the functional object to do whatever is desired
+ */
 class PieceFunctionality {
 private:
+    /**
+     * Pointer to pointers becuase object pointers with inheritence in C++ is interesting
+     * These are objects (more like state-less utility functions with some inheritence), that perform piece behavior
+     */
     Piece **pieceFunctions;
 
     PieceFunctionality();
     ~PieceFunctionality();
 
 public:
+    /**
+     *  An array that stores the piece value of any given piece
+     */
     PieceIndexType pieceValues[21];
 
     static PieceFunctionality& getInstance() {

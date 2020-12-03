@@ -426,5 +426,5 @@ void PieceFunctionality::generateBoards(Board &board, std::vector<Board> &boards
 }
 
 char PieceFunctionality::getDisplayCharacter(PieceIndexType pieceIndex) {
-    return pieceFunctions[pieceIndex]->displayCharacter;
+    return pieceFunctions[pieceIndex]->getDisplayCharacter();
 }

@@ -19,7 +19,7 @@ int main() {
     if(id == 0) {
         Board board;
         // board.setBoard();
-        board.clearBoard();
+        board.clear();
         board.pieces2D[0][4] = Piece::TYPE::BLACK_KING;
         board.pieces2D[1][4] = Piece::TYPE::BLACK_PAWN;
         board.pieces2D[1][5] = Piece::TYPE::BLACK_PAWN;
@@ -42,7 +42,7 @@ int main() {
         for(size_t i = 1; i < worldSize && i < boardsToEvalutate.size(); i++) {
             activeWorkersToBoardIndex.insert(std::make_pair(i, nextBoardToEvaluateIndex));
 
-            MPI_Send(boardsToEvalutate.at(nextBoardToEvaluateIndex).pieces, 65, MPI_INT, i, 0, MPI_COMM_WORLD);
+            MPI_Send(boardsToEvalutate.at(nextBoardToEvaluateIndex).state, Board::STATE_LENGTH, MPI_INT, i, 0, MPI_COMM_WORLD);
             nextBoardToEvaluateIndex--;
         }
 
@@ -50,14 +50,14 @@ int main() {
         std::vector<std::pair<Board, int>> results;
         while(activeWorkersToBoardIndex.size() != 0) {
             Board b;
-            MPI_Recv(b.pieces, 65, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+            MPI_Recv(b.state, Board::STATE_LENGTH, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
             results.push_back(std::make_pair(b, activeWorkersToBoardIndex.find(status.MPI_SOURCE)->second));
 
             if(nextBoardToEvaluateIndex < 0) {
-                MPI_Send(b.pieces, 65, MPI_INT, status.MPI_SOURCE, 1, MPI_COMM_WORLD);
+                MPI_Send(b.state, Board::STATE_LENGTH, MPI_INT, status.MPI_SOURCE, 1, MPI_COMM_WORLD);
                 activeWorkersToBoardIndex.erase(status.MPI_SOURCE);
             } else {
-                MPI_Send(boardsToEvalutate.at(nextBoardToEvaluateIndex).pieces, 65, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD);
+                MPI_Send(boardsToEvalutate.at(nextBoardToEvaluateIndex).state, Board::STATE_LENGTH, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD);
                 activeWorkersToBoardIndex.find(status.MPI_SOURCE)->second = nextBoardToEvaluateIndex;
                 nextBoardToEvaluateIndex--;
             }
@@ -65,7 +65,7 @@ int main() {
 
         size_t bestResultIndex = 0;
         for(size_t i = 1; i < results.size(); i++) {
-            if(results.at(i).first.pieces[64] > results.at(bestResultIndex).first.pieces[64]) {
+            if(results.at(i).first.state[Board::SCORE_INDEX] > results.at(bestResultIndex).first.state[Board::SCORE_INDEX]) {
                 bestResultIndex = i;
             }
         }
@@ -75,12 +75,12 @@ int main() {
         MPI_Status status;
         Board boardToEvaluate;
 
-        MPI_Recv(boardToEvaluate.pieces, 65, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+        MPI_Recv(boardToEvaluate.state, Board::STATE_LENGTH, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         while(status.MPI_TAG == 0) {
             Board evaluation = MiniMax::evaluateWhiteMove(boardToEvaluate, (2 * moveDepth) - 1);
 
-            MPI_Send(evaluation.pieces, 65, MPI_INT, 0, 0, MPI_COMM_WORLD);
-            MPI_Recv(boardToEvaluate.pieces, 65, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+            MPI_Send(evaluation.state, Board::STATE_LENGTH, MPI_INT, 0, 0, MPI_COMM_WORLD);
+            MPI_Recv(boardToEvaluate.state, Board::STATE_LENGTH, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         }
     }
 

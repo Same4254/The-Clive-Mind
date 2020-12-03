@@ -4,8 +4,10 @@
 #include <cmath>
 #include <vector>
 
+//Type of the indecies in IDs in the board
 typedef int PieceIndexType;
 
+//Circle Dependency
 class Board;
 
 class Piece {
@@ -52,11 +54,17 @@ public:
         NONE
     };
 
+protected:
     TEAM team;
     char displayCharacter;
 
+    /**
+     * Every piece has position offsets that describe its movement. 
+     * When possible, these lists are used to generalize piece movement, but this is not always possible
+     */
     std::vector<int> rowMovementOffsets, columnMovementOffsets;
 
+public:
     Piece(TEAM team, char displayCharacter);
     virtual ~Piece();
 
@@ -67,22 +75,38 @@ public:
      * @param startCol -> start col coordinate of the piece
      * @param endRow -> end row coordinate of the piece
      * @param endCol -> end col coordinate of the piece
+     * 
+     * @return -> Whether or not the piece at the given position, on the given board, can move to the target location
      */
     virtual bool canMove(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn) = 0;
 
     /**
-     * Given a piece on the board, move the piece to the end location
+     * Given a piece on the board, move the piece to the end location.
+     * 
+     * WARNING. This does not call canMove before moving the piece. This is so that when generating the board, 
+     *      boards are only created when the piece can move, and then when it is moved, it doesn't check the move again
      * 
      * @param startRow -> start row coordinate of the piece
      * @param startCol -> start col coordinate of the piece
      * @param endRow -> end row coordinate of the piece
      * @param endCol -> end col coordinate of the piece
-     * 
-     * @return -> Whether or not the piece was moved
      */
     virtual void move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn);
 
+    /**
+     * Given a board, generate all of the possible boards (as a result of all possible movements of the piece at the location). 
+     * These possible boards are added into the boards vector.
+     * 
+     * @param board -> The board to generate moves from
+     * @param boards -> The generated list of boards to add to
+     * @param pieceRow -> Row of the piece to try all moves for
+     * @param pieceColumn -> Column of the piece to try all moves for
+     */
     virtual void generateBoards(Board &board, std::vector<Board> &boards, int pieceRow, int pieceColumn);
+
+    //**** GETTERS & SETTERS
+    virtual TEAM getTeam();
+    virtual char getDisplayCharacter();
 };
 
 #endif

@@ -1,28 +1,32 @@
 #include "Board.hpp"
 
+const int Board::STATE_LENGTH = 65;
+const int Board::SCORE_INDEX = 64;
+
 Board::Board() {
     //Chess board is 8x8 board. Thus, 64 indecies long for the board. In addition, one more for the score
-    pieces = (PieceIndexType*) calloc(65, sizeof(PieceIndexType));
+    state = (PieceIndexType*) calloc(STATE_LENGTH, sizeof(PieceIndexType));
     pieces2D = (PieceIndexType**) malloc(sizeof(PieceIndexType*) * 8);
 
     //Set the row pointer to the pointer at the location in the 1D allocation
     for(int i = 0; i < 8; i++)
-        pieces2D[i] = &pieces[i * 8];
+        pieces2D[i] = &state[i * 8];
 }
 
 Board::Board(const Board &other) : Board() {
-    memcpy(pieces, other.pieces, sizeof(PieceIndexType) * 65);
+    memcpy(state, other.state, sizeof(PieceIndexType) * STATE_LENGTH);
 
-    minimaxDepth = 0;
+    minimaxDepth = other.minimaxDepth;
 }
 
 Board::~Board() {
-    free(pieces);
+    //Be freeeee!!!!
+    free(state);
     free(pieces2D);
 }
 
 void Board::setBoard() {
-    pieces[64] = 0;
+    state[64] = 0;
 
     pieces2D[0][0] = Piece::TYPE::BLACK_ROOK_CASTLE_ABLE;
     pieces2D[0][1] = Piece::TYPE::BLACK_KNIGHT;
@@ -55,7 +59,7 @@ void Board::setBoard() {
     pieces2D[7][7] = Piece::TYPE::WHITE_ROOK_CASTLE_ABLE;
 }
 
-void Board::clearBoard() {
+void Board::clear() {
     for(int i = 0; i <= 7; i++) {
         for(int j = 0; j <= 7; j++) {
             pieces2D[i][j] = Piece::TYPE::EMPTY;
@@ -82,7 +86,7 @@ void Board::print() {
         std::cout << std::endl;
     }
 
-    std::cout << "   ---------------- Score: " << (int) pieces[64] << std::endl;
+    std::cout << "   ---------------- Score: " << (int) state[64] << std::endl;
     std::cout << "    a b c d e f g h" << std::endl;
 }
 
