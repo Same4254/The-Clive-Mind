@@ -1,5 +1,13 @@
-bin/*
-.vscode/*
+bin/
+.vscode/
 
-Chess/.vscode/*
-Chess/bin/*
+Chess/.vscode/
+Chess/bin/
+
+Website/*
+!Website/src/
+
+SocketIOcpp/
+Models/
+Data/
+Build/
