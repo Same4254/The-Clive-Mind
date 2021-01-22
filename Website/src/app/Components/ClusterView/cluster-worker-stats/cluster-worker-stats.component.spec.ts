@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ControlsComponent } from './controls.component';
+import { ClusterWorkerStatsComponent } from './cluster-worker-stats.component';
 
-describe('ControlsComponent', () => {
-  let component: ControlsComponent;
-  let fixture: ComponentFixture<ControlsComponent>;
+describe('ClusterWorkerStatsComponent', () => {
+  let component: ClusterWorkerStatsComponent;
+  let fixture: ComponentFixture<ClusterWorkerStatsComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ControlsComponent ]
+      declarations: [ ClusterWorkerStatsComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ControlsComponent);
+    fixture = TestBed.createComponent(ClusterWorkerStatsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

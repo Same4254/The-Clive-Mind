@@ -19,17 +19,17 @@ export class TrainingGraphComponent implements OnInit {
     ngOnInit(): void {        
         this.createChart();
 
-        // this.addBaseState(0, .5, "001.001");
-        // this.addState(0, 0, 0, .5, "001.001", 1, .25, "001.002");
-        // this.addState(1, 0, 0, .5, "001.001", 1, .75, "002.001");
-        // this.addState(1, 1, 1, .75, "002.001", 2, .4, "002.002");
+        this.addBaseState(0, .5, "001.001");
+        this.addState(0, 0, 0, .5, "001.001", 1, .25, "001.002");
+        this.addState(1, 0, 0, .5, "001.001", 1, .75, "002.001");
+        this.addState(1, 1, 1, .75, "002.001", 2, .4, "002.002");
 
         // this.addBaseState(2, .3, "003.001");
         // this.addState(2, 2, 0, .3, "003.001", 1, .1, "003.002");
 
         // this.addState(3, 1, 1, .75, "002.001", 2, .9, "004.001");
 
-        // this.chart.update();
+        this.chart.update();
     }
 
     private random_rgba() : string {
@@ -181,9 +181,10 @@ export class TrainingGraphComponent implements OnInit {
                 },
 
                 onClick: (event) => {
-                    // var activePoints = this.chart.getElementAtEvent(event);
+                    var activePoints = this.chart.getElementAtEvent(event);
 
                     // console.log(this.chart.getDatasetAtEvent(event));
+                    console.log(activePoints)
 
                     // if(!activePoints.length) return;
 

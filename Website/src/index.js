@@ -1,39 +1,33 @@
-const app = require('express')();
-const http = require('http').createServer(app);
-const io = require('socket.io')(http);
+const { response } = require('express');
 
-var clientIO = require('socket.io')(http);
+var clientIO = require('socket.io').listen(3200);
 var cppIO = require('socket.io').listen(3000);
 
-http.listen(3200);
+var toCpp = [
+    "sys-info"
+];
 
-var forwardToCPP = ["create"];
-var forwardToClients = ["created"];
+var toAngularClient = [
+    "sys-info-reply"
+];
 
 clientIO.sockets.on('connection', function(socket) {
     console.log("Site client connected");
 
-    for(label in forwardToCPP) {
-        socket.on(label, data => {
-            cppIO.emit(label, data);
+    for(let i = 0; i < toCpp.length; i++) {
+        socket.on(toCpp[i], () => {
+            cppIO.sockets.emit(toCpp[i]);
         });
     }
-});
-
-clientIO.sockets.on('disconnection', (data) => {
-    console.log("Site client disconnected");
 });
 
 cppIO.sockets.on('connection', function(socket) {
     console.log("CPP client connected");
 
-    for(label in forwardToClients) {
-        socket.on(label, data => {
-            clientIO.emit(label, data);
-        });
+    for(let i = 0; i < toAngularClient.length; i++) {
+        socket.on(toAngularClient[i], data => {
+            console.log(data);
+            clientIO.sockets.emit(toAngularClient[i], data);
+        })
     }
 });
-
-cppIO.sockets.on("disconnection", (data) => {
-    console.log("CPP disconnect");
-})

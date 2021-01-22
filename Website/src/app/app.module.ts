@@ -8,14 +8,17 @@ import { TrainingGraphComponent } from './Components/Training/Graph/training-gra
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { ControlsComponent } from './Components/Training/controls/controls.component';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
+import { ClusterWorkerStatsComponent } from './Components/ClusterView/cluster-worker-stats/cluster-worker-stats.component';
+import { ClusterWorkerStatsArrayComponent } from './Components/ClusterView/cluster-worker-stats-array/cluster-worker-stats-array.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     TrainingGraphComponent,
-    ControlsComponent
+    ClusterWorkerStatsComponent,
+    ClusterWorkerStatsArrayComponent
   ],
   imports: [
     BrowserModule,
@@ -23,7 +26,8 @@ import { ControlsComponent } from './Components/Training/controls/controls.compo
     BrowserAnimationsModule,
 
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    MatProgressBarModule
   ],
   providers: [],
   bootstrap: [AppComponent]

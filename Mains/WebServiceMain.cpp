@@ -1,10 +1,9 @@
-#include<iostream>
+#include <iostream>
+
+#include <sys/types.h>
+#include <sys/sysinfo.h>
 
 #include "Web/SocketIO/sio_client.h"
-
-void create(sio::message::list &data) {
-
-}
 
 /*
  * C++
@@ -46,9 +45,30 @@ int main() {
             std::cout << "Got a create messege" << std::endl;
 
             // auto dataMap = event.get_message()->get
-
-            
         });
+
+        socket->on("sys-info", sio::socket::event_listener_aux([&](std::string const& name, sio::message::ptr const& data, bool isAck, sio::message::list &ack_resp) {
+            std::cout << "Got a sys-info request" << std::endl;
+
+            sio::message::ptr m(sio::object_message::create());
+            auto &map = m.get()->get_map();
+
+            struct sysinfo memInfo;
+            sysinfo(&memInfo);
+
+            long long totalPhysicalRAM = memInfo.totalram;
+            long long totalPhysicalRAMUsed = memInfo.totalram - memInfo.freeram;
+
+            totalPhysicalRAM *= memInfo.mem_unit;
+            totalPhysicalRAMUsed *= memInfo.mem_unit;
+
+            map.insert(std::make_pair("Total RAM", sio::string_message::create(std::to_string(totalPhysicalRAM * 9.31E-10))));
+            map.insert(std::make_pair("Used RAM", sio::string_message::create(std::to_string(totalPhysicalRAMUsed * 9.31E-10))));
+
+            client.socket()->emit("sys-info-reply", m);
+
+            // ack_resp.push(m);
+        }));
 
         socket->on("connection", [&](sio::event& event) {
             std::cout << "Connected" << std::endl;
