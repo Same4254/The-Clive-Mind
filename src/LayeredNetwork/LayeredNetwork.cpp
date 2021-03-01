@@ -34,12 +34,12 @@ void LayeredNetwork::initialize() {
     layers[0]->setInputNRows(inputNRows);
     layers[0]->setInputNCols(inputNCols);
 
-    for(unsigned int i = 0; i < layers.size(); i++) {
+    for(size_t i = 0; i < layers.size(); i++) {
         layers[i]->Layer::initialize();
         layers[i]->initialize();
     }
 
-    for(unsigned int i = 0; i < layers.size(); i++)
+    for(size_t i = 0; i < layers.size(); i++)
         layers[i]->postInitialize();
 
     outputMatrixCount = layers[layers.size() - 1]->getOutputMatrixCount();
@@ -49,12 +49,22 @@ void LayeredNetwork::initialize() {
     inputMatrix = (Matrix*) malloc(inputMatrixCount * sizeof(Matrix));
     labelMatrix = (Matrix*) malloc(outputMatrixCount * sizeof(Matrix));
 
+    /**
+     * The idea here is that all of the input matricies will simply point to the input recourse
+     * Rather than copying the data into memory. Thus, the matricies start with NULL as their 
+     * data pointer. When an input is provided, this input matricies will point to the provided data
+     * without having to copy or re-arrange themselves since the matrix knows the amount of rows and cols
+     * it takes up.
+     * 
+     * This is a very similar story with the output matricies
+     */
     for(int i = 0; i < inputMatrixCount; i++)
         new (&inputMatrix[i]) Matrix(NULL, inputNRows, inputNCols);
 
     for(int i = 0; i < outputMatrixCount; i++)
         new (&labelMatrix[i]) Matrix(NULL, outputNRows, outputNCols);
 
+    //tells the first layer where to look for input
     layers[0]->setInputMatrix(inputMatrix);
 }
 

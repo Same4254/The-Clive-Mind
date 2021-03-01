@@ -24,7 +24,5 @@ public:
      * @param endCol -> end col coordinate of the piece
      */
     virtual bool canMove(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn);
-
-    virtual void generateBoards(Board &board, std::vector<Board> &boards, int pieceRow, int pieceColumn);
 };
 #endif

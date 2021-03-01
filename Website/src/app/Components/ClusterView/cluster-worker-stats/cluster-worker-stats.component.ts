@@ -9,15 +9,12 @@ import { SocketService } from '../../../Services/socket.service'
   styleUrls: ['./cluster-worker-stats.component.css']
 })
 export class ClusterWorkerStatsComponent implements OnInit {
+    public title = "TestTitle:sam"
     public ramUsage = 0;
 
     constructor(private socketService : SocketService) { }
 
     ngOnInit(): void {
 
-    }
-
-    public setRamPercentage(ramUsage) {
-        this.ramUsage = ramUsage;
     }
 }

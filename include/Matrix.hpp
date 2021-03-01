@@ -5,6 +5,25 @@
 #include <iostream>
 #include <cmath>
 
+/**
+ * This matrix class is the crux of the entire Neural Network.
+ * I decided not to use a library since I wanted to see what kind of
+ * obstacles form with designing a matrix class. 
+ * 
+ * Some interesting decisions were made here. 
+ * To understand what happend here, understand that MPI desires a single pointer and a length. 
+ * Therefore, if we plan on sending a matrix over the wire with MPI, having a matrix that stores    
+ * all of the data contiguous would be ideal. This is why there are two ways to access the data in the matrix.
+ * 
+ * The first is through the overall pointer: data. This is simply a C pointer with a length of rows * columns.
+ * The second: data2D. This can be thought of as an array of pointers, where the pointers are separated by the nubmer of columns between them.
+ *      Conceptually, each pointer in this array is the memory address of where the row starts. Thus, data2D[0][2] accesses the 3rd element in the first row.
+ *      It is also important to note that these pointers are to the memory addresses from the data pointer. Thus, the two pointers are pointing to the same
+ *      region in memory. 
+ * 
+ * While at first this may seem... special... it allows very efficient 2D access and makes sending over MPI incredibly easy.
+ * As long as we handle these pointers *very* *very* carefully, all shall be fine. 
+ */
 class Matrix {
 private:
     double* data;
@@ -14,14 +33,14 @@ private:
     int length;
 
     /**
-     * Updates the 2 dimensonal structure of the data to the 
+     * Updates the 2 dimensonal structure of the data to the addresses in the 1D pointer
      */
     void updateData2D();
 
 public:
 
     /**
-    *   The Matrix constructor will store the given data pointer with the given dimensions.
+    *   The Matrix constructor will store the given data pointer with the given dimensions. A copy is NOT made of the data in the pointer.
     *   The total length of the data pointer should be row * col, and the values for this pointer should be initialized.
     * 
     *   The dimensions of the matrix are not mutable. They cannot be changed after the creation of the matrix 
@@ -88,7 +107,7 @@ public:
 
     /**
     *   Use with caution. The idea of this function is to allow quick hot-swapping
-    *       of data not created by this matrix. This will not free the current pointer, nor will it adjust dimensional information.
+    *       of data not created by this matrix. This will NOT free the current pointer, nor will it adjust dimensional information.
     * 
     *   @param data -> Pointer to read and write data to
     *   @return this matrix

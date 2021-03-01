@@ -3,18 +3,19 @@ import { Chart } from 'chart.js';
 import 'chartjs-plugin-zoom';
 import 'chartjs-chart-graph';
 
+import { SocketService } from './../../../Services/socket.service';
+
 @Component({
     selector: 'app-training-graph',
     templateUrl: './training-graph.component.html',
     styleUrls: ['./training-graph.component.css']
 })
-
 export class TrainingGraphComponent implements OnInit {
     private chart: Chart;
     private branches = [];
     private names: string[][] = [];
 
-    constructor() {}
+    constructor(private socketService: SocketService) {}
 
     ngOnInit(): void {        
         this.createChart();

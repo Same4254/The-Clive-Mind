@@ -43,9 +43,11 @@ int main() {
 
         socket->on("create", [&](sio::event& event) {
             std::cout << "Got a create messege" << std::endl;
-
-            // auto dataMap = event.get_message()->get
         });
+
+        // socket->on("get-models", [&](sio::event& event) {
+
+        // });
 
         socket->on("sys-info", sio::socket::event_listener_aux([&](std::string const& name, sio::message::ptr const& data, bool isAck, sio::message::list &ack_resp) {
             std::cout << "Got a sys-info request" << std::endl;
@@ -66,8 +68,6 @@ int main() {
             map.insert(std::make_pair("Used RAM", sio::string_message::create(std::to_string(totalPhysicalRAMUsed * 9.31E-10))));
 
             client.socket()->emit("sys-info-reply", m);
-
-            // ack_resp.push(m);
         }));
 
         socket->on("connection", [&](sio::event& event) {

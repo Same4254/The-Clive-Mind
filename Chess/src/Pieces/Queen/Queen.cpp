@@ -13,8 +13,3 @@ bool Queen::canMove(PieceIndexType **pieces2D, int startRow, int startColumn, in
     return rookInstance.canMove(pieces2D, startRow, startColumn, endRow, endColumn) ||
             bishopInstance.canMove(pieces2D, startRow, startColumn, endRow, endColumn);
 }
-
-void Queen::generateBoards(Board &board, std::vector<Board> &boards, int pieceRow, int pieceColumn) {
-    rookInstance.generateBoards(board, boards, pieceRow, pieceColumn);
-    bishopInstance.generateBoards(board, boards, pieceRow, pieceColumn);
-}

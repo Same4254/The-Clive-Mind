@@ -58,13 +58,13 @@ protected:
     TEAM team;
     char displayCharacter;
 
+public:
     /**
      * Every piece has position offsets that describe its movement. 
      * When possible, these lists are used to generalize piece movement, but this is not always possible
      */
     std::vector<int> rowMovementOffsets, columnMovementOffsets;
 
-public:
     Piece(TEAM team, char displayCharacter);
     virtual ~Piece();
 
@@ -92,17 +92,6 @@ public:
      * @param endCol -> end col coordinate of the piece
      */
     virtual void move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn);
-
-    /**
-     * Given a board, generate all of the possible boards (as a result of all possible movements of the piece at the location). 
-     * These possible boards are added into the boards vector.
-     * 
-     * @param board -> The board to generate moves from
-     * @param boards -> The generated list of boards to add to
-     * @param pieceRow -> Row of the piece to try all moves for
-     * @param pieceColumn -> Column of the piece to try all moves for
-     */
-    virtual void generateBoards(Board &board, std::vector<Board> &boards, int pieceRow, int pieceColumn);
 
     //**** GETTERS & SETTERS
     virtual TEAM getTeam();

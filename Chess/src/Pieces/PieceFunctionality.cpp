@@ -385,7 +385,7 @@ bool PieceFunctionality::canAnyBlackPieceMoveTo(PieceIndexType **pieces2D, int r
     return canAnyPieceMoveTo(pieces2D, row, column, Piece::TEAM::BLACK);
 }
 
-void PieceFunctionality::move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn) {
+void PieceFunctionality::move(Board &board, int startRow, int startColumn, int endRow, int endColumn) {
     if(startRow < 0 || startRow > 7 || startColumn < 0 || startColumn > 7 ||
         endRow < 0 || endRow > 7 || endColumn < 0 || endColumn > 7) {
         
@@ -393,36 +393,16 @@ void PieceFunctionality::move(PieceIndexType **pieces2D, int startRow, int start
         return;
     }
 
-    PieceIndexType enPassantToRemove = (pieces2D[startRow][endRow] % 2 == 0 ? Piece::TYPE::BLACK_PAWN_EN_PASSANT_ABLE : Piece::TYPE::WHITE_PAWN_EN_PASSANT_ABLE);
-    PieceIndexType pawnToPlace = (pieces2D[startRow][endRow] % 2 == 0 ? Piece::TYPE::BLACK_PAWN : Piece::TYPE::WHITE_PAWN);
+    PieceIndexType enPassantToRemove = (board.pieces2D[startRow][endRow] % 2 == 0 ? Piece::TYPE::BLACK_PAWN_EN_PASSANT_ABLE : Piece::TYPE::WHITE_PAWN_EN_PASSANT_ABLE);
+    PieceIndexType pawnToPlace = (board.pieces2D[startRow][endRow] % 2 == 0 ? Piece::TYPE::BLACK_PAWN : Piece::TYPE::WHITE_PAWN);
 
-    pieceFunctions[pieces2D[startRow][startColumn]]->move(pieces2D, startRow, startColumn, endRow, endColumn);
+    pieceFunctions[board.pieces2D[startRow][startColumn]]->move(board.pieces2D, startRow, startColumn, endRow, endColumn);
 
     for(int i = 0; i <= 7; i++) {
     for(int j = 0; j <= 7; j++) {
-        if(pieces2D[i][j] == enPassantToRemove)
-            pieces2D[i][j] = pawnToPlace;
+        if(board.pieces2D[i][j] == enPassantToRemove)
+            board.pieces2D[i][j] = pawnToPlace;
     }}
-}
-
-//TODO: This is not great, but works for now
-void PieceFunctionality::generateBoards(Board &board, std::vector<Board> &boards, int pieceRow, int pieceColumn) {
-    if(board.pieces2D[pieceRow][pieceColumn] == Piece::TYPE::EMPTY)
-        return;
-
-    // for(int i = 0; i <= 7; i++) {
-    // for(int j = 0; j <= 7; j++) {
-    //     if(canMove(board.pieces2D, pieceRow, pieceColumn, i, j)) {
-    //         Board b(board);
-    //         move(b.pieces2D, pieceRow, pieceColumn, i, j);
-    //         boards.push_back(b);
-
-    //         // boards.push_back(Board(board));
-    //         // move(boards.at(boards.size() - 1).pieces2D, pieceRow, pieceColumn, i, j);
-    //     }
-    // }}
-
-    pieceFunctions[board.pieces2D[pieceRow][pieceColumn]]->generateBoards(board, boards, pieceRow, pieceColumn);
 }
 
 char PieceFunctionality::getDisplayCharacter(PieceIndexType pieceIndex) {

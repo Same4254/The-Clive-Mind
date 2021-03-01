@@ -18,17 +18,17 @@ export class ClusterWorkerStatsArrayComponent implements AfterViewInit, OnInit {
     }
 
     ngAfterViewInit() {
-        interval(1000).subscribe((n) => {
-            console.log('Sending System Info Query');
+        // interval(1000).subscribe((n) => {
+        //     console.log('Sending System Info Query');
 
-            this.socketService.socket.emit('sys-info');
-        });
+        //     this.socketService.socket.emit('sys-info');
+        // });
 
-        this.socketService.socket.on("sys-info-reply", (response => {
-            console.log('Recieved System Info: ');
-            console.log(response);
+        // this.socketService.socket.on("sys-info-reply", (response => {
+        //     console.log('Recieved System Info: ');
+        //     console.log(response);
 
-            this.stats.first.setRamPercentage((response['Used RAM'] / response['Total RAM']) * 100);
-        }));
+        //     this.stats.first.setRamPercentage((response['Used RAM'] / response['Total RAM']) * 100);
+        // }));
     }
 }

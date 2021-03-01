@@ -2,18 +2,29 @@
 #define BOARD_HPP
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <iomanip>
 #include <iostream>
+#include <random>
+
+#include <unordered_map>
+#include <unordered_set>
 
 #include "Pieces/PieceFunctionality.hpp"
 #include "Pieces/Piece.hpp"
 
+typedef unsigned long long hash_type;
+
 class Board {
+private:
+    int countMovesHelper(std::unordered_set<hash_type> &visitedPositions, bool whiteToMove, int plys);
+
 public:
     static const int STATE_LENGTH;
-    static const int SCORE_INDEX;
+
+    hash_type hash;
 
     /**
      * 1D representation of the IDs of the pieces on the board
@@ -28,12 +39,7 @@ public:
     //This offers the ability to access by rows and columns while having the actual memory as a plain 1D pointer
     PieceIndexType **pieces2D;
 
-    /**
-     * A variable to store how many layers deep this board is in minimax. 
-     * This is used to break ties between possible moves and ensure the quickest route to the highest score is taken
-     * This may be moved into the board state pointer rather than the Board class
-     */ 
-    int minimaxDepth;
+    std::array<std::array<std::array<hash_type, 21>, 8>, 8> pieceToHash;
 
     /**
      * This initializes the memory of the board state. It is initially a clear board of "empty pieces" 
@@ -56,18 +62,19 @@ public:
     void setBoard();
 
     /**
+     *  Generates a hash for the current position of the pieces
+     */
+    hash_type generateHash();
+
+    /**
+     *  Count Moves from white's perspective
+     */
+    int countMoves(bool whiteToMove, int plys);
+
+    /**
      * Clears the board of all pieces, and sets the score to 0
      */
     void clear();
-
-    /**
-     * This will take the current state of the board and generate all of the possible moves, for the given color, in the form of new boards.
-     * These new boards will be push_back-ed onto the possibleMoves vector.
-     * 
-     * @param possibleMoves -> The vector to add all of the possible moves to, in the form of the resulting board from performing the move
-     * @param team -> The team to generate the moves for
-     */
-    void generateAllMoves(std::vector<Board> &possibleMoves, Piece::TEAM team);
 
     /**
      * Print the numerical ID of each piece on the board. This ID represent the number in the Enumaration in the Piece class.

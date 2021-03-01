@@ -22,16 +22,18 @@
  */
 class PieceFunctionality {
 private:
-    /**
-     * Pointer to pointers becuase object pointers with inheritence in C++ is interesting
-     * These are objects (more like state-less utility functions with some inheritence), that perform piece behavior
-     */
-    Piece **pieceFunctions;
-
     PieceFunctionality();
     ~PieceFunctionality();
 
 public:
+    /**
+     * Pointer to pointers becuase object pointers with inheritence in C++ is interesting
+     * These are objects (more like state-less utility functions with some inheritence), that perform piece behavior
+     * 
+     * TODO replace this with a better structure. Not raw pointer
+     */
+    Piece **pieceFunctions;
+
     /**
      *  An array that stores the piece value of any given piece
      */
@@ -66,9 +68,7 @@ public:
      * @param endRow -> end row coordinate of the piece
      * @param endCol -> end col coordinate of the piece
      */
-    void move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn);
-
-    void generateBoards(Board &board, std::vector<Board> &boards, int pieceRow, int pieceColumn);
+    void move(Board &board, int startRow, int startColumn, int endRow, int endColumn);
 
     char getDisplayCharacter(PieceIndexType pieceIndex);
 };
