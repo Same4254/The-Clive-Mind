@@ -10,7 +10,7 @@ SOCKET_OBJECTS := ./SocketIOcpp/
 
 CC       := g++
 MPI      := mpic++
-CPPFLAGS := -std=c++17 -O3 -Wall -I $(HEADER_DIR)
+CPPFLAGS := -std=c++17 -g -Wall -I $(HEADER_DIR) -ftrapv -D_GLIBCXX_DEBUG
 LDFLAGS  := -lpthread
 
 SOURCES := $(shell find $(SRC_DIR) -name "*.$(SOURCE_FILES)")
@@ -24,13 +24,9 @@ $(BIN_DIR)%$(OBJECT_FILES): $(SRC_DIR)%$(SOURCE_FILES) $(HEADERS)
 
 	$(CC) $(CPPFLAGS) -c $< -o $@
 
-.PHONY: chess
-chess: $(OBJECTS) $(HEADERS)
-	$(CC) $(CPPFLAGS) main.cpp -o chess $(OBJECTS) $(wildcard $(SOCKET_OBJECTS)*) $(LDFLAGS)
-
-.PHONY: MiniMaxMPIChess
-MiniMaxMPIChess: $(OBJECTS) $(HEADERS)
-	$(MPI) $(CPPFLAGS) MPIMiniMax.cpp -o chess $(OBJECTS) $(wildcard $(SOCKET_OBJECTS)*) $(LDFLAGS)
+.PHONY: game
+game: $(OBJECTS) $(HEADERS)
+	$(CC) $(CPPFLAGS) main.cpp -o game $(OBJECTS) $(wildcard $(SOCKET_OBJECTS)*) $(LDFLAGS)
 
 .PHONY: clean
 clean:

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Pieces/PieceFunctionality.hpp"
+#include "Pieces/Pawn.hpp"
 
-class EmptyPiece : public PieceFunctionality {
+class PawnDouble : public Pawn {
 public:
-    EmptyPiece(const char renderCharacter);
+    PawnDouble(const PieceFunctionalityIndex piece, const char renderCharacter);
 
     virtual void fillMoves(BoardState &boardState, std::array<Move, MAX_MOVES_PER_PIECE> &movesToFill, int &amtMovesFilled, const BoardPieceIndex boardRow, const BoardPieceIndex boardCol, const BoardPieceIndex boardPositionIndex) const;
 };

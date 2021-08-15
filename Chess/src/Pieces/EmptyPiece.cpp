@@ -1,18 +1,9 @@
 #include "Pieces/EmptyPiece.hpp"
-#include "Pieces/PieceFunctionality.hpp"
 
-EmptyPiece::EmptyPiece(char displayCharacter) : Piece(Piece::TEAM::NONE, displayCharacter) {
+EmptyPiece::EmptyPiece(const char renderCharacter) : PieceFunctionality(PIECES::EMPTY, renderCharacter, false) {
 
 }
 
-EmptyPiece::~EmptyPiece() {
-    
-}
-
-bool EmptyPiece::canMove(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn) {
-    return false;
-}
-
-void EmptyPiece::move(PieceIndexType **pieces2D, int startRow, int startColumn, int endRow, int endColumn) {
+void EmptyPiece::fillMoves(BoardState &boardState, std::array<Move, MAX_MOVES_PER_PIECE> &movesToFill, int &amtMovesFilled, const BoardPieceIndex boardRow, const BoardPieceIndex boardCol, const BoardPieceIndex boardPositionIndex) const {
 
 }
