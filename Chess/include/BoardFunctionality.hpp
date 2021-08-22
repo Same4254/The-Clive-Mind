@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <memory>
+#include <map>
 
 #include "Pieces/PieceFunctionality.hpp"
 #include "Pieces/EmptyPiece.hpp"
@@ -21,6 +22,9 @@
 class BoardFunctionality {
 private:
     BoardHashTable hashTable;
+    std::map<char, PIECES> fenStringToPiece;
+
+    std::vector<std::string> stringSplit(std::string string, std::string delimeter) const;
 
 public:
     //Each element describes how a piece moves. The index corresponds to the values in the state
@@ -29,6 +33,7 @@ public:
     BoardFunctionality();
 
     void clearBoardState(BoardState &boardState) const;
+    void setFENBoardState(BoardState &boardState, std::string fen) const;
     void setInitialBoardState(BoardState &BoardState) const;
 
     bool isSquareAttacked(BoardState &boardState, TEAM defendingTeam, int row, int col) const;

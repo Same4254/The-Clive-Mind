@@ -243,8 +243,18 @@ void testMateIn1() {
     // std::cout << boardFunctionality.isSquareAttacked(boardState, TEAM::BLACK, 0, 6) << std::endl;
 }
 
+void testFEN() {
+    BoardState boardState;
+    boardState.set2DPointers();
+
+    BoardFunctionality boardFunctionality;
+
+    boardFunctionality.setFENBoardState(boardState, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    boardFunctionality.print(boardState);
+}
+
 int main() {
-    std::cout << std::is_pod<Move>() << std::endl;
+    // std::cout << std::is_pod<Move>() << std::endl;
 
     // testPawns();
     // testKnight();
@@ -258,5 +268,7 @@ int main() {
     // testFirstMove();
 
     // testAttackedSquare();
-    testMateIn1();
+    // testMateIn1();
+
+    testFEN();
 }

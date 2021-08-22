@@ -25,6 +25,21 @@ BoardFunctionality::BoardFunctionality() : hashTable(pieceFunctions.size(), Boar
 
     pieceFunctions[PIECES::WHITE_KING] = std::make_unique<King>(PIECES::WHITE_KING, '/');
     pieceFunctions[PIECES::BLACK_KING] = std::make_unique<King>(PIECES::BLACK_KING, '\\');
+
+    //pnbrqk
+    fenStringToPiece.insert(std::make_pair('P', PIECES::WHITE_PAWN));
+    fenStringToPiece.insert(std::make_pair('N', PIECES::WHITE_KNIGHT));
+    fenStringToPiece.insert(std::make_pair('B', PIECES::WHITE_BISHOP));
+    fenStringToPiece.insert(std::make_pair('R', PIECES::WHITE_ROOK));
+    fenStringToPiece.insert(std::make_pair('Q', PIECES::WHITE_QUEEN));
+    fenStringToPiece.insert(std::make_pair('K', PIECES::WHITE_KING));
+
+    fenStringToPiece.insert(std::make_pair('p', PIECES::BLACK_PAWN));
+    fenStringToPiece.insert(std::make_pair('n', PIECES::BLACK_KNIGHT));
+    fenStringToPiece.insert(std::make_pair('b', PIECES::BLACK_BISHOP));
+    fenStringToPiece.insert(std::make_pair('r', PIECES::BLACK_ROOK));
+    fenStringToPiece.insert(std::make_pair('q', PIECES::BLACK_QUEEN));
+    fenStringToPiece.insert(std::make_pair('k', PIECES::BLACK_KING));
 }
 
 void BoardFunctionality::clearBoardState(BoardState &boardState) const {
@@ -32,6 +47,90 @@ void BoardFunctionality::clearBoardState(BoardState &boardState) const {
     for(uint32_t col = 0; col < boardState.nCols; col++) {
         boardState.pieces2D[row][col] = PIECES::EMPTY;
     }}
+}
+
+std::vector<std::string> BoardFunctionality::stringSplit(std::string string, std::string delimeter) const {
+    std::vector<std::string> split;
+
+    int start = 0;
+    int end = string.find(delimeter);
+    while (end != -1) {
+        split.push_back(string.substr(start, end - start));
+
+        start = end + delimeter.size();
+        end = string.find(delimeter, start);
+    }
+    split.push_back(string.substr(start, end - start));
+
+    return split;
+}
+
+void BoardFunctionality::setFENBoardState(BoardState &boardState, std::string fen) const {
+    clearBoardState(boardState);
+
+    std::vector<std::string> spaceSplit = stringSplit(fen, " ");
+
+    if(spaceSplit.size() != 6) {
+        std::cerr << "Invalid Space delimination for FEN string" << std::endl;
+        return;
+    }
+
+    std::string board = spaceSplit[0];
+    std::vector<std::string> rows = stringSplit(board, "/");
+
+    std::string turnString = spaceSplit[1];
+    if(turnString.size() != 1) {
+        std::cout << "Invalid string for the turn in FEN string" << std::endl;
+        return;
+    }
+
+    if(turnString == "w")
+        boardState.player1Turn = true;
+    else if(turnString == "b")
+        boardState.player1Turn = false;
+    else {
+        std::cout << "Invalid turn character in FEN string!" << std::endl;
+        return;
+    }
+
+    std::string castlingRights = spaceSplit[2];
+
+    bool whiteKingSide = castlingRights.find('K') != -1;
+    bool whiteQueenSide = castlingRights.find('Q') != -1;
+    bool blackKingSide = castlingRights.find('k') != -1;
+    bool blackQueenSide = castlingRights.find('q') != -1;
+
+    for(size_t row = 0; row < rows.size(); row++) {
+        int col = 0;
+
+        for(char c : rows[row]) {
+            if(isdigit(c)) {
+                col += c - '0';
+            } else {
+                boardState.pieces2D[row][col] = fenStringToPiece.at(c);
+            }
+        }
+    }
+
+    if(whiteKingSide) {
+        boardState.pieces2D[7][7] = PIECES::WHITE_ROOK_CASTLE_ABLE;
+        boardState.pieces2D[7][4] = PIECES::WHITE_KING_CASTLE_ABLE;
+    }
+
+    if(whiteQueenSide) {
+        boardState.pieces2D[7][0] = PIECES::WHITE_ROOK_CASTLE_ABLE;
+        boardState.pieces2D[7][4] = PIECES::WHITE_KING_CASTLE_ABLE;
+    }
+
+    if(blackKingSide) {
+        boardState.pieces2D[0][7] = PIECES::BLACK_ROOK_CASTLE_ABLE;
+        boardState.pieces2D[0][4] = PIECES::BLACK_KING_CASTLE_ABLE;
+    }
+
+    if(blackQueenSide) {
+        boardState.pieces2D[0][0] = PIECES::BLACK_ROOK_CASTLE_ABLE;
+        boardState.pieces2D[0][4] = PIECES::BLACK_KING_CASTLE_ABLE;
+    }
 }
 
 void BoardFunctionality::setInitialBoardState(BoardState &boardState) const {
