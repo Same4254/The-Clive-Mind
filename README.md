@@ -1,21 +1,11 @@
-# The Clive Mind
+# The Clive Mind \[Abandoned :(\]
 
-Let me start off by saying this is an educational project. I want to learn and construct neural networks. If this project were more about the results than the adventure, I would use a lirbary.
+Let me start off by saying this was an educational project that never got finished and I decided not to because I lost interest. I wanted to learn how to construct neural networks and divide the work with MPI. I went off the deepend trying to make a live webserver to graph the training status and a chess solver... The initial goal was only to learn about neural networks and MPI, which the project achieved!
 
 This is a cluster of 20 Dell Optiplex 755's...
 
 ![](/Cluster.jpg)
 
-I saw a surpluss posting for these computers from a local high school and instantly jumped in the auction. My idea for these computers is to train neural networks for different projects I want to do. However, I want to take the educational approach to this and construct the neural network library myself, and use MPI to communicate between computers. 
+I saw a surpluss posting for these computers from a local high school and instantly jumped in the auction. 
 
-## Current Progress
-
-So far I have built the vanilla fully-connected neural network and a convolutional model. These have both seen success on the MNIST data set, with both scoring roughly 90% after one epoch of training.
-
-## What I want to achieve
-
-I would like to make a builder class for the nerural network because right now the process to set up the model is tedious and prone to errorr. 
-
-On top of that, I would like to use MPI to communicate grradient and network paramters between computers in order to maximize the amount of work done. Once this basic step is complete, I will be able to experiment with different models of parallelization of network training. This cluster is a bit unconventional because each worker node is not very good on its own, so it is key that the work be divided efficiently to get the most out of this setup. 
-
-I would also like to make a webserver using NodeJS to enable live "footage" of the training process. In addition, this would allow me to analyze different learning methods and experiment.
+The MPI-ness of the project is plitting up the batches to different computers in the cluster in parallel and then collect the results.
